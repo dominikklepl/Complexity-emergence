@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z jednoduchého složité</title>
+
+    <!-- KaTeX for rendering equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+    <style>
+        /* ---- Reset & base ---- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #0d0d1a;
+            color: #e0dcd4;
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* ---- Layout: sidebar + canvas ---- */
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px;
+            min-width: 320px;
+            background: #15152a;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-right: 2px solid #c8b88a33;
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            background: #0a0a16;
+            gap: 0;
+            padding: 12px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            width: 100%;
+            overflow: hidden;
+            padding: 6px 16px;
+        }
+
+        canvas {
+            max-height: 100%;
+            max-width: 100%;
+            height: 100%;
+            aspect-ratio: 3 / 2;
+            cursor: crosshair;
+            border: 2px solid #c8b88a44;
+            border-radius: 0 0 4px 4px;
+            display: block;
+        }
+
+        /* ---- Sidebar header with logo ---- */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header img {
+            height: 44px;
+            width: auto;
+            border-radius: 4px;
+        }
+
+        .sidebar-header-text {
+            flex: 1;
+        }
+
+        /* ---- Language toggle ---- */
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid #c8b88a44;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .lang-btn {
+            padding: 4px 8px;
+            background: transparent;
+            color: #c8b88a66;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: #c8b88a22;
+            color: #c8b88a;
+        }
+
+        .lang-btn:hover {
+            color: #c8b88a;
+        }
+
+        /* ---- Equation panel ---- */
+        .equation-panel {
+            width: 100%;
+            max-width: calc(100vw - 380px);
+            flex-shrink: 0;
+            margin-bottom: 0;
+            border-radius: 6px 6px 0 0;
+            overflow: hidden;
+            border: 1px solid #c8b88a22;
+            border-bottom: none;
+            background: rgba(15, 15, 30, 0.92);
+        }
+
+        .eq-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            cursor: pointer;
+            background: rgba(200, 184, 138, 0.06);
+            border-bottom: 1px solid #c8b88a15;
+            transition: background 0.2s;
+        }
+
+        .eq-header:hover {
+            background: rgba(200, 184, 138, 0.12);
+        }
+
+        .eq-header-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #c8b88a;
+            letter-spacing: 0.04em;
+        }
+
+        .eq-chevron {
+            font-size: 12px;
+            color: #c8b88a88;
+            transition: transform 0.3s;
+        }
+
+        .eq-chevron.open {
+            transform: rotate(180deg);
+        }
+
+        .eq-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease;
+            padding: 0 14px;
+        }
+
+        .eq-body.open {
+            max-height: 300px;
+            padding: 12px 16px;
+        }
+
+        .eq-content {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px 32px;
+        }
+
+        .eq-math {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #e0dcd4;
+            text-align: center;
+        }
+
+        .eq-params {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+            padding-top: 8px;
+            border-top: 1px solid #ffffff08;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .eq-param {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: rgba(200, 184, 138, 0.08);
+            border: 1px solid #c8b88a33;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #c8b88a;
+            cursor: help;
+            transition: all 0.2s;
+        }
+
+        .eq-param:hover {
+            background: rgba(200, 184, 138, 0.18);
+            border-color: #c8b88a66;
+        }
+
+        .eq-param .eq-param-symbol {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .eq-param .eq-param-name {
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .eq-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a35;
+            border: 1px solid #c8b88a44;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.4;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 50;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .eq-param:hover .eq-tooltip {
+            opacity: 1;
+        }
+
+        /* ---- Tab buttons ---- */
+        .tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: 1px solid #c8b88a44;
+            background: transparent;
+            color: #c8b88a88;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #c8b88a22;
+            color: #c8b88a;
+            border-color: #c8b88a88;
+        }
+
+        .tab-btn:hover {
+            background: #c8b88a15;
+        }
+
+        /* ---- Section titles ---- */
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #c8b88a;
+            margin-top: 4px;
+        }
+
+        /* ---- Sliders ---- */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .slider-label .val {
+            font-family: 'Courier New', monospace;
+            color: #c8b88a;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #2a2a44;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #c8b88a;
+            cursor: pointer;
+        }
+
+        /* ---- Preset buttons ---- */
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .preset-btn {
+            padding: 6px 10px;
+            border: 1px solid #c8b88a44;
+            background: transparent;
+            color: #ccc;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.15s;
+        }
+
+        .preset-btn:hover {
+            background: #c8b88a22;
+            border-color: #c8b88a;
+            color: #fff;
+        }
+
+        /* ---- Action buttons ---- */
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-reset {
+            background: #2a2a44;
+            color: #ccc;
+        }
+
+        .btn-reset:hover {
+            background: #3a3a55;
+        }
+
+        .btn-snapshot {
+            background: #c8b88a;
+            color: #1a1a2e;
+        }
+
+        .btn-snapshot:hover {
+            background: #d4c896;
+        }
+
+        /* ---- Description text ---- */
+        .description {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.5;
+            padding: 8px 0;
+            border-top: 1px solid #ffffff10;
+        }
+
+        /* ---- Colour scheme selector ---- */
+        .colour-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .colour-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+
+        .colour-btn.active {
+            border-color: #fff;
+        }
+
+        .colour-btn:hover {
+            border-color: #ffffff88;
+        }
+
+        /* ---- Notification toast ---- */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #c8b88a;
+            color: #1a1a2e;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ---- Interaction hint overlay ---- */
+        .touch-hint {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #c8b88a66;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- --- Left sidebar with controls --- -->
+        <div class="sidebar">
+            <!-- Header with logo + title + language toggle -->
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div class="sidebar-header">
+                    <img src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
+                    <div class="sidebar-header-text">
+                        <div style="font-size:18px; font-weight:700; color:#c8b88a;" data-i18n="title">
+                            Z jednoduchého složité
+                        </div>
+                        <div style="font-size:11px; color:#666; margin-top:2px;">
+                            ÚI AV ČR — Veletrh vědy 2026
+                        </div>
+                    </div>
+                </div>
+                <div class="lang-toggle">
+                    <button class="lang-btn active" onclick="setLang('cs')">CZ</button>
+                    <button class="lang-btn" onclick="setLang('en')">EN</button>
+                </div>
+            </div>
+
+            <!-- Tab switcher -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="rd" onclick="switchTab('rd')" data-i18n="tab_rd">
+                    Turingovy vzory
+                </button>
+                <button class="tab-btn" data-tab="osc" onclick="switchTab('osc')" data-i18n="tab_osc">
+                    Synchronizace
+                </button>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- REACTION-DIFFUSION controls                  -->
+            <!-- ============================================ -->
+            <div id="controls-rd">
+                <div class="description" data-i18n="desc_rd">
+                    Dvě jednoduché chemické pravidla stačí k vytvoření složitých vzorů —
+                    podobných skvrnám na kůži zvířat! Posuňte posuvníky a sledujte, co se stane.
+                </div>
+
+                <div class="section-title" data-i18n="presets">Předvolby</div>
+                <div class="presets">
+                    <button class="preset-btn" onclick="setRDPreset(0.042, 0.063)"
+                        data-i18n="preset_labyrinth">Labyrint</button>
+                    <button class="preset-btn" onclick="setRDPreset(0.035, 0.065)"
+                        data-i18n="preset_spots">Skvrny</button>
+                    <button class="preset-btn" onclick="setRDPreset(0.014, 0.054)"
+                        data-i18n="preset_waves">Vlny</button>
+                    <button class="preset-btn" onclick="setRDPreset(0.046, 0.063)"
+                        data-i18n="preset_worms">Červi</button>
+                    <button class="preset-btn" onclick="setRDPreset(0.025, 0.060)"
+                        data-i18n="preset_coral">Korál</button>
+                </div>
+
+                <div class="section-title" data-i18n="parameters">Parametry</div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span data-i18n="feed_rate">Přidávání látky (f)</span>
+                        <span class="val" id="val-f">0.042</span>
+                    </div>
+                    <input type="range" id="slider-f" min="0.01" max="0.08" step="0.001" value="0.042"
+                        oninput="updateRDParam()">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span data-i18n="kill_rate">Odbourávání látky (k)</span>
+                        <span class="val" id="val-k">0.063</span>
+                    </div>
+                    <input type="range" id="slider-k" min="0.04" max="0.075" step="0.001" value="0.063"
+                        oninput="updateRDParam()">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span data-i18n="speed">Rychlost simulace</span>
+                        <span class="val" id="val-speed-rd">10</span>
+                    </div>
+                    <input type="range" id="slider-speed-rd" min="1" max="30" step="1" value="10"
+                        oninput="document.getElementById('val-speed-rd').textContent=this.value">
+                </div>
+
+                <div class="section-title" data-i18n="colour_scheme">Barevné schéma</div>
+                <div class="colour-btns" id="rd-colours">
+                    <button class="colour-btn active" data-scheme="0"
+                        style="background: linear-gradient(135deg, #f0ede6, #a0b4c8, #1e2850);"
+                        onclick="setRDColour(0, this)" title="Porcelán"></button>
+                    <button class="colour-btn" data-scheme="1"
+                        style="background: linear-gradient(135deg, #1e1914, #3c5a32, #dcd2b4);"
+                        onclick="setRDColour(1, this)" title="Les"></button>
+                    <button class="colour-btn" data-scheme="2"
+                        style="background: linear-gradient(135deg, #280f1e, #963c3c, #fae6b4);"
+                        onclick="setRDColour(2, this)" title="Západ slunce"></button>
+                    <button class="colour-btn" data-scheme="3"
+                        style="background: linear-gradient(135deg, #0f0f14, #645f5a, #f5f0eb);"
+                        onclick="setRDColour(3, this)" title="Inkoust"></button>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- COUPLED OSCILLATORS controls                 -->
+            <!-- ============================================ -->
+            <div id="controls-osc" style="display:none;">
+                <div class="description" data-i18n="desc_osc">
+                    Tisíce blikajících světýlek, každé s jednoduchým pravidlem: přizpůsob se
+                    sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte,
+                    jak se sladí.
+                </div>
+
+                <div class="section-title" data-i18n="presets">Předvolby</div>
+                <div class="presets">
+                    <button class="preset-btn" onclick="setOscPreset(1.5, 0.4, 0.6)" data-i18n="preset_spiral">Spirálové
+                        vlny</button>
+                    <button class="preset-btn" onclick="setOscPreset(0.5, 0.8, 0.6)"
+                        data-i18n="preset_chimera">Chiméra</button>
+                    <button class="preset-btn" onclick="setOscPreset(3.0, 0.2, 0.4)" data-i18n="preset_sync">Plná
+                        synchronizace</button>
+                    <button class="preset-btn" onclick="setOscPreset(0.2, 0.6, 0.8)"
+                        data-i18n="preset_turbulence">Turbulence</button>
+                </div>
+
+                <div class="section-title" data-i18n="parameters">Parametry</div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span data-i18n="coupling">Síla propojení (K)</span>
+                        <span class="val" id="val-K">1.50</span>
+                    </div>
+                    <input type="range" id="slider-K" min="0.0" max="4.0" step="0.05" value="1.5"
+                        oninput="updateOscParam()">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span data-i18n="freq_spread">Rozdíly v tempu</span>
+                        <span class="val" id="val-spread">0.40</span>
+                    </div>
+                    <input type="range" id="slider-spread" min="0.0" max="1.0" step="0.02" value="0.4"
+                        oninput="updateOscParam()">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span data-i18n="base_freq">Základní tempo (ω)</span>
+                        <span class="val" id="val-omega">0.60</span>
+                    </div>
+                    <input type="range" id="slider-omega" min="0.1" max="1.5" step="0.02" value="0.6"
+                        oninput="updateOscParam()">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span data-i18n="speed">Rychlost simulace</span>
+                        <span class="val" id="val-speed-osc">4</span>
+                    </div>
+                    <input type="range" id="slider-speed-osc" min="1" max="15" step="1" value="4"
+                        oninput="document.getElementById('val-speed-osc').textContent=this.value">
+                </div>
+
+                <div class="section-title" data-i18n="colour_scheme">Barevné schéma</div>
+                <div class="colour-btns" id="osc-colours">
+                    <button class="colour-btn active" data-scheme="0"
+                        style="background: conic-gradient(#0a0a28, #1e7864, #8cdca0, #b48cc8, #0a0a28);"
+                        onclick="setOscColour(0, this)" title="Polární záře"></button>
+                    <button class="colour-btn" data-scheme="1"
+                        style="background: conic-gradient(#a03c28, #c8a050, #f0e6c8, #465a50, #a03c28);"
+                        onclick="setOscColour(1, this)" title="Terakota"></button>
+                    <button class="colour-btn" data-scheme="2"
+                        style="background: conic-gradient(#141032, #a03090, #e8a060, #141032);"
+                        onclick="setOscColour(2, this)" title="Soumrak"></button>
+                    <button class="colour-btn" data-scheme="3"
+                        style="background: conic-gradient(#0a0f32, #145078, #3cb4aa, #1e3c64, #0a0f32);"
+                        onclick="setOscColour(3, this)" title="Oceán"></button>
+                </div>
+            </div>
+
+            <!-- Action buttons (always visible) -->
+            <div class="actions">
+                <button class="action-btn btn-reset" onclick="resetSim()" data-i18n="reset">⟲ Resetovat</button>
+                <button class="action-btn btn-snapshot" onclick="takeSnapshot()" data-i18n="snapshot">📸 Uložit
+                    pohlednici</button>
+            </div>
+        </div>
+
+        <!-- --- Main canvas area --- -->
+        <div class="canvas-area">
+
+            <!-- Equation panel (collapsible, above canvas) -->
+            <div class="equation-panel" id="equation-panel">
+                <div class="eq-header" onclick="toggleEquations()">
+                    <span class="eq-header-title" data-i18n="eq_title">Jak to funguje — rovnice</span>
+                    <span class="eq-chevron" id="eq-chevron">▼</span>
+                </div>
+                <div class="eq-body" id="eq-body">
+                    <div class="eq-content" id="eq-content-rd">
+                        <div class="eq-math" id="eq-rd-1"></div>
+                        <div class="eq-math" id="eq-rd-2"></div>
+                        <div class="eq-params" id="eq-params-rd"></div>
+                    </div>
+                    <div class="eq-content" id="eq-content-osc" style="display:none;">
+                        <div class="eq-math" id="eq-osc-1"></div>
+                        <div class="eq-params" id="eq-params-osc"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <canvas id="simCanvas" width="768" height="512"></canvas>
+            </div>
+            <div class="touch-hint" data-i18n="touch_hint">👆 Klikněte na plátno a přidejte nové vzory!</div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+
+    <!-- ============================================================
+     GLSL SHADERS
+     ============================================================ -->
+
+    <!-- Vertex shader -->
+    <script id="vs-quad" type="x-shader/x-vertex">
+    attribute vec2 a_position;
+    varying vec2 v_uv;
+
+    void main() {
+        v_uv = a_position * 0.5 + 0.5;
+        gl_Position = vec4(a_position, 0.0, 1.0);
+    }
+</script>
+
+    <!-- ============================================================
+     REACTION-DIFFUSION: simulation step (Gray-Scott model)
+     ============================================================ -->
+    <script id="fs-rd-step" type="x-shader/x-fragment">
+    precision highp float;
+
+    uniform sampler2D u_state;
+    uniform vec2 u_resolution;
+    uniform float u_f;
+    uniform float u_k;
+    uniform float u_Du;
+    uniform float u_Dv;
+    uniform vec2 u_touch;
+    uniform float u_touchRadius;
+
+    varying vec2 v_uv;
+
+    void main() {
+        vec2 dx = vec2(1.0 / u_resolution.x, 0.0);
+        vec2 dy = vec2(0.0, 1.0 / u_resolution.y);
+
+        vec4 here  = texture2D(u_state, v_uv);
+        float u = here.r;
+        float v = here.g;
+
+        float u_up    = texture2D(u_state, v_uv + dy).r;
+        float u_down  = texture2D(u_state, v_uv - dy).r;
+        float u_left  = texture2D(u_state, v_uv - dx).r;
+        float u_right = texture2D(u_state, v_uv + dx).r;
+        float lap_u   = u_up + u_down + u_left + u_right - 4.0 * u;
+
+        float v_up    = texture2D(u_state, v_uv + dy).g;
+        float v_down  = texture2D(u_state, v_uv - dy).g;
+        float v_left  = texture2D(u_state, v_uv - dx).g;
+        float v_right = texture2D(u_state, v_uv + dx).g;
+        float lap_v   = v_up + v_down + v_left + v_right - 4.0 * v;
+
+        float uvv = u * v * v;
+        float new_u = u + u_Du * lap_u - uvv + u_f * (1.0 - u);
+        float new_v = v + u_Dv * lap_v + uvv - (u_f + u_k) * v;
+
+        if (u_touch.x >= 0.0) {
+            float dist = length(v_uv - u_touch);
+            if (dist < u_touchRadius) {
+                float strength = 1.0 - dist / u_touchRadius;
+                new_u -= 0.1 * strength;
+                new_v += 0.2 * strength;
+            }
+        }
+
+        gl_FragColor = vec4(clamp(new_u, 0.0, 1.0), clamp(new_v, 0.0, 1.0), 0.0, 1.0);
+    }
+</script>
+
+
+    <!-- ============================================================
+     REACTION-DIFFUSION: display — ARTISTIC PALETTES
+     ============================================================ -->
+    <script id="fs-rd-display" type="x-shader/x-fragment">
+    precision highp float;
+
+    uniform sampler2D u_state;
+    uniform int u_colourScheme;
+    varying vec2 v_uv;
+
+    // Porcelain: cream -> soft blue -> deep indigo
+    vec3 porcelain(float t) {
+        if (t < 0.3) {
+            float p = t / 0.3;
+            return vec3(245.0 - p*55.0, 240.0 - p*40.0, 230.0 - p*10.0) / 255.0;
+        }
+        if (t < 0.6) {
+            float p = (t - 0.3) / 0.3;
+            return vec3(190.0 - p*70.0, 200.0 - p*30.0, 220.0 - p*40.0) / 255.0;
+        }
+        float p = (t - 0.6) / 0.4;
+        return vec3(120.0 - p*90.0, 170.0 - p*120.0, 180.0 - p*100.0) / 255.0;
+    }
+
+    // Forest: dark brown -> moss -> sage -> warm cream
+    vec3 forest(float t) {
+        if (t < 0.25) {
+            float p = t / 0.25;
+            return vec3(30.0 + p*15.0, 25.0 + p*30.0, 20.0 + p*10.0) / 255.0;
+        }
+        if (t < 0.5) {
+            float p = (t - 0.25) / 0.25;
+            return vec3(45.0 + p*25.0, 55.0 + p*45.0, 30.0 + p*25.0) / 255.0;
+        }
+        if (t < 0.75) {
+            float p = (t - 0.5) / 0.25;
+            return vec3(70.0 + p*70.0, 100.0 + p*60.0, 55.0 + p*65.0) / 255.0;
+        }
+        float p = (t - 0.75) / 0.25;
+        return vec3(140.0 + p*80.0, 160.0 + p*50.0, 120.0 + p*60.0) / 255.0;
+    }
+
+    // Sunset: deep plum -> rose -> amber -> pale gold
+    vec3 sunset(float t) {
+        if (t < 0.25) {
+            float p = t / 0.25;
+            return vec3(40.0 + p*50.0, 15.0 + p*10.0, 30.0 + p*5.0) / 255.0;
+        }
+        if (t < 0.5) {
+            float p = (t - 0.25) / 0.25;
+            return vec3(90.0 + p*70.0, 25.0 + p*30.0, 35.0 + p*10.0) / 255.0;
+        }
+        if (t < 0.75) {
+            float p = (t - 0.5) / 0.25;
+            return vec3(160.0 + p*60.0, 55.0 + p*95.0, 45.0 + p*15.0) / 255.0;
+        }
+        float p = (t - 0.75) / 0.25;
+        return vec3(220.0 + p*30.0, 150.0 + p*80.0, 60.0 + p*120.0) / 255.0;
+    }
+
+    // Ink: near-black -> warm grey -> off-white (sepia tint)
+    vec3 ink(float t) {
+        if (t < 0.3) {
+            float p = t / 0.3;
+            return vec3(15.0 + p*35.0, 15.0 + p*32.0, 20.0 + p*25.0) / 255.0;
+        }
+        if (t < 0.7) {
+            float p = (t - 0.3) / 0.4;
+            return vec3(50.0 + p*60.0, 47.0 + p*55.0, 45.0 + p*50.0) / 255.0;
+        }
+        float p = (t - 0.7) / 0.3;
+        return vec3(110.0 + p*135.0, 102.0 + p*138.0, 95.0 + p*140.0) / 255.0;
+    }
+
+    void main() {
+        float v = texture2D(u_state, v_uv).g;
+        float t = clamp(v * 3.5, 0.0, 1.0);
+
+        vec3 col;
+        if (u_colourScheme == 0) col = porcelain(t);
+        else if (u_colourScheme == 1) col = forest(t);
+        else if (u_colourScheme == 2) col = sunset(t);
+        else col = ink(t);
+
+        gl_FragColor = vec4(col, 1.0);
+    }
+</script>
+
+
+    <!-- ============================================================
+     COUPLED OSCILLATORS: simulation step (Kuramoto model)
+     ============================================================ -->
+    <script id="fs-osc-step" type="x-shader/x-fragment">
+    precision highp float;
+
+    uniform sampler2D u_state;
+    uniform vec2 u_resolution;
+    uniform float u_K;
+    uniform float u_dt;
+    uniform vec2 u_touch;
+    uniform float u_touchRadius;
+
+    varying vec2 v_uv;
+
+    const float PI2 = 6.28318530718;
+
+    void main() {
+        vec2 dx = vec2(1.0 / u_resolution.x, 0.0);
+        vec2 dy = vec2(0.0, 1.0 / u_resolution.y);
+
+        vec4 here = texture2D(u_state, v_uv);
+        float theta = here.r;
+        float omega = here.g;
+
+        float t_up    = texture2D(u_state, v_uv + dy).r;
+        float t_down  = texture2D(u_state, v_uv - dy).r;
+        float t_left  = texture2D(u_state, v_uv - dx).r;
+        float t_right = texture2D(u_state, v_uv + dx).r;
+
+        float coupling = sin(t_up - theta) + sin(t_down - theta)
+                       + sin(t_left - theta) + sin(t_right - theta);
+
+        float new_theta = theta + u_dt * (omega + u_K / 4.0 * coupling);
+
+        if (u_touch.x >= 0.0) {
+            float dist = length(v_uv - u_touch);
+            if (dist < u_touchRadius && dist > 0.001) {
+                vec2 diff = v_uv - u_touch;
+                float angle = atan(diff.y, diff.x);
+                float spiral = angle + dist * 30.0;
+                float strength = 1.0 - dist / u_touchRadius;
+                new_theta = mix(new_theta, spiral, strength * 0.8);
+            }
+        }
+
+        new_theta = mod(new_theta, PI2);
+        if (new_theta < 0.0) new_theta += PI2;
+
+        gl_FragColor = vec4(new_theta, omega, 0.0, 1.0);
+    }
+</script>
+
+
+    <!-- ============================================================
+     COUPLED OSCILLATORS: display — ARTISTIC PALETTES
+     ============================================================ -->
+    <script id="fs-osc-display" type="x-shader/x-fragment">
+    precision highp float;
+
+    uniform sampler2D u_state;
+    uniform int u_colourScheme;
+    varying vec2 v_uv;
+
+    const float PI2 = 6.28318530718;
+
+    // Aurora: deep navy -> teal -> pale green -> lavender -> navy (wrapping)
+    vec3 aurora(float t) {
+        if (t < 0.2) {
+            float p = t / 0.2;
+            return vec3(10.0 + p*10.0, 10.0 + p*60.0, 40.0 + p*30.0) / 255.0;
+        }
+        if (t < 0.4) {
+            float p = (t - 0.2) / 0.2;
+            return vec3(20.0 + p*10.0, 70.0 + p*60.0, 70.0 + p*30.0) / 255.0;
+        }
+        if (t < 0.6) {
+            float p = (t - 0.4) / 0.2;
+            return vec3(30.0 + p*110.0, 130.0 + p*90.0, 100.0 + p*60.0) / 255.0;
+        }
+        if (t < 0.8) {
+            float p = (t - 0.6) / 0.2;
+            return vec3(140.0 + p*40.0, 220.0 - p*80.0, 160.0 + p*40.0) / 255.0;
+        }
+        float p = (t - 0.8) / 0.2;
+        return vec3(180.0 - p*170.0, 140.0 - p*130.0, 200.0 - p*160.0) / 255.0;
+    }
+
+    // Terracotta: rust -> ochre -> cream -> slate -> rust (wrapping)
+    vec3 terracotta(float t) {
+        if (t < 0.25) {
+            float p = t / 0.25;
+            return vec3(160.0 + p*30.0, 60.0 + p*60.0, 40.0 + p*20.0) / 255.0;
+        }
+        if (t < 0.5) {
+            float p = (t - 0.25) / 0.25;
+            return vec3(190.0 + p*10.0, 120.0 + p*40.0, 60.0 + p*20.0) / 255.0;
+        }
+        if (t < 0.75) {
+            float p = (t - 0.5) / 0.25;
+            return vec3(200.0 + p*40.0, 160.0 + p*70.0, 80.0 + p*120.0) / 255.0;
+        }
+        float p = (t - 0.75) / 0.25;
+        return vec3(240.0 - p*80.0, 230.0 - p*170.0, 200.0 - p*160.0) / 255.0;
+    }
+
+    // Twilight: deep violet -> magenta -> warm -> dark
+    vec3 twilight(float t) {
+        if (t < 0.25) {
+            float p = t / 0.25;
+            return vec3(20.0 + p*40.0, 10.0 + p*15.0, 60.0 + p*80.0) / 255.0;
+        }
+        if (t < 0.50) {
+            float p = (t - 0.25) / 0.25;
+            return vec3(60.0 + p*120.0, 25.0 + p*30.0, 140.0 - p*20.0) / 255.0;
+        }
+        if (t < 0.75) {
+            float p = (t - 0.5) / 0.25;
+            return vec3(180.0 + p*50.0, 55.0 + p*120.0, 120.0 - p*60.0) / 255.0;
+        }
+        float p = (t - 0.75) / 0.25;
+        return vec3(230.0 - p*210.0, 175.0 - p*165.0, 60.0) / 255.0;
+    }
+
+    // Ocean: deep navy -> teal -> aqua -> dark blue (wrapping)
+    vec3 ocean(float t) {
+        if (t < 0.25) {
+            float p = t / 0.25;
+            return vec3(10.0 + p*5.0, 15.0 + p*35.0, 50.0 + p*30.0) / 255.0;
+        }
+        if (t < 0.5) {
+            float p = (t - 0.25) / 0.25;
+            return vec3(15.0 + p*5.0, 50.0 + p*40.0, 80.0 + p*40.0) / 255.0;
+        }
+        if (t < 0.75) {
+            float p = (t - 0.5) / 0.25;
+            return vec3(20.0 + p*40.0, 90.0 + p*90.0, 120.0 + p*50.0) / 255.0;
+        }
+        float p = (t - 0.75) / 0.25;
+        return vec3(60.0 - p*50.0, 180.0 - p*165.0, 170.0 - p*120.0) / 255.0;
+    }
+
+    void main() {
+        float theta = texture2D(u_state, v_uv).r;
+        float t = mod(theta, PI2) / PI2;
+
+        vec3 col;
+        if (u_colourScheme == 0) col = aurora(t);
+        else if (u_colourScheme == 1) col = terracotta(t);
+        else if (u_colourScheme == 2) col = twilight(t);
+        else col = ocean(t);
+
+        gl_FragColor = vec4(col, 1.0);
+    }
+</script>
+
+
+    <!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+    <script>
+        // ============================================================
+        // TRANSLATIONS
+        // ============================================================
+
+        const translations = {
+            title: { cs: "Z jednoduchého složité", en: "From Simple to Complex" },
+            tab_rd: { cs: "Turingovy vzory", en: "Turing Patterns" },
+            tab_osc: { cs: "Synchronizace", en: "Synchronisation" },
+            desc_rd: {
+                cs: "Dvě jednoduché chemické pravidla stačí k vytvoření složitých vzorů — podobných skvrnám na kůži zvířat! Posuňte posuvníky a sledujte, co se stane.",
+                en: "Two simple chemical rules are enough to create complex patterns — just like spots on animal skin! Move the sliders and watch what happens."
+            },
+            desc_osc: {
+                cs: "Tisíce blikajících světýlek, každé s jednoduchým pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí.",
+                en: "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up."
+            },
+            presets: { cs: "Předvolby", en: "Presets" },
+            parameters: { cs: "Parametry", en: "Parameters" },
+            colour_scheme: { cs: "Barevné schéma", en: "Colour scheme" },
+            feed_rate: { cs: "Přidávání látky (f)", en: "Adding chemical (f)" },
+            kill_rate: { cs: "Odbourávání látky (k)", en: "Removing chemical (k)" },
+            speed: { cs: "Rychlost simulace", en: "Simulation speed" },
+            coupling: { cs: "Síla propojení (K)", en: "Connection strength (K)" },
+            freq_spread: { cs: "Rozdíly v tempu", en: "Tempo differences" },
+            base_freq: { cs: "Základní tempo (ω)", en: "Base tempo (ω)" },
+            reset: { cs: "⟲ Resetovat", en: "⟲ Reset" },
+            snapshot: { cs: "📸 Uložit pohlednici", en: "📸 Save postcard" },
+            touch_hint: {
+                cs: "👆 Klikněte na plátno a přidejte nové vzory!",
+                en: "👆 Click on the canvas to add new patterns!"
+            },
+            eq_title: { cs: "Jak to funguje — rovnice", en: "How it works — equations" },
+            preset_labyrinth: { cs: "Labyrint", en: "Labyrinth" },
+            preset_spots: { cs: "Skvrny", en: "Spots" },
+            preset_waves: { cs: "Vlny", en: "Waves" },
+            preset_worms: { cs: "Červi", en: "Worms" },
+            preset_coral: { cs: "Korál", en: "Coral" },
+            preset_spiral: { cs: "Spirálové vlny", en: "Spiral waves" },
+            preset_chimera: { cs: "Chiméra", en: "Chimera" },
+            preset_sync: { cs: "Plná synchronizace", en: "Full sync" },
+            preset_turbulence: { cs: "Turbulence", en: "Turbulence" },
+            toast_saved: { cs: "Uloženo", en: "Saved" },
+            toast_downloaded: { cs: "Pohlednice stažena", en: "Postcard downloaded" },
+            snap_title_rd: { cs: "Turingovy vzory", en: "Turing Patterns" },
+            snap_title_osc: { cs: "Synchronizace oscilátorů", en: "Synchronisation Dynamics" },
+            snap_sub_rd: {
+                cs: "Tvoje nastavení vytvořilo tento jedinečný vzor",
+                en: "Your settings created this unique pattern"
+            },
+            snap_sub_osc: {
+                cs: "Tvoje nastavení propojení vytvořilo tyto vlny",
+                en: "Your connection settings shaped these waves"
+            },
+            tip_f: {
+                cs: "Kolik nové látky se neustále přilévá — jako když pouštíš vodu do vany",
+                en: "How much new stuff keeps flowing in — like running water into a bathtub"
+            },
+            tip_k: {
+                cs: "Jak rychle látka mizí — jako když voda odtéká odtokem",
+                en: "How fast stuff disappears — like water draining out"
+            },
+            tip_Du: {
+                cs: "Jak rychle se první látka rozlévá do okolí (tuto hodnotu nelze měnit)",
+                en: "How fast the first chemical spreads to its surroundings (this value is fixed)"
+            },
+            tip_Dv: {
+                cs: "Jak rychle se druhá látka rozlévá — pomaleji než první, a právě to vytváří vzory! (nelze měnit)",
+                en: "How fast the second chemical spreads — slower than the first, and that's what creates patterns! (fixed)"
+            },
+            tip_K_osc: {
+                cs: "Jak moc sousední světýlka ovlivňují jedno druhé — čím víc, tím spíš začnou blikat společně",
+                en: "How much neighbouring lights influence each other — the more, the sooner they blink together"
+            },
+            tip_omega: {
+                cs: "Jak rychle světýlka blikají sama od sebe, bez vlivu sousedů",
+                en: "How fast each light blinks on its own, without any neighbours"
+            },
+            tip_spread_osc: {
+                cs: "Jak moc se liší tempo jednotlivých světýlek — malý rozdíl = snáz se sladí",
+                en: "How different the blinking speeds are — small difference = easier to synchronise"
+            },
+            param_f: { cs: "přidávání", en: "feed" },
+            param_k: { cs: "odbourávání", en: "removal" },
+            param_Du: { cs: "šíření látky 1", en: "spread of chem. 1" },
+            param_Dv: { cs: "šíření látky 2", en: "spread of chem. 2" },
+            param_K_osc: { cs: "propojení", en: "connection" },
+            param_omega: { cs: "tempo", en: "tempo" },
+            param_spread: { cs: "rozdíly", en: "differences" },
+        };
+
+        let currentLang = "cs";
+
+        function setLang(lang) {
+            currentLang = lang;
+
+            // Update toggle buttons
+            document.querySelectorAll(".lang-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.textContent.trim() === (lang === "cs" ? "CZ" : "EN"));
+            });
+
+            // Update all i18n elements
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[key] && translations[key][lang]) {
+                    el.textContent = translations[key][lang];
+                }
+            });
+
+            // Re-render equations
+            renderEquations();
+        }
+
+
+        // ============================================================
+        // EQUATION PANEL
+        // ============================================================
+
+        let eqOpen = false;
+
+        function toggleEquations() {
+            eqOpen = !eqOpen;
+            document.getElementById("eq-body").classList.toggle("open", eqOpen);
+            document.getElementById("eq-chevron").classList.toggle("open", eqOpen);
+        }
+
+        function renderEquations() {
+            const lang = currentLang;
+
+            // RD equations
+            const rdEq1 = document.getElementById("eq-rd-1");
+            const rdEq2 = document.getElementById("eq-rd-2");
+            const rdParams = document.getElementById("eq-params-rd");
+
+            if (typeof katex !== "undefined") {
+                katex.render(
+                    "\\frac{\\partial u}{\\partial t} = \\color{#887550}{D_u} \\nabla^2 u \\;-\\; uv^2 \\;+\\; \\color{#c8b88a}{f}\\,(1 - u)",
+                    rdEq1, { displayMode: true, throwOnError: false }
+                );
+                katex.render(
+                    "\\frac{\\partial v}{\\partial t} = \\color{#887550}{D_v} \\nabla^2 v \\;+\\; uv^2 \\;-\\; (\\color{#c8b88a}{f} + \\color{#c8b88a}{k})\\,v",
+                    rdEq2, { displayMode: true, throwOnError: false }
+                );
+            } else {
+                rdEq1.innerHTML = "∂u/∂t = D<sub>u</sub>∇²u − uv² + f(1−u)";
+                rdEq2.innerHTML = "∂v/∂t = D<sub>v</sub>∇²v + uv² − (f+k)v";
+            }
+
+            rdParams.innerHTML =
+                '<div class="eq-param">' +
+                '<span class="eq-param-symbol" style="color:#c8b88a;">f</span>' +
+                '<span class="eq-param-name">= ' + translations.param_f[lang] + '</span>' +
+                '<div class="eq-tooltip">' + translations.tip_f[lang] + '</div>' +
+                '</div>' +
+                '<div class="eq-param">' +
+                '<span class="eq-param-symbol" style="color:#c8b88a;">k</span>' +
+                '<span class="eq-param-name">= ' + translations.param_k[lang] + '</span>' +
+                '<div class="eq-tooltip">' + translations.tip_k[lang] + '</div>' +
+                '</div>' +
+                '<div class="eq-param">' +
+                '<span class="eq-param-symbol" style="color:#887550;">D<sub>u</sub></span>' +
+                '<span class="eq-param-name">= 0.16 (' + translations.param_Du[lang] + ')</span>' +
+                '<div class="eq-tooltip">' + translations.tip_Du[lang] + '</div>' +
+                '</div>' +
+                '<div class="eq-param">' +
+                '<span class="eq-param-symbol" style="color:#887550;">D<sub>v</sub></span>' +
+                '<span class="eq-param-name">= 0.08 (' + translations.param_Dv[lang] + ')</span>' +
+                '<div class="eq-tooltip">' + translations.tip_Dv[lang] + '</div>' +
+                '</div>';
+
+            // OSC equations
+            const oscEq1 = document.getElementById("eq-osc-1");
+            const oscParams = document.getElementById("eq-params-osc");
+
+            if (typeof katex !== "undefined") {
+                katex.render(
+                    "\\frac{d\\theta_i}{dt} = \\color{#c8b88a}{\\omega_i} \\;+\\; \\frac{\\color{#c8b88a}{K}}{4} \\sum_{j \\in \\mathcal{N}} \\sin(\\theta_j - \\theta_i)",
+                    oscEq1, { displayMode: true, throwOnError: false }
+                );
+            } else {
+                oscEq1.innerHTML = "dθ<sub>i</sub>/dt = ω<sub>i</sub> + (K/4) Σ sin(θ<sub>j</sub> − θ<sub>i</sub>)";
+            }
+
+            oscParams.innerHTML =
+                '<div class="eq-param">' +
+                '<span class="eq-param-symbol" style="color:#c8b88a;">K</span>' +
+                '<span class="eq-param-name">= ' + translations.param_K_osc[lang] + '</span>' +
+                '<div class="eq-tooltip">' + translations.tip_K_osc[lang] + '</div>' +
+                '</div>' +
+                '<div class="eq-param">' +
+                '<span class="eq-param-symbol" style="color:#c8b88a;">ω</span>' +
+                '<span class="eq-param-name">= ' + translations.param_omega[lang] + '</span>' +
+                '<div class="eq-tooltip">' + translations.tip_omega[lang] + '</div>' +
+                '</div>' +
+                '<div class="eq-param">' +
+                '<span class="eq-param-symbol" style="color:#887550;">σ</span>' +
+                '<span class="eq-param-name">= ' + translations.param_spread[lang] + '</span>' +
+                '<div class="eq-tooltip">' + translations.tip_spread_osc[lang] + '</div>' +
+                '</div>';
+        }
+
+
+        // ============================================================
+        // GLOBAL STATE
+        // ============================================================
+
+        let gl;
+        let canvas;
+        const SIM_W = 768;     // 3:2 aspect ratio
+        const SIM_H = 512;
+        let activeTab = "rd";
+
+        let textures = [null, null];
+        let framebuffers = [null, null];
+        let currentTex = 0;
+
+        let rdStepProg, rdDisplayProg;
+        let oscStepProg, oscDisplayProg;
+
+        let quadBuffer;
+
+        let touchPos = [-1, -1];
+        let touchActive = false;
+
+        let rdColour = 0;
+        let oscColour = 0;
+
+
+        // ============================================================
+        // WEBGL SETUP
+        // ============================================================
+
+        function initWebGL() {
+            canvas = document.getElementById("simCanvas");
+            canvas.width = SIM_W;
+            canvas.height = SIM_H;
+
+            gl = canvas.getContext("webgl", {
+                preserveDrawingBuffer: true,
+                antialias: false
+            });
+
+            if (!gl) {
+                alert("WebGL not supported in this browser!");
+                return false;
+            }
+
+            const ext = gl.getExtension("OES_texture_float");
+            if (!ext) {
+                alert("Float textures not supported — try Chrome or Firefox");
+                return false;
+            }
+
+            quadBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1, -1, 1, -1, -1, 1,
+                1, -1, 1, 1, -1, 1
+            ]), gl.STATIC_DRAW);
+
+            return true;
+        }
+
+
+        function compileShader(type, sourceId) {
+            const source = document.getElementById(sourceId).textContent;
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error("Shader " + sourceId + " error:", gl.getShaderInfoLog(shader));
+                return null;
+            }
+            return shader;
+        }
+
+
+        function createProgram(vsId, fsId) {
+            const vs = compileShader(gl.VERTEX_SHADER, vsId);
+            const fs = compileShader(gl.FRAGMENT_SHADER, fsId);
+            const prog = gl.createProgram();
+            gl.attachShader(prog, vs);
+            gl.attachShader(prog, fs);
+            gl.linkProgram(prog);
+
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+                console.error("Program link error:", gl.getProgramInfoLog(prog));
+                return null;
+            }
+            return prog;
+        }
+
+
+        function createTexture(width, height, data) {
+            const tex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+                gl.RGBA, gl.FLOAT, data);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            return tex;
+        }
+
+
+        function createFramebuffer(tex) {
+            const fb = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+                gl.TEXTURE_2D, tex, 0);
+            return fb;
+        }
+
+
+        function drawQuad(program) {
+            gl.useProgram(program);
+
+            const posLoc = gl.getAttribLocation(program, "a_position");
+            gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+
+
+        function setUniform(prog, name, type) {
+            var values = Array.prototype.slice.call(arguments, 3);
+            const loc = gl.getUniformLocation(prog, name);
+            if (loc === null) return;
+            if (type === "1f") gl.uniform1f(loc, values[0]);
+            else if (type === "2f") gl.uniform2f(loc, values[0], values[1]);
+            else if (type === "1i") gl.uniform1i(loc, values[0]);
+        }
+
+
+        // ============================================================
+        // SIMULATION INITIALISATION
+        // ============================================================
+
+        function initRDState() {
+            const data = new Float32Array(SIM_W * SIM_H * 4);
+
+            for (let i = 0; i < SIM_W * SIM_H; i++) {
+                data[i * 4 + 0] = 1.0;
+                data[i * 4 + 1] = 0.0;
+                data[i * 4 + 2] = 0.0;
+                data[i * 4 + 3] = 1.0;
+            }
+
+            // Seed random patches (more for wider canvas)
+            for (let s = 0; s < 40; s++) {
+                const cx = Math.floor(20 + Math.random() * (SIM_W - 40));
+                const cy = Math.floor(20 + Math.random() * (SIM_H - 40));
+                const r = 3 + Math.floor(Math.random() * 5);
+
+                for (let dy = -r; dy <= r; dy++) {
+                    for (let dx = -r; dx <= r; dx++) {
+                        if (dx * dx + dy * dy < r * r) {
+                            const x = (cx + dx + SIM_W) % SIM_W;
+                            const y = (cy + dy + SIM_H) % SIM_H;
+                            const idx = (y * SIM_W + x) * 4;
+                            data[idx + 0] = 0.5 + Math.random() * 0.1;
+                            data[idx + 1] = 0.25 + Math.random() * 0.1;
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
+
+
+        function initOscState() {
+            const data = new Float32Array(SIM_W * SIM_H * 4);
+            const cx = SIM_W / 2, cy = SIM_H / 2;
+            const maxDist = Math.sqrt(cx * cx + cy * cy);
+
+            const spread = parseFloat(document.getElementById("slider-spread").value);
+            const baseOmega = parseFloat(document.getElementById("slider-omega").value);
+
+            for (let y = 0; y < SIM_H; y++) {
+                for (let x = 0; x < SIM_W; x++) {
+                    const idx = (y * SIM_W + x) * 4;
+                    const dist = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy)) / maxDist;
+
+                    data[idx + 0] = Math.random() * Math.PI * 2;
+                    data[idx + 1] = baseOmega + spread * dist
+                        + (Math.random() - 0.5) * 0.2;
+                    data[idx + 2] = 0;
+                    data[idx + 3] = 1;
+                }
+            }
+
+            // Inject spiral seeds
+            for (let s = 0; s < 6; s++) {
+                const sx = 40 + Math.random() * (SIM_W - 80);
+                const sy = 40 + Math.random() * (SIM_H - 80);
+                const sr = 20 + Math.random() * 10;
+
+                for (let dy = -sr; dy <= sr; dy++) {
+                    for (let dx = -sr; dx <= sr; dx++) {
+                        const r = Math.sqrt(dx * dx + dy * dy);
+                        if (r > 0 && r < sr) {
+                            const x = Math.floor((sx + dx + SIM_W) % SIM_W);
+                            const y = Math.floor((sy + dy + SIM_H) % SIM_H);
+                            data[(y * SIM_W + x) * 4] = Math.atan2(dy, dx) + r * 0.4;
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
+
+
+        function setupTextures(initData) {
+            if (textures[0]) gl.deleteTexture(textures[0]);
+            if (textures[1]) gl.deleteTexture(textures[1]);
+            if (framebuffers[0]) gl.deleteFramebuffer(framebuffers[0]);
+            if (framebuffers[1]) gl.deleteFramebuffer(framebuffers[1]);
+
+            textures[0] = createTexture(SIM_W, SIM_H, initData);
+            textures[1] = createTexture(SIM_W, SIM_H, initData);
+            framebuffers[0] = createFramebuffer(textures[0]);
+            framebuffers[1] = createFramebuffer(textures[1]);
+            currentTex = 0;
+        }
+
+
+        // ============================================================
+        // SIMULATION STEP + DISPLAY
+        // ============================================================
+
+        function stepRD() {
+            const f = parseFloat(document.getElementById("slider-f").value);
+            const k = parseFloat(document.getElementById("slider-k").value);
+
+            gl.useProgram(rdStepProg);
+            setUniform(rdStepProg, "u_resolution", "2f", SIM_W, SIM_H);
+            setUniform(rdStepProg, "u_f", "1f", f);
+            setUniform(rdStepProg, "u_k", "1f", k);
+            setUniform(rdStepProg, "u_Du", "1f", 0.16);
+            setUniform(rdStepProg, "u_Dv", "1f", 0.08);
+            setUniform(rdStepProg, "u_touchRadius", "1f", 0.03);
+
+            if (touchActive) {
+                setUniform(rdStepProg, "u_touch", "2f", touchPos[0], touchPos[1]);
+            } else {
+                setUniform(rdStepProg, "u_touch", "2f", -1, -1);
+            }
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, textures[currentTex]);
+            setUniform(rdStepProg, "u_state", "1i", 0);
+
+            const target = 1 - currentTex;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[target]);
+            gl.viewport(0, 0, SIM_W, SIM_H);
+            drawQuad(rdStepProg);
+
+            currentTex = target;
+        }
+
+
+        function displayRD() {
+            gl.useProgram(rdDisplayProg);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, textures[currentTex]);
+            setUniform(rdDisplayProg, "u_state", "1i", 0);
+            setUniform(rdDisplayProg, "u_colourScheme", "1i", rdColour);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            drawQuad(rdDisplayProg);
+        }
+
+
+        function stepOsc() {
+            const K = parseFloat(document.getElementById("slider-K").value);
+
+            gl.useProgram(oscStepProg);
+            setUniform(oscStepProg, "u_resolution", "2f", SIM_W, SIM_H);
+            setUniform(oscStepProg, "u_K", "1f", K);
+            setUniform(oscStepProg, "u_dt", "1f", 0.12);
+            setUniform(oscStepProg, "u_touchRadius", "1f", 0.06);
+
+            if (touchActive) {
+                setUniform(oscStepProg, "u_touch", "2f", touchPos[0], touchPos[1]);
+            } else {
+                setUniform(oscStepProg, "u_touch", "2f", -1, -1);
+            }
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, textures[currentTex]);
+            setUniform(oscStepProg, "u_state", "1i", 0);
+
+            const target = 1 - currentTex;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[target]);
+            gl.viewport(0, 0, SIM_W, SIM_H);
+            drawQuad(oscStepProg);
+
+            currentTex = target;
+        }
+
+
+        function displayOsc() {
+            gl.useProgram(oscDisplayProg);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, textures[currentTex]);
+            setUniform(oscDisplayProg, "u_state", "1i", 0);
+            setUniform(oscDisplayProg, "u_colourScheme", "1i", oscColour);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            drawQuad(oscDisplayProg);
+        }
+
+
+        // ============================================================
+        // MAIN ANIMATION LOOP
+        // ============================================================
+
+        function animate() {
+            if (activeTab === "rd") {
+                const steps = parseInt(document.getElementById("slider-speed-rd").value);
+                for (let i = 0; i < steps; i++) stepRD();
+                displayRD();
+            } else {
+                const steps = parseInt(document.getElementById("slider-speed-osc").value);
+                for (let i = 0; i < steps; i++) stepOsc();
+                displayOsc();
+            }
+
+            if (!pointerDown) touchActive = false;
+
+            requestAnimationFrame(animate);
+        }
+
+
+        // ============================================================
+        // USER INTERACTION
+        // ============================================================
+
+        let pointerDown = false;
+
+        function getCanvasUV(event) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+            const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+
+            const x = (clientX - rect.left) / rect.width;
+            const y = 1.0 - (clientY - rect.top) / rect.height;
+            return [Math.max(0, Math.min(1, x)), Math.max(0, Math.min(1, y))];
+        }
+
+        canvas = null;
+
+        function setupInteraction() {
+            canvas = document.getElementById("simCanvas");
+
+            canvas.addEventListener("pointerdown", function (e) {
+                pointerDown = true;
+                touchPos = getCanvasUV(e);
+                touchActive = true;
+                e.preventDefault();
+            });
+
+            canvas.addEventListener("pointermove", function (e) {
+                if (pointerDown) {
+                    touchPos = getCanvasUV(e);
+                    touchActive = true;
+                }
+                e.preventDefault();
+            });
+
+            canvas.addEventListener("pointerup", function () {
+                pointerDown = false;
+                touchActive = false;
+            });
+
+            canvas.addEventListener("pointerleave", function () {
+                pointerDown = false;
+                touchActive = false;
+            });
+
+            canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+        }
+
+
+        // --- Tab switching ---
+        function switchTab(tab) {
+            activeTab = tab;
+
+            document.querySelectorAll(".tab-btn").forEach(function (btn) {
+                btn.classList.toggle("active", btn.dataset.tab === tab);
+            });
+
+            document.getElementById("controls-rd").style.display = tab === "rd" ? "block" : "none";
+            document.getElementById("controls-osc").style.display = tab === "osc" ? "block" : "none";
+
+            // Switch equation content
+            document.getElementById("eq-content-rd").style.display = tab === "rd" ? "flex" : "none";
+            document.getElementById("eq-content-osc").style.display = tab === "osc" ? "flex" : "none";
+
+            resetSim();
+        }
+
+
+        // --- Parameter updates ---
+        function updateRDParam() {
+            document.getElementById("val-f").textContent =
+                parseFloat(document.getElementById("slider-f").value).toFixed(3);
+            document.getElementById("val-k").textContent =
+                parseFloat(document.getElementById("slider-k").value).toFixed(3);
+        }
+
+        function updateOscParam() {
+            document.getElementById("val-K").textContent =
+                parseFloat(document.getElementById("slider-K").value).toFixed(2);
+            document.getElementById("val-spread").textContent =
+                parseFloat(document.getElementById("slider-spread").value).toFixed(2);
+            document.getElementById("val-omega").textContent =
+                parseFloat(document.getElementById("slider-omega").value).toFixed(2);
+        }
+
+
+        // --- Presets ---
+        function setRDPreset(f, k) {
+            document.getElementById("slider-f").value = f;
+            document.getElementById("slider-k").value = k;
+            updateRDParam();
+            resetSim();
+        }
+
+        function setOscPreset(K, spread, omega) {
+            document.getElementById("slider-K").value = K;
+            document.getElementById("slider-spread").value = spread;
+            document.getElementById("slider-omega").value = omega;
+            updateOscParam();
+            resetSim();
+        }
+
+
+        // --- Colour scheme selection ---
+        function setRDColour(idx, btn) {
+            rdColour = idx;
+            document.querySelectorAll("#rd-colours .colour-btn").forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+        }
+
+        function setOscColour(idx, btn) {
+            oscColour = idx;
+            document.querySelectorAll("#osc-colours .colour-btn").forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+        }
+
+
+        // --- Reset simulation ---
+        function resetSim() {
+            if (activeTab === "rd") {
+                setupTextures(initRDState());
+            } else {
+                setupTextures(initOscState());
+            }
+        }
+
+
+        // --- Snapshot ---
+        function takeSnapshot() {
+            if (activeTab === "rd") displayRD();
+            else displayOsc();
+
+            const imageData = canvas.toDataURL("image/png");
+            const lang = currentLang;
+
+            const title = activeTab === "rd"
+                ? translations.snap_title_rd[lang]
+                : translations.snap_title_osc[lang];
+            const subtitle = activeTab === "rd"
+                ? translations.snap_sub_rd[lang]
+                : translations.snap_sub_osc[lang];
+
+            fetch("/api/snapshot", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    image: imageData,
+                    title: title,
+                    subtitle: subtitle,
+                    sim_type: activeTab,
+                    lang: lang
+                })
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.ok) {
+                        showToast(translations.toast_saved[lang] + ": " + data.filename);
+                    }
+                })
+                .catch(function (err) {
+                    console.warn("Server not available, downloading directly:", err);
+                    const link = document.createElement("a");
+                    link.download = "pattern_" + activeTab + "_" + Date.now() + ".png";
+                    link.href = imageData;
+                    link.click();
+                    showToast(translations.toast_downloaded[lang]);
+                });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.classList.add("show");
+            setTimeout(function () { toast.classList.remove("show"); }, 2500);
+        }
+
+
+        // ============================================================
+        // INITIALISE EVERYTHING
+        // ============================================================
+
+        function init() {
+            if (!initWebGL()) return;
+
+            rdStepProg = createProgram("vs-quad", "fs-rd-step");
+            rdDisplayProg = createProgram("vs-quad", "fs-rd-display");
+            oscStepProg = createProgram("vs-quad", "fs-osc-step");
+            oscDisplayProg = createProgram("vs-quad", "fs-osc-display");
+
+            if (!rdStepProg || !rdDisplayProg || !oscStepProg || !oscDisplayProg) {
+                console.error("Failed to compile shaders");
+                return;
+            }
+
+            setupTextures(initRDState());
+            setupInteraction();
+
+            // Render equations once KaTeX is loaded
+            if (typeof katex !== "undefined") {
+                renderEquations();
+            } else {
+                var waitForKatex = setInterval(function () {
+                    if (typeof katex !== "undefined") {
+                        clearInterval(waitForKatex);
+                        renderEquations();
+                    }
+                }, 100);
+            }
+
+            animate();
+
+            console.log("✓ Veletrh simulator ready");
+        }
+
+        window.addEventListener("load", init);
+    </script>
+
+</body>
+
+</html>
