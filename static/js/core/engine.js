@@ -8,7 +8,7 @@
 
 import { initWebGL, getGL, getCanvas } from "./webgl.js";
 import { mergeTranslations, setLang, getLang, t } from "./i18n.js";
-import { setupInteraction, touchPos, touchActive, frameTick } from "./interaction.js";
+import { setupInteraction, touchPos, touchActive, touchButton, frameTick } from "./interaction.js";
 import { buildControls } from "./controls.js";
 import { renderEquations, toggleEquations } from "./equations.js";
 import { takeSnapshot } from "./snapshot.js";
@@ -133,6 +133,11 @@ function switchSim(id) {
 
     activeSim = sim;
 
+    // Re-merge translations so shared keys (e.g. 'desc') reflect the active sim
+    if (sim.translations) {
+        mergeTranslations(sim.translations);
+    }
+
     // Update tab buttons
     document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.tab === id);
@@ -174,7 +179,7 @@ function animate() {
         const speed = activeControls.getSpeed();
         const colourScheme = activeControls.getColourScheme();
 
-        const touch = { pos: touchPos, active: touchActive };
+        const touch = { pos: touchPos, active: touchActive, button: touchButton };
 
         // Run multiple simulation steps per frame
         for (let i = 0; i < speed; i++) {

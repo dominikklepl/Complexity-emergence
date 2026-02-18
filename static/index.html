@@ -84,10 +84,12 @@
         import { registerSim, init } from "/static/js/core/engine.js";
         import rdSim from "/static/js/sims/reaction-diffusion.js";
         import oscSim from "/static/js/sims/kuramoto.js";
+        import boidsSim from "/static/js/sims/boids.js";
 
         // Register simulations in the order they should appear as tabs
         registerSim(rdSim);
         registerSim(oscSim);
+        registerSim(boidsSim);
 
         // Boot
         init();

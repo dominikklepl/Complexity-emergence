@@ -12,6 +12,9 @@ export let touchPos = [-1, -1];
 /** Whether the user is currently touching / clicking the canvas */
 export let touchActive = false;
 
+/** Which pointer button is pressed (0 = left, 2 = right) */
+export let touchButton = 0;
+
 let pointerDown = false;
 
 /** @type {HTMLCanvasElement|null} */
@@ -43,6 +46,7 @@ export function setupInteraction(canvasEl) {
         pointerDown = true;
         touchPos = getCanvasUV(e);
         touchActive = true;
+        touchButton = e.button;
         e.preventDefault();
     });
 
