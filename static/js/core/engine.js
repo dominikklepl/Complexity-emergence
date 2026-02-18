@@ -50,7 +50,7 @@ export function registerSim(sim) {
 /**
  * Initialise the engine: set up WebGL, build tabs, start the first sim.
  */
-export function init() {
+export function init(defaultLang) {
     const canvasEl = document.getElementById("simCanvas");
     if (!canvasEl) {
         console.error("Canvas element #simCanvas not found");
@@ -59,6 +59,11 @@ export function init() {
 
     const result = initWebGL(canvasEl);
     if (!result) return;
+
+    // Apply default language from config before building any UI
+    if (defaultLang) {
+        setLang(defaultLang);
+    }
 
     setupInteraction(canvasEl);
 

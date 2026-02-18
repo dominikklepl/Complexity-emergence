@@ -26,10 +26,10 @@
                 <div class="sidebar-header">
                     <img src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
                     <div class="sidebar-header-text">
-                        <div style="font-size:18px; font-weight:700; color:#c8b88a;" data-i18n="title">
+                        <div id="app-title" style="font-size:18px; font-weight:700; color:#c8b88a;" data-i18n="title">
                             Z jednoduchého složité
                         </div>
-                        <div style="font-size:11px; color:#666; margin-top:2px;">
+                        <div id="app-subtitle" style="font-size:11px; color:#666; margin-top:2px;">
                             ÚI AV ČR — Veletrh vědy 2026
                         </div>
                     </div>
@@ -69,7 +69,7 @@
             </div>
 
             <div class="canvas-wrapper">
-                <canvas id="simCanvas" width="768" height="512"></canvas>
+                <canvas id="simCanvas"></canvas>
             </div>
 
             <div class="touch-hint" data-i18n="touch_hint">👆 Klikněte na plátno a přidejte nové vzory!</div>
@@ -86,13 +86,35 @@
         import oscSim from "/static/js/sims/kuramoto.js";
         import boidsSim from "/static/js/sims/boids.js";
 
-        // Register simulations in the order they should appear as tabs
-        registerSim(rdSim);
-        registerSim(oscSim);
-        registerSim(boidsSim);
+        const ALL_SIMS = { rd: rdSim, osc: oscSim, boids: boidsSim };
 
-        // Boot
-        init();
+        // Fetch config from server, then boot
+        fetch("/api/config")
+            .then(r => r.json())
+            .then(cfg => {
+                // Apply branding text
+                const lang = cfg.branding.default_lang || "cs";
+                const title = lang === "en"
+                    ? cfg.branding.title_en
+                    : cfg.branding.title_cs;
+                const titleEl = document.getElementById("app-title");
+                const subtitleEl = document.getElementById("app-subtitle");
+                if (titleEl && title) titleEl.textContent = title;
+                if (subtitleEl && cfg.branding.subtitle)
+                    subtitleEl.textContent = cfg.branding.subtitle;
+
+                // Register only the enabled simulations (in config order)
+                for (const id of cfg.simulations) {
+                    if (ALL_SIMS[id]) registerSim(ALL_SIMS[id]);
+                }
+
+                init(lang);
+            })
+            .catch(() => {
+                // Server unreachable — register all sims with defaults
+                for (const sim of Object.values(ALL_SIMS)) registerSim(sim);
+                init();
+            });
     </script>
 
 </body>

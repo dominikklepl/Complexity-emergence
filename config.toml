@@ -1,0 +1,66 @@
+# =============================================================
+#  Veletrh vědy 2026 — Configuration
+# =============================================================
+#  Edit this file to customise the app without touching any code.
+#  Restart the server after saving for changes to take effect.
+# =============================================================
+
+
+# -------------------------------------------------------------
+#  SIMULATIONS
+#  Set enabled = true/false to show or hide each simulation tab.
+#  The order here controls the tab order in the UI.
+# -------------------------------------------------------------
+
+[[simulations]]
+id      = "rd"      # Reaction-Diffusion (Turing patterns)
+enabled = true
+
+[[simulations]]
+id      = "osc"     # Kuramoto coupled oscillators (synchronisation)
+enabled = true
+
+[[simulations]]
+id      = "boids"   # Boids flocking / crowd / predator-prey
+enabled = true
+
+
+# -------------------------------------------------------------
+#  BRANDING — text shown in the UI sidebar
+# -------------------------------------------------------------
+
+[branding]
+# Main title in the sidebar header (bold gold text)
+title_cs = "Z jednoduchého složité"
+title_en = "From Simple to Complex"
+
+# Smaller sub-line below the title
+subtitle = "Ústav Informatiky AV ČR"
+
+# Default language on page load: "cs" or "en"
+default_lang = "cs"
+
+
+# -------------------------------------------------------------
+#  POSTCARD — text on the printed PDF postcard
+# -------------------------------------------------------------
+
+[postcard]
+# Footer branding lines (bottom of postcard)
+footer_left  = "Veletrh vědy 2026"
+footer_right = "www.cs.cas.cz"
+
+# Logo image path (relative to project root)
+logo_path = "static/logo.png"
+
+# Output directory for saved postcards (relative to project root)
+output_dir = "postcards"
+
+# Physical page size for the PDF:
+#   "6x4"  — standard postcard (6x4 inches), 300 DPI = 1800x1200 px
+#   "A6"   — 148x105 mm
+#   "A5"   — 210x148 mm
+page_size = "6x4"
+
+# Fraction of page height used by the simulation image (rest = footer)
+art_fraction = 0.77

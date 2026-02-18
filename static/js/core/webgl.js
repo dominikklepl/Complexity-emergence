@@ -6,9 +6,13 @@
  * No simulation knowledge lives here.
  */
 
-/** Canvas dimensions (3:2 aspect) */
+/** Simulation texture dimensions (3:2 aspect) */
 export const SIM_W = 768;
 export const SIM_H = 512;
+
+/** Export resolution for print-quality postcards (300 DPI @ 6×4 inches) */
+export const EXPORT_W = 1800;
+export const EXPORT_H = 1200;
 
 /** Shared vertex shader source for all full-screen quad passes */
 export const VERTEX_SHADER_SRC = `
@@ -32,8 +36,12 @@ let quadBuffer = null;
  */
 export function initWebGL(canvasEl) {
     canvas = canvasEl;
-    canvas.width = SIM_W;
-    canvas.height = SIM_H;
+
+    // Scale canvas backing store by devicePixelRatio for sharp rendering
+    // on HiDPI screens and large displays. CSS size stays the same.
+    const dpr = Math.min(window.devicePixelRatio || 1, 3); // cap at 3×
+    canvas.width = Math.round(SIM_W * dpr);
+    canvas.height = Math.round(SIM_H * dpr);
 
     gl = canvas.getContext("webgl", {
         preserveDrawingBuffer: true,
