@@ -532,17 +532,17 @@ export default {
             const eqItems = [
                 {
                     label: lang === "cs" ? (_eq.sep_label_cs || "Separace") : (_eq.sep_label_en || "Separation"),
-                    desc:  lang === "cs" ? (_eq.sep_desc_cs  || "nesrážej se") : (_eq.sep_desc_en  || "avoid collisions"),
+                    desc: lang === "cs" ? (_eq.sep_desc_cs || "nesrážej se") : (_eq.sep_desc_en || "avoid collisions"),
                     tex: "\\vec{F}_{\\text{sep}} = w_s \\cdot \\operatorname{steer}\\!\\left(\\frac{1}{|N_s|}\\sum_{j \\in N_s} \\frac{\\vec{r}_i - \\vec{r}_j}{\\|\\vec{r}_i - \\vec{r}_j\\|}\\right)",
                 },
                 {
                     label: lang === "cs" ? (_eq.ali_label_cs || "Zarovnání") : (_eq.ali_label_en || "Alignment"),
-                    desc:  lang === "cs" ? (_eq.ali_desc_cs  || "leť stejným směrem") : (_eq.ali_desc_en  || "match heading"),
+                    desc: lang === "cs" ? (_eq.ali_desc_cs || "leť stejným směrem") : (_eq.ali_desc_en || "match heading"),
                     tex: "\\vec{F}_{\\text{ali}} = w_a \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{v}}_{N} - \\vec{v}_i\\right)",
                 },
                 {
                     label: lang === "cs" ? (_eq.coh_label_cs || "Soudržnost") : (_eq.coh_label_en || "Cohesion"),
-                    desc:  lang === "cs" ? (_eq.coh_desc_cs  || "drž se blízko skupiny") : (_eq.coh_desc_en  || "stay near the group"),
+                    desc: lang === "cs" ? (_eq.coh_desc_cs || "drž se blízko skupiny") : (_eq.coh_desc_en || "stay near the group"),
                     tex: "\\vec{F}_{\\text{coh}} = w_c \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{r}}_{N} - \\vec{r}_i\\right)",
                 },
             ];
@@ -639,45 +639,45 @@ export default {
             }
         };
 
-        setTr("tab_boids",          cfg.tab_cs,               cfg.tab_en);
-        setTr("desc",               cfg.desc_cs,              cfg.desc_en);
-        setTr("mode_label",         cfg.lbl_mode_cs,          cfg.lbl_mode_en);
-        setTr("mode_boids",         cfg.lbl_mode_boids_cs,    cfg.lbl_mode_boids_en);
-        setTr("mode_crowd",         cfg.lbl_mode_crowd_cs,    cfg.lbl_mode_crowd_en);
-        setTr("mode_predator",      cfg.lbl_mode_predator_cs, cfg.lbl_mode_predator_en);
-        setTr("lbl_separation",     cfg.lbl_separation_cs,    cfg.lbl_separation_en);
-        setTr("lbl_alignment",      cfg.lbl_alignment_cs,     cfg.lbl_alignment_en);
-        setTr("lbl_cohesion",       cfg.lbl_cohesion_cs,      cfg.lbl_cohesion_en);
-        setTr("lbl_perception",     cfg.lbl_perception_cs,    cfg.lbl_perception_en);
-        setTr("lbl_max_speed",      cfg.lbl_max_speed_cs,     cfg.lbl_max_speed_en);
-        setTr("lbl_trail",          cfg.lbl_trail_cs,         cfg.lbl_trail_en);
-        setTr("preset_murmuration", cfg.preset_murmuration_cs,cfg.preset_murmuration_en);
-        setTr("preset_school",      cfg.preset_school_cs,     cfg.preset_school_en);
-        setTr("preset_predator",    cfg.preset_predator_cs,   cfg.preset_predator_en);
-        setTr("preset_crowd",       cfg.preset_crowd_cs,      cfg.preset_crowd_en);
-        setTr("preset_chaos",       cfg.preset_chaos_cs,      cfg.preset_chaos_en);
-        setTr("snap_title_boids",   cfg.snap_title_cs,        cfg.snap_title_en);
-        setTr("snap_sub_boids",     cfg.snap_sub_cs,          cfg.snap_sub_en);
+        setTr("tab_boids", cfg.tab_cs, cfg.tab_en);
+        setTr("desc", cfg.desc_cs, cfg.desc_en);
+        setTr("mode_label", cfg.lbl_mode_cs, cfg.lbl_mode_en);
+        setTr("mode_boids", cfg.lbl_mode_boids_cs, cfg.lbl_mode_boids_en);
+        setTr("mode_crowd", cfg.lbl_mode_crowd_cs, cfg.lbl_mode_crowd_en);
+        setTr("mode_predator", cfg.lbl_mode_predator_cs, cfg.lbl_mode_predator_en);
+        setTr("lbl_separation", cfg.lbl_separation_cs, cfg.lbl_separation_en);
+        setTr("lbl_alignment", cfg.lbl_alignment_cs, cfg.lbl_alignment_en);
+        setTr("lbl_cohesion", cfg.lbl_cohesion_cs, cfg.lbl_cohesion_en);
+        setTr("lbl_perception", cfg.lbl_perception_cs, cfg.lbl_perception_en);
+        setTr("lbl_max_speed", cfg.lbl_max_speed_cs, cfg.lbl_max_speed_en);
+        setTr("lbl_trail", cfg.lbl_trail_cs, cfg.lbl_trail_en);
+        setTr("preset_murmuration", cfg.preset_murmuration_cs, cfg.preset_murmuration_en);
+        setTr("preset_school", cfg.preset_school_cs, cfg.preset_school_en);
+        setTr("preset_predator", cfg.preset_predator_cs, cfg.preset_predator_en);
+        setTr("preset_crowd", cfg.preset_crowd_cs, cfg.preset_crowd_en);
+        setTr("preset_chaos", cfg.preset_chaos_cs, cfg.preset_chaos_en);
+        setTr("snap_title_boids", cfg.snap_title_cs, cfg.snap_title_en);
+        setTr("snap_sub_boids", cfg.snap_sub_cs, cfg.snap_sub_en);
 
         // Equation text overrides (stored on both sim and equations sub-object so
         // equations.render can access them via `this._eqContent` where `this = equations`)
         const eq = this._eqContent || (this._eqContent = {});
-        if (cfg.eq_intro_cs)    eq.intro_cs    = cfg.eq_intro_cs;
-        if (cfg.eq_intro_en)    eq.intro_en    = cfg.eq_intro_en;
+        if (cfg.eq_intro_cs) eq.intro_cs = cfg.eq_intro_cs;
+        if (cfg.eq_intro_en) eq.intro_en = cfg.eq_intro_en;
         if (cfg.eq_sep_label_cs) eq.sep_label_cs = cfg.eq_sep_label_cs;
         if (cfg.eq_sep_label_en) eq.sep_label_en = cfg.eq_sep_label_en;
-        if (cfg.eq_sep_desc_cs) eq.sep_desc_cs  = cfg.eq_sep_desc_cs;
-        if (cfg.eq_sep_desc_en) eq.sep_desc_en  = cfg.eq_sep_desc_en;
+        if (cfg.eq_sep_desc_cs) eq.sep_desc_cs = cfg.eq_sep_desc_cs;
+        if (cfg.eq_sep_desc_en) eq.sep_desc_en = cfg.eq_sep_desc_en;
         if (cfg.eq_ali_label_cs) eq.ali_label_cs = cfg.eq_ali_label_cs;
         if (cfg.eq_ali_label_en) eq.ali_label_en = cfg.eq_ali_label_en;
-        if (cfg.eq_ali_desc_cs) eq.ali_desc_cs  = cfg.eq_ali_desc_cs;
-        if (cfg.eq_ali_desc_en) eq.ali_desc_en  = cfg.eq_ali_desc_en;
+        if (cfg.eq_ali_desc_cs) eq.ali_desc_cs = cfg.eq_ali_desc_cs;
+        if (cfg.eq_ali_desc_en) eq.ali_desc_en = cfg.eq_ali_desc_en;
         if (cfg.eq_coh_label_cs) eq.coh_label_cs = cfg.eq_coh_label_cs;
         if (cfg.eq_coh_label_en) eq.coh_label_en = cfg.eq_coh_label_en;
-        if (cfg.eq_coh_desc_cs) eq.coh_desc_cs  = cfg.eq_coh_desc_cs;
-        if (cfg.eq_coh_desc_en) eq.coh_desc_en  = cfg.eq_coh_desc_en;
-        if (cfg.eq_note_cs)     eq.note_cs      = cfg.eq_note_cs;
-        if (cfg.eq_note_en)     eq.note_en      = cfg.eq_note_en;
+        if (cfg.eq_coh_desc_cs) eq.coh_desc_cs = cfg.eq_coh_desc_cs;
+        if (cfg.eq_coh_desc_en) eq.coh_desc_en = cfg.eq_coh_desc_en;
+        if (cfg.eq_note_cs) eq.note_cs = cfg.eq_note_cs;
+        if (cfg.eq_note_en) eq.note_en = cfg.eq_note_en;
         // Mirror onto equations sub-object (render uses `this` which == equations)
         this.equations._eqContent = eq;
     },

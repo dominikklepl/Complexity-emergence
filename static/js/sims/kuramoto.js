@@ -347,26 +347,26 @@ export default fieldSim({
             }
         };
 
-        setTr("tab_osc",           cfg.tab_cs,               cfg.tab_en);
-        setTr("desc",              cfg.desc_cs,              cfg.desc_en);
-        setTr("coupling",          cfg.lbl_coupling_cs,      cfg.lbl_coupling_en);
-        setTr("freq_spread",       cfg.lbl_freq_spread_cs,   cfg.lbl_freq_spread_en);
-        setTr("base_freq",         cfg.lbl_base_freq_cs,     cfg.lbl_base_freq_en);
-        setTr("preset_spiral",     cfg.preset_spiral_cs,     cfg.preset_spiral_en);
-        setTr("preset_chimera",    cfg.preset_chimera_cs,    cfg.preset_chimera_en);
-        setTr("preset_sync",       cfg.preset_sync_cs,       cfg.preset_sync_en);
+        setTr("tab_osc", cfg.tab_cs, cfg.tab_en);
+        setTr("desc", cfg.desc_cs, cfg.desc_en);
+        setTr("coupling", cfg.lbl_coupling_cs, cfg.lbl_coupling_en);
+        setTr("freq_spread", cfg.lbl_freq_spread_cs, cfg.lbl_freq_spread_en);
+        setTr("base_freq", cfg.lbl_base_freq_cs, cfg.lbl_base_freq_en);
+        setTr("preset_spiral", cfg.preset_spiral_cs, cfg.preset_spiral_en);
+        setTr("preset_chimera", cfg.preset_chimera_cs, cfg.preset_chimera_en);
+        setTr("preset_sync", cfg.preset_sync_cs, cfg.preset_sync_en);
         setTr("preset_turbulence", cfg.preset_turbulence_cs, cfg.preset_turbulence_en);
-        setTr("snap_title_osc",    cfg.snap_title_cs,        cfg.snap_title_en);
-        setTr("snap_sub_osc",      cfg.snap_sub_cs,          cfg.snap_sub_en);
+        setTr("snap_title_osc", cfg.snap_title_cs, cfg.snap_title_en);
+        setTr("snap_sub_osc", cfg.snap_sub_cs, cfg.snap_sub_en);
 
         // Parameter tooltips
         for (const [lang, suffix] of [["cs", "_cs"], ["en", "_en"]]) {
-            if (cfg["tip_K_name"    + suffix]) tips[lang].K_name      = cfg["tip_K_name"    + suffix];
-            if (cfg["tip_K"        + suffix]) tips[lang].K_tip        = cfg["tip_K"        + suffix];
-            if (cfg["tip_omega_name" + suffix]) tips[lang].omega_name  = cfg["tip_omega_name" + suffix];
-            if (cfg["tip_omega"     + suffix]) tips[lang].omega_tip    = cfg["tip_omega"     + suffix];
+            if (cfg["tip_K_name" + suffix]) tips[lang].K_name = cfg["tip_K_name" + suffix];
+            if (cfg["tip_K" + suffix]) tips[lang].K_tip = cfg["tip_K" + suffix];
+            if (cfg["tip_omega_name" + suffix]) tips[lang].omega_name = cfg["tip_omega_name" + suffix];
+            if (cfg["tip_omega" + suffix]) tips[lang].omega_tip = cfg["tip_omega" + suffix];
             if (cfg["tip_spread_name" + suffix]) tips[lang].spread_name = cfg["tip_spread_name" + suffix];
-            if (cfg["tip_spread"    + suffix]) tips[lang].spread_tip   = cfg["tip_spread"    + suffix];
+            if (cfg["tip_spread" + suffix]) tips[lang].spread_tip = cfg["tip_spread" + suffix];
         }
     },
 });

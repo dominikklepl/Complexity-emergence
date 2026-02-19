@@ -188,7 +188,9 @@ def api_config():
     # The [content.*] sections in config.toml are flat key=value pairs;
     # we pass them through as-is so the JS can merge them freely.
     raw_content = CFG.get("content", {})
-    content = {sim_id: dict(raw_content.get(sim_id, {})) for sim_id in ["rd", "osc", "boids"]}
+    content = {
+        sim_id: dict(raw_content.get(sim_id, {})) for sim_id in ["rd", "osc", "boids"]
+    }
 
     branding = dict(CFG["branding"])
     # Surface logo_light_path alongside branding so the frontend can choose
