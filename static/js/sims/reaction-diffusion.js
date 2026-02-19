@@ -318,6 +318,50 @@ export default fieldSim({
             subtitle: t("snap_sub_rd"),
         };
     },
+
+    // ─── Content overrides from config.toml ─────────────────────
+    // Called by index.html after /api/config is loaded.
+    // `cfg` is the flat object from config.toml [content.rd].
+    applyContent(cfg) {
+        if (!cfg) return;
+        const tr = this.translations;
+        const tips = PARAM_TIPS;
+
+        // Helper: set both cs and en in a translations entry
+        const setTr = (key, csVal, enVal) => {
+            if (csVal || enVal) {
+                if (!tr[key]) tr[key] = { cs: csVal || "", en: enVal || "" };
+                else {
+                    if (csVal) tr[key].cs = csVal;
+                    if (enVal) tr[key].en = enVal;
+                }
+            }
+        };
+
+        setTr("tab_rd",           cfg.tab_cs,            cfg.tab_en);
+        setTr("desc",             cfg.desc_cs,           cfg.desc_en);
+        setTr("feed_rate",        cfg.lbl_feed_rate_cs,  cfg.lbl_feed_rate_en);
+        setTr("kill_rate",        cfg.lbl_kill_rate_cs,  cfg.lbl_kill_rate_en);
+        setTr("preset_labyrinth", cfg.preset_labyrinth_cs, cfg.preset_labyrinth_en);
+        setTr("preset_spots",     cfg.preset_spots_cs,   cfg.preset_spots_en);
+        setTr("preset_waves",     cfg.preset_waves_cs,   cfg.preset_waves_en);
+        setTr("preset_worms",     cfg.preset_worms_cs,   cfg.preset_worms_en);
+        setTr("preset_coral",     cfg.preset_coral_cs,   cfg.preset_coral_en);
+        setTr("snap_title_rd",    cfg.snap_title_cs,     cfg.snap_title_en);
+        setTr("snap_sub_rd",      cfg.snap_sub_cs,       cfg.snap_sub_en);
+
+        // Parameter tooltips
+        const overrideTip = (lang, key, nameProp, tipProp) => {
+            if (cfg[nameProp]) tips[lang][key + "_name"] = cfg[nameProp];
+            if (cfg[tipProp])  tips[lang][key + "_tip"]  = cfg[tipProp];
+        };
+        for (const [lang, suffix] of [["cs", "_cs"], ["en", "_en"]]) {
+            overrideTip(lang, "f",  "tip_f_name"  + suffix, "tip_f"  + suffix);
+            overrideTip(lang, "k",  "tip_k_name"  + suffix, "tip_k"  + suffix);
+            overrideTip(lang, "Du", "tip_Du_name" + suffix, "tip_Du" + suffix);
+            overrideTip(lang, "Dv", "tip_Dv_name" + suffix, "tip_Dv" + suffix);
+        }
+    },
 });
 
 // ─── Helpers ────────────────────────────────────────────────────

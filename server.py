@@ -57,10 +57,12 @@ def _load_config():
             "footer_left": "Veletrh vědy 2026",
             "footer_right": "www.cs.cas.cz",
             "logo_path": "static/logo.png",
+            "logo_light_path": "",
             "output_dir": "postcards",
             "page_size": "6x4",
             "art_fraction": 0.77,
         },
+        "content": {},
     }
     if tomllib is None or not _CONFIG_PATH.exists():
         if tomllib is None:
@@ -181,10 +183,23 @@ def index():
 def api_config():
     """Return the subset of config the frontend needs."""
     enabled_sims = [s["id"] for s in CFG["simulations"] if s.get("enabled", True)]
+
+    # Build a content map: sim_id -> normalised overrides dict.
+    # The [content.*] sections in config.toml are flat key=value pairs;
+    # we pass them through as-is so the JS can merge them freely.
+    raw_content = CFG.get("content", {})
+    content = {sim_id: dict(raw_content.get(sim_id, {})) for sim_id in ["rd", "osc", "boids"]}
+
+    branding = dict(CFG["branding"])
+    # Surface logo_light_path alongside branding so the frontend can choose
+    # the right logo image without knowing about the [postcard] section.
+    branding["logo_light_path"] = CFG.get("postcard", {}).get("logo_light_path", "")
+
     return jsonify(
         {
             "simulations": enabled_sims,
-            "branding": CFG["branding"],
+            "branding": branding,
+            "content": content,
         }
     )
 

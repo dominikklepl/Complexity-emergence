@@ -83,6 +83,9 @@ canvas {
     height: 44px;
     width: auto;
     border-radius: 4px;
+    /* Invert dark logo to be visible on dark sidebar background.
+       Overridden at runtime if a dedicated light logo is configured. */
+    filter: invert(1) brightness(1.8) grayscale(0.1);
 }
 
 .sidebar-header-text {

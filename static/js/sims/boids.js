@@ -516,48 +516,51 @@ export default {
 
     equations: {
         render(container, lang) {
+            // Pull config-supplied text overrides (set by applyContent via parent sim object)
+            const _eq = this._eqContent || {};
+
             const div = document.createElement("div");
             div.className = "eq-content";
 
             const intro = document.createElement("p");
             intro.style.cssText = "margin:0 0 12px 0; font-size:13px; color:#bbb;";
             intro.textContent = lang === "cs"
-                ? "Každý agent reaguje pouze na své blízké sousedy pomocí tří sil:"
-                : "Each agent reacts only to nearby neighbours via three forces:";
+                ? (_eq.intro_cs || "Každý agent reaguje pouze na své blízké sousedy pomocí tří sil:")
+                : (_eq.intro_en || "Each agent reacts only to nearby neighbours via three forces:");
             div.appendChild(intro);
 
-            const eqs = [
+            const eqItems = [
                 {
-                    label: lang === "cs" ? "Separace" : "Separation",
-                    desc: lang === "cs" ? "nesrážej se" : "avoid collisions",
+                    label: lang === "cs" ? (_eq.sep_label_cs || "Separace") : (_eq.sep_label_en || "Separation"),
+                    desc:  lang === "cs" ? (_eq.sep_desc_cs  || "nesrážej se") : (_eq.sep_desc_en  || "avoid collisions"),
                     tex: "\\vec{F}_{\\text{sep}} = w_s \\cdot \\operatorname{steer}\\!\\left(\\frac{1}{|N_s|}\\sum_{j \\in N_s} \\frac{\\vec{r}_i - \\vec{r}_j}{\\|\\vec{r}_i - \\vec{r}_j\\|}\\right)",
                 },
                 {
-                    label: lang === "cs" ? "Zarovnání" : "Alignment",
-                    desc: lang === "cs" ? "leť stejným směrem" : "match heading",
+                    label: lang === "cs" ? (_eq.ali_label_cs || "Zarovnání") : (_eq.ali_label_en || "Alignment"),
+                    desc:  lang === "cs" ? (_eq.ali_desc_cs  || "leť stejným směrem") : (_eq.ali_desc_en  || "match heading"),
                     tex: "\\vec{F}_{\\text{ali}} = w_a \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{v}}_{N} - \\vec{v}_i\\right)",
                 },
                 {
-                    label: lang === "cs" ? "Soudržnost" : "Cohesion",
-                    desc: lang === "cs" ? "drž se blízko skupiny" : "stay near the group",
+                    label: lang === "cs" ? (_eq.coh_label_cs || "Soudržnost") : (_eq.coh_label_en || "Cohesion"),
+                    desc:  lang === "cs" ? (_eq.coh_desc_cs  || "drž se blízko skupiny") : (_eq.coh_desc_en  || "stay near the group"),
                     tex: "\\vec{F}_{\\text{coh}} = w_c \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{r}}_{N} - \\vec{r}_i\\right)",
                 },
             ];
 
-            for (const eq of eqs) {
+            for (const item of eqItems) {
                 const row = document.createElement("div");
                 row.style.cssText = "margin: 8px 0;";
 
                 const lbl = document.createElement("div");
                 lbl.style.cssText = "color:#c8b88a; font-size:12px; font-weight:700; margin-bottom:2px;";
-                lbl.textContent = eq.label + " — " + eq.desc;
+                lbl.textContent = item.label + " — " + item.desc;
                 row.appendChild(lbl);
 
                 const math = document.createElement("span");
                 try {
-                    katex.render(eq.tex, math, { throwOnError: false, displayMode: false });
+                    katex.render(item.tex, math, { throwOnError: false, displayMode: false });
                 } catch (_) {
-                    math.textContent = eq.tex;
+                    math.textContent = item.tex;
                 }
                 row.appendChild(math);
                 div.appendChild(row);
@@ -566,8 +569,8 @@ export default {
             const note = document.createElement("p");
             note.style.cssText = "margin:12px 0 0 0; font-size:12px; color:#888;";
             note.textContent = lang === "cs"
-                ? "steer(d) = normalize(d) · v_max − v_i, omezeno na maximální sílu."
-                : "steer(d) = normalize(d) · v_max − v_i, clamped to max force.";
+                ? (_eq.note_cs || "steer(d) = normalize(d) · v_max − v_i, omezeno na maximální sílu.")
+                : (_eq.note_en || "steer(d) = normalize(d) · v_max − v_i, clamped to max force.");
             div.appendChild(note);
 
             container.appendChild(div);
@@ -619,5 +622,63 @@ export default {
             title: pick("snap_title_boids"),
             subtitle: pick("snap_sub_boids"),
         };
+    },
+
+    // ── Content overrides from config.toml ─────────────────────
+    applyContent(cfg) {
+        if (!cfg) return;
+        const tr = this.translations;
+
+        const setTr = (key, csVal, enVal) => {
+            if (csVal || enVal) {
+                if (!tr[key]) tr[key] = { cs: csVal || "", en: enVal || "" };
+                else {
+                    if (csVal) tr[key].cs = csVal;
+                    if (enVal) tr[key].en = enVal;
+                }
+            }
+        };
+
+        setTr("tab_boids",          cfg.tab_cs,               cfg.tab_en);
+        setTr("desc",               cfg.desc_cs,              cfg.desc_en);
+        setTr("mode_label",         cfg.lbl_mode_cs,          cfg.lbl_mode_en);
+        setTr("mode_boids",         cfg.lbl_mode_boids_cs,    cfg.lbl_mode_boids_en);
+        setTr("mode_crowd",         cfg.lbl_mode_crowd_cs,    cfg.lbl_mode_crowd_en);
+        setTr("mode_predator",      cfg.lbl_mode_predator_cs, cfg.lbl_mode_predator_en);
+        setTr("lbl_separation",     cfg.lbl_separation_cs,    cfg.lbl_separation_en);
+        setTr("lbl_alignment",      cfg.lbl_alignment_cs,     cfg.lbl_alignment_en);
+        setTr("lbl_cohesion",       cfg.lbl_cohesion_cs,      cfg.lbl_cohesion_en);
+        setTr("lbl_perception",     cfg.lbl_perception_cs,    cfg.lbl_perception_en);
+        setTr("lbl_max_speed",      cfg.lbl_max_speed_cs,     cfg.lbl_max_speed_en);
+        setTr("lbl_trail",          cfg.lbl_trail_cs,         cfg.lbl_trail_en);
+        setTr("preset_murmuration", cfg.preset_murmuration_cs,cfg.preset_murmuration_en);
+        setTr("preset_school",      cfg.preset_school_cs,     cfg.preset_school_en);
+        setTr("preset_predator",    cfg.preset_predator_cs,   cfg.preset_predator_en);
+        setTr("preset_crowd",       cfg.preset_crowd_cs,      cfg.preset_crowd_en);
+        setTr("preset_chaos",       cfg.preset_chaos_cs,      cfg.preset_chaos_en);
+        setTr("snap_title_boids",   cfg.snap_title_cs,        cfg.snap_title_en);
+        setTr("snap_sub_boids",     cfg.snap_sub_cs,          cfg.snap_sub_en);
+
+        // Equation text overrides (stored on both sim and equations sub-object so
+        // equations.render can access them via `this._eqContent` where `this = equations`)
+        const eq = this._eqContent || (this._eqContent = {});
+        if (cfg.eq_intro_cs)    eq.intro_cs    = cfg.eq_intro_cs;
+        if (cfg.eq_intro_en)    eq.intro_en    = cfg.eq_intro_en;
+        if (cfg.eq_sep_label_cs) eq.sep_label_cs = cfg.eq_sep_label_cs;
+        if (cfg.eq_sep_label_en) eq.sep_label_en = cfg.eq_sep_label_en;
+        if (cfg.eq_sep_desc_cs) eq.sep_desc_cs  = cfg.eq_sep_desc_cs;
+        if (cfg.eq_sep_desc_en) eq.sep_desc_en  = cfg.eq_sep_desc_en;
+        if (cfg.eq_ali_label_cs) eq.ali_label_cs = cfg.eq_ali_label_cs;
+        if (cfg.eq_ali_label_en) eq.ali_label_en = cfg.eq_ali_label_en;
+        if (cfg.eq_ali_desc_cs) eq.ali_desc_cs  = cfg.eq_ali_desc_cs;
+        if (cfg.eq_ali_desc_en) eq.ali_desc_en  = cfg.eq_ali_desc_en;
+        if (cfg.eq_coh_label_cs) eq.coh_label_cs = cfg.eq_coh_label_cs;
+        if (cfg.eq_coh_label_en) eq.coh_label_en = cfg.eq_coh_label_en;
+        if (cfg.eq_coh_desc_cs) eq.coh_desc_cs  = cfg.eq_coh_desc_cs;
+        if (cfg.eq_coh_desc_en) eq.coh_desc_en  = cfg.eq_coh_desc_en;
+        if (cfg.eq_note_cs)     eq.note_cs      = cfg.eq_note_cs;
+        if (cfg.eq_note_en)     eq.note_en      = cfg.eq_note_en;
+        // Mirror onto equations sub-object (render uses `this` which == equations)
+        this.equations._eqContent = eq;
     },
 };

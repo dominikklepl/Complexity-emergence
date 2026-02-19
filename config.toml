@@ -53,6 +53,11 @@ footer_right = "www.cs.cas.cz"
 # Logo image path (relative to project root)
 logo_path = "static/logo.png"
 
+# Optional: path to a light/white version of the logo for the dark sidebar.
+# If set, this image is used in the web app instead of logo_path.
+# If empty (""), the app applies a CSS invert filter on logo_path automatically.
+logo_light_path = ""
+
 # Output directory for saved postcards (relative to project root)
 output_dir = "postcards"
 
@@ -64,3 +69,208 @@ page_size = "6x4"
 
 # Fraction of page height used by the simulation image (rest = footer)
 art_fraction = 0.77
+
+
+# =============================================================
+#  SIMULATION CONTENT
+#  Customise labels, descriptions, parameter names, equation
+#  hints, and preset names for each simulation.
+#  All fields support Czech (_cs) and English (_en) variants.
+#  Leaving a field empty ("") keeps the built-in JS default.
+# =============================================================
+
+# -------------------------------------------------------------
+#  REACTION-DIFFUSION (Turing patterns)
+# -------------------------------------------------------------
+
+[content.rd]
+# Tab label
+tab_cs = "Turingovy vzory"
+tab_en = "Turing Patterns"
+
+# Short description shown below the tab (1–3 sentences, plain text)
+desc_cs = "Dvě jednoduché chemické pravidla stačí k vytvoření složitých vzorů — podobných skvrnám na kůži zvířat! Posuňte posuvníky a sledujte, co se stane."
+desc_en = "Two simple chemical rules are enough to create complex patterns — just like spots on animal skin! Move the sliders and watch what happens."
+
+# Parameter labels (displayed next to each slider)
+lbl_feed_rate_cs = "Přidávání látky (f)"
+lbl_feed_rate_en = "Adding chemical (f)"
+lbl_kill_rate_cs = "Odbourávání látky (k)"
+lbl_kill_rate_en = "Removing chemical (k)"
+
+# Equation parameter badge names and tooltips
+# f
+tip_f_name_cs = "= přidávání"
+tip_f_name_en = "= feed"
+tip_f_cs = "Kolik nové látky se neustále přilévá — jako když pouštíš vodu do vany"
+tip_f_en = "How much new stuff keeps flowing in — like running water into a bathtub"
+# k
+tip_k_name_cs = "= odbourávání"
+tip_k_name_en = "= removal"
+tip_k_cs = "Jak rychle látka mizí — jako když voda odtéká odtokem"
+tip_k_en = "How fast stuff disappears — like water draining out"
+# Du (fixed, labelled in badge)
+tip_Du_name_cs = "šíření látky 1"
+tip_Du_name_en = "spread of chem. 1"
+tip_Du_cs = "Jak rychle se první látka rozlévá do okolí (tuto hodnotu nelze měnit)"
+tip_Du_en = "How fast the first chemical spreads to its surroundings (this value is fixed)"
+# Dv (fixed, labelled in badge)
+tip_Dv_name_cs = "šíření látky 2"
+tip_Dv_name_en = "spread of chem. 2"
+tip_Dv_cs = "Jak rychle se druhá látka rozlévá — pomaleji než první, a právě to vytváří vzory! (nelze měnit)"
+tip_Dv_en = "How fast the second chemical spreads — slower than the first, and that's what creates patterns! (fixed)"
+
+# Preset names
+preset_labyrinth_cs = "Labyrint"
+preset_labyrinth_en = "Labyrinth"
+preset_spots_cs     = "Skvrny"
+preset_spots_en     = "Spots"
+preset_waves_cs     = "Vlny"
+preset_waves_en     = "Waves"
+preset_worms_cs     = "Červi"
+preset_worms_en     = "Worms"
+preset_coral_cs     = "Korál"
+preset_coral_en     = "Coral"
+
+# Postcard snapshot strings
+snap_title_cs = "Turingovy vzory"
+snap_title_en = "Turing Patterns"
+snap_sub_cs   = "Tvoje nastavení vytvořilo tento jedinečný vzor"
+snap_sub_en   = "Your settings created this unique pattern"
+
+
+# -------------------------------------------------------------
+#  KURAMOTO OSCILLATORS (Synchronisation)
+# -------------------------------------------------------------
+
+[content.osc]
+# Tab label
+tab_cs = "Synchronizace"
+tab_en = "Synchronisation"
+
+# Short description
+desc_cs = "Tisíce blikajících světýlek, každé s jednoduchým pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí."
+desc_en = "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up."
+
+# Parameter labels
+lbl_coupling_cs    = "Síla propojení (K)"
+lbl_coupling_en    = "Connection strength (K)"
+lbl_freq_spread_cs = "Rozdíly v tempu"
+lbl_freq_spread_en = "Tempo differences"
+lbl_base_freq_cs   = "Základní tempo (ω)"
+lbl_base_freq_en   = "Base tempo (ω)"
+
+# Equation parameter badge names and tooltips
+# K
+tip_K_name_cs    = "= propojení"
+tip_K_name_en    = "= connection"
+tip_K_cs         = "Jak moc sousední světýlka ovlivňují jedno druhé — čím víc, tím spíš začnou blikat společně"
+tip_K_en         = "How much neighbouring lights influence each other — the more, the sooner they blink together"
+# ω
+tip_omega_name_cs   = "= tempo"
+tip_omega_name_en   = "= tempo"
+tip_omega_cs        = "Jak rychle světýlka blikají sama od sebe, bez vlivu sousedů"
+tip_omega_en        = "How fast each light blinks on its own, without any neighbours"
+# σ (spread)
+tip_spread_name_cs  = "= rozdíly"
+tip_spread_name_en  = "= differences"
+tip_spread_cs       = "Jak moc se liší tempo jednotlivých světýlek — malý rozdíl = snáz se sladí"
+tip_spread_en       = "How different the blinking speeds are — small difference = easier to synchronise"
+
+# Preset names
+preset_spiral_cs     = "Spirálové vlny"
+preset_spiral_en     = "Spiral waves"
+preset_chimera_cs    = "Chiméra"
+preset_chimera_en    = "Chimera"
+preset_sync_cs       = "Plná synchronizace"
+preset_sync_en       = "Full sync"
+preset_turbulence_cs = "Turbulence"
+preset_turbulence_en = "Turbulence"
+
+# Postcard snapshot strings
+snap_title_cs = "Synchronizace oscilátorů"
+snap_title_en = "Synchronisation Dynamics"
+snap_sub_cs   = "Tvoje nastavení propojení vytvořilo tyto vlny"
+snap_sub_en   = "Your connection settings shaped these waves"
+
+
+# -------------------------------------------------------------
+#  BOIDS (Flocking / Crowd / Predator-prey)
+# -------------------------------------------------------------
+
+[content.boids]
+# Tab label
+tab_cs = "Hejna"
+tab_en = "Flocking"
+
+# Short description
+desc_cs = "Tři jednoduchá pravidla — separace, zarovnání a soudržnost — stačí k tomu, aby vzniklo složité hejnové chování, jako u ptáků nebo ryb. Klikněte levým tlačítkem pro přitahování, pravým pro odpuzování."
+desc_en = "Three simple rules — separation, alignment, and cohesion — are enough to produce complex flocking behaviour, like in birds or fish. Left-click to attract, right-click to repel."
+
+# Mode selector label
+lbl_mode_cs = "Režim"
+lbl_mode_en = "Mode"
+
+# Mode option labels
+lbl_mode_boids_cs    = "Hejno"
+lbl_mode_boids_en    = "Flocking"
+lbl_mode_crowd_cs    = "Dav"
+lbl_mode_crowd_en    = "Crowd"
+lbl_mode_predator_cs = "Predátor"
+lbl_mode_predator_en = "Predator"
+
+# Slider labels
+lbl_separation_cs = "Separace"
+lbl_separation_en = "Separation"
+lbl_alignment_cs  = "Zarovnání"
+lbl_alignment_en  = "Alignment"
+lbl_cohesion_cs   = "Soudržnost"
+lbl_cohesion_en   = "Cohesion"
+lbl_perception_cs = "Vnímání"
+lbl_perception_en = "Perception"
+lbl_max_speed_cs  = "Max. rychlost"
+lbl_max_speed_en  = "Max speed"
+lbl_trail_cs      = "Stopa"
+lbl_trail_en      = "Trail"
+
+# Equation section: intro sentence
+eq_intro_cs = "Každý agent reaguje pouze na své blízké sousedy pomocí tří sil:"
+eq_intro_en = "Each agent reacts only to nearby neighbours via three forces:"
+
+# Equation force label + description (label — desc)
+eq_sep_label_cs = "Separace"
+eq_sep_label_en = "Separation"
+eq_sep_desc_cs  = "nesrážej se"
+eq_sep_desc_en  = "avoid collisions"
+
+eq_ali_label_cs = "Zarovnání"
+eq_ali_label_en = "Alignment"
+eq_ali_desc_cs  = "leť stejným směrem"
+eq_ali_desc_en  = "match heading"
+
+eq_coh_label_cs = "Soudržnost"
+eq_coh_label_en = "Cohesion"
+eq_coh_desc_cs  = "drž se blízko skupiny"
+eq_coh_desc_en  = "stay near the group"
+
+# Equation footnote
+eq_note_cs = "steer(d) = normalize(d) · v_max − v_i, omezeno na maximální sílu."
+eq_note_en = "steer(d) = normalize(d) · v_max − v_i, clamped to max force."
+
+# Preset names
+preset_murmuration_cs = "Ptačí hejno"
+preset_murmuration_en = "Murmuration"
+preset_school_cs      = "Hejno ryb"
+preset_school_en      = "Fish school"
+preset_predator_cs    = "Útěk před predátorem"
+preset_predator_en    = "Predator panic"
+preset_crowd_cs       = "Proudění davu"
+preset_crowd_en       = "Crowd flow"
+preset_chaos_cs       = "Chaos"
+preset_chaos_en       = "Chaos"
+
+# Postcard snapshot strings
+snap_title_cs = "Hejna"
+snap_title_en = "Flocking"
+snap_sub_cs   = "Emergentní kolektivní pohyb"
+snap_sub_en   = "Emergent collective motion"

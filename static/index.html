@@ -24,7 +24,7 @@
             <!-- Header: logo + title + language toggle -->
             <div style="display:flex; align-items:center; justify-content:space-between;">
                 <div class="sidebar-header">
-                    <img src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
+                    <img id="app-logo" src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
                     <div class="sidebar-header-text">
                         <div id="app-title" style="font-size:18px; font-weight:700; color:#c8b88a;" data-i18n="title">
                             Z jednoduchého složité
@@ -103,9 +103,24 @@
                 if (subtitleEl && cfg.branding.subtitle)
                     subtitleEl.textContent = cfg.branding.subtitle;
 
+                // Logo: if a dedicated light-version logo is configured, use it
+                // (and remove the CSS invert filter since it's already light).
+                const logoEl = document.getElementById("app-logo");
+                const lightLogo = cfg.branding.logo_light_path;
+                if (logoEl && lightLogo) {
+                    logoEl.src = "/static/" + lightLogo.replace(/^static\//, "");
+                    logoEl.style.filter = "none";
+                }
+
                 // Register only the enabled simulations (in config order)
                 for (const id of cfg.simulations) {
-                    if (ALL_SIMS[id]) registerSim(ALL_SIMS[id]);
+                    if (ALL_SIMS[id]) {
+                        registerSim(ALL_SIMS[id]);
+                        // Apply content overrides from config.toml [content.*]
+                        if (cfg.content && cfg.content[id] && ALL_SIMS[id].applyContent) {
+                            ALL_SIMS[id].applyContent(cfg.content[id]);
+                        }
+                    }
                 }
 
                 init(lang);
