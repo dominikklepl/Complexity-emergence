@@ -91,6 +91,39 @@ export function init(defaultLang) {
         });
     });
 
+    // Pause animation when tab/window is hidden (saves GPU during idle kiosk time)
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        } else if (rafId === null) {
+            animate();
+        }
+    });
+
+    // WebGL context loss recovery (GPU driver hiccup during long exhibition runs)
+    canvasEl.addEventListener("webglcontextlost", (e) => {
+        e.preventDefault();
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+        console.warn("WebGL context lost — waiting for restore…");
+    });
+
+    canvasEl.addEventListener("webglcontextrestored", () => {
+        console.log("WebGL context restored — reinitialising…");
+        const result = initWebGL(canvasEl);
+        if (!result) return;
+        if (activeSim && activeControls) {
+            const params = activeControls.getParams();
+            activeSim.setup(result.gl, result.canvas, params);
+        }
+        animate();
+    });
+
     // Wait for KaTeX then start
     waitForKaTeX(() => {
         // Activate the first registered sim
@@ -186,9 +219,12 @@ function animate() {
 
         const touch = { pos: touchPos, active: touchActive, button: touchButton };
 
-        // Run multiple simulation steps per frame
+        // Run multiple simulation steps per frame, but respect a time budget
+        // so that high speed values don't stall the frame and cause visible stutter.
+        const frameDeadline = performance.now() + 13; // ~13ms leaves margin for render + browser overhead
         for (let i = 0; i < speed; i++) {
             activeSim.step(params, touch);
+            if (i > 0 && performance.now() > frameDeadline) break;
         }
 
         // Display

@@ -21,7 +21,7 @@
 import {
     SIM_W, SIM_H, VERTEX_SHADER_SRC,
     getGL,
-    createProgram, createTexture, createFramebuffer,
+    createProgram, deleteProgram, cacheUniformLocations, createTexture, createFramebuffer,
     drawQuad, setUniform,
 } from "../core/webgl.js";
 
@@ -29,6 +29,8 @@ import {
 
 const AGENT_RES = 32;                       // state texture width/height
 const AGENT_COUNT = AGENT_RES * AGENT_RES;    // 1 024 boids
+
+const MODE_MAP = { boids: 0, crowd: 1, predator: 2 };
 
 // ── GLSL Shaders ────────────────────────────────────────────────
 
@@ -347,6 +349,18 @@ export default {
 
         curState = 0;
         curTrail = 0;
+
+        // Pre-cache all uniform locations
+        cacheUniformLocations(stepProg, [
+            "u_state", "u_separation", "u_alignment", "u_cohesion",
+            "u_perception", "u_maxSpeed", "u_mode",
+            "u_touch", "u_touchActive", "u_touchButton",
+        ]);
+        cacheUniformLocations(trailFadeProg, ["u_trail", "u_persistence"]);
+        cacheUniformLocations(boidDrawProg, [
+            "u_state", "u_stateRes", "u_maxSpeed", "u_pointSize",
+        ]);
+        cacheUniformLocations(displayProg, ["u_trail", "u_colourScheme"]);
     },
 
     teardown(gl) {
@@ -357,10 +371,10 @@ export default {
             if (trailFB[i]) gl.deleteFramebuffer(trailFB[i]);
         }
         if (indexBuf) gl.deleteBuffer(indexBuf);
-        if (stepProg) gl.deleteProgram(stepProg);
-        if (trailFadeProg) gl.deleteProgram(trailFadeProg);
-        if (boidDrawProg) gl.deleteProgram(boidDrawProg);
-        if (displayProg) gl.deleteProgram(displayProg);
+        if (stepProg) deleteProgram(stepProg);
+        if (trailFadeProg) deleteProgram(trailFadeProg);
+        if (boidDrawProg) deleteProgram(boidDrawProg);
+        if (displayProg) deleteProgram(displayProg);
 
         stateTex = [null, null];
         stateFB = [null, null];
@@ -375,7 +389,6 @@ export default {
         const gl = getGL();
         if (!stepProg) return;
 
-        const modeMap = { boids: 0, crowd: 1, predator: 2 };
 
         // ── 1. Update boid state (32×32 quad) ───────────────────
         const nextState = 1 - curState;
@@ -389,7 +402,7 @@ export default {
         setUniform(stepProg, "u_cohesion", "1f", params.cohesion);
         setUniform(stepProg, "u_perception", "1f", params.perception);
         setUniform(stepProg, "u_maxSpeed", "1f", params.maxSpeed);
-        setUniform(stepProg, "u_mode", "1f", modeMap[params.mode] || 0);
+        setUniform(stepProg, "u_mode", "1f", MODE_MAP[params.mode] || 0);
 
         if (touch.active) {
             setUniform(stepProg, "u_touch", "2f", touch.pos[0], touch.pos[1]);

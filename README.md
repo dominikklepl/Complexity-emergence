@@ -8,6 +8,7 @@ Visitors can explore pattern formation through two interactive simulations:
 
 - **Reaction-Diffusion Systems** – Create Turing patterns (spots, stripes, labyrinths) by adjusting chemical reaction parameters
 - **Coupled Oscillators** – Observe synchronization phenomena in networks of connected oscillators
+- **Boids Flocking Simulation** – Simulate flocking behavior of birds/fish based on simple rules of alignment, cohesion, and separation
 
 The application lets visitors experiment with parameters in real-time and save their created patterns as personalized postcards.
 
@@ -18,20 +19,24 @@ The simulation runs entirely in the browser using WebGL for real-time computatio
 - Receiving pattern snapshots
 - Assembling print-ready postcards with educational information
 
-## Running the application
+## Setup & Running
+
+**Prerequisites:** [uv](https://docs.astral.sh/uv/getting-started/installation/) and a modern browser (Chrome/Chromium recommended).
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Start the server
-python server.py
-
-# Open in browser
-firefox --kiosk http://localhost:5000
+git clone <repo-url>
+cd "Complexity emergence postcard"
+uv run server.py
 ```
 
-The kiosk mode is recommended for exhibition use.
+`uv` automatically creates a virtual environment and installs all dependencies on first run. Then open `http://localhost:5000` in your browser.
+
+**Exhibition kiosk mode** (hides browser UI):
+```bash
+chromium-browser --kiosk http://localhost:5000
+```
+
+The server is accessible from any device on the same network at `http://<host-ip>:5000`.
 
 ## Purpose
 

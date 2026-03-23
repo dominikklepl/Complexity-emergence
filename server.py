@@ -11,14 +11,11 @@ The server now produces **PDF postcards** with:
   - Print-ready 6×4 inch (152×102 mm) format
 
 To run:
-    pip install flask pillow reportlab
-    python server.py
+    uv run server.py
 
 Then open http://localhost:5000 in Chrome/Chromium.
 For the fair, run Chrome in kiosk mode:
     chromium-browser --kiosk http://localhost:5000
-
-Requirements: flask, pillow, reportlab
 """
 
 from flask import Flask, send_from_directory, request, jsonify

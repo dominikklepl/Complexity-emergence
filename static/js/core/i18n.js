@@ -21,7 +21,7 @@ const translations = {
     reset: { cs: "⟲ Resetovat", en: "⟲ Reset" },
     snapshot: { cs: "📸 Uložit pohlednici", en: "📸 Save postcard" },
     touch_hint: { cs: "👆 Klikněte na plátno a přidejte nové vzory!", en: "👆 Click on the canvas to add new patterns!" },
-    eq_title: { cs: "Jak to funguje — rovnice", en: "How it works — equations" },
+    eq_title: { cs: "Jak to funguje? 🔍", en: "How does this work? 🔍" },
     toast_saved: { cs: "Uloženo", en: "Saved" },
     toast_downloaded: { cs: "Pohlednice stažena", en: "Postcard downloaded" },
 };

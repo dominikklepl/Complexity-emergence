@@ -13,7 +13,7 @@
 import {
     SIM_W, SIM_H, VERTEX_SHADER_SRC,
     getGL, getCanvas,
-    createProgram, createTexture, createFramebuffer,
+    createProgram, deleteProgram, cacheUniformLocations, createTexture, createFramebuffer,
     drawQuad, setUniform,
 } from "./webgl.js";
 
@@ -55,6 +55,7 @@ export function fieldSim(config) {
         translations: config.translations || {},
         equations: config.equations || { render() { } },
         snapshotMeta: config.snapshotMeta || (() => ({ title: "", subtitle: "" })),
+        applyContent: config.applyContent,
 
         /**
          * Compile shaders, create textures, initialise state.
@@ -80,6 +81,13 @@ export function fieldSim(config) {
                 return;
             }
 
+            // Pre-cache all uniform locations to avoid per-frame driver roundtrips
+            const stepUniforms = ["u_state", "u_resolution", "u_touch", "u_touchRadius",
+                ...((config.getStepUniforms({}) || []).map(u => u.name))];
+            cacheUniformLocations(stepProg, stepUniforms);
+            cacheUniformLocations(displayProg, ["u_state", "u_colourScheme",
+                ...((config.getDisplayUniforms ? (config.getDisplayUniforms(0) || []).map(u => u.name) : []))]);
+
             // Create initial state texture data
             const initData = config.initState(SIM_W, SIM_H, params);
 
@@ -100,8 +108,8 @@ export function fieldSim(config) {
             if (textures[1]) gl.deleteTexture(textures[1]);
             if (framebuffers[0]) gl.deleteFramebuffer(framebuffers[0]);
             if (framebuffers[1]) gl.deleteFramebuffer(framebuffers[1]);
-            if (stepProg) gl.deleteProgram(stepProg);
-            if (displayProg) gl.deleteProgram(displayProg);
+            if (stepProg) deleteProgram(stepProg);
+            if (displayProg) deleteProgram(displayProg);
 
             textures = [null, null];
             framebuffers = [null, null];

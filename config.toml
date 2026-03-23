@@ -89,8 +89,8 @@ tab_cs = "Turingovy vzory"
 tab_en = "Turing Patterns"
 
 # Short description shown below the tab (1–3 sentences, plain text)
-desc_cs = "Dvě jednoduché chemické pravidla stačí k vytvoření složitých vzorů — podobných skvrnám na kůži zvířat! Posuňte posuvníky a sledujte, co se stane."
-desc_en = "Two simple chemical rules are enough to create complex patterns — just like spots on animal skin! Move the sliders and watch what happens."
+desc_cs = "Dvě jednoduchá pravidla míchání — a najednou vzniknou leopardí skvrny! Posuňte posuvníky a sledujte, co se stane. Stejné rovnice vysvětlují vzory na kůži zvířat, mušlích i v korálových útesech."
+desc_en = "Two simple mixing rules — and suddenly, leopard spots appear! Move the sliders and watch what happens. These same equations explain animal skin patterns, seashells, and coral reefs."
 
 # Parameter labels (displayed next to each slider)
 lbl_feed_rate_cs = "Přidávání látky (f)"
@@ -135,8 +135,8 @@ preset_coral_en     = "Coral"
 # Postcard snapshot strings
 snap_title_cs = "Turingovy vzory"
 snap_title_en = "Turing Patterns"
-snap_sub_cs   = "Tvoje nastavení vytvořilo tento jedinečný vzor"
-snap_sub_en   = "Your settings created this unique pattern"
+snap_sub_cs   = "Tento vzor ještě nikdy neexistoval — dokud jsi ho nevytvořil."
+snap_sub_en   = "You made a pattern that has never existed before."
 
 
 # -------------------------------------------------------------
@@ -149,8 +149,8 @@ tab_cs = "Synchronizace"
 tab_en = "Synchronisation"
 
 # Short description
-desc_cs = "Tisíce blikajících světýlek, každé s jednoduchým pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí."
-desc_en = "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up."
+desc_cs = "Tisíce blikajících světýlek, každé s jediným pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí. Stejný princip synchronizuje tleskání publika, blikání světlušek i buňky srdce."
+desc_en = "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up. The same rule synchronises fireflies, heart cells, and audience clapping."
 
 # Parameter labels
 lbl_coupling_cs    = "Síla propojení (K)"
@@ -180,8 +180,8 @@ tip_spread_en       = "How different the blinking speeds are — small differenc
 # Preset names
 preset_spiral_cs     = "Spirálové vlny"
 preset_spiral_en     = "Spiral waves"
-preset_chimera_cs    = "Chiméra"
-preset_chimera_en    = "Chimera"
+preset_chimera_cs    = "Chiméra (polovina nesync)"
+preset_chimera_en    = "Chimera (half unsync)"
 preset_sync_cs       = "Plná synchronizace"
 preset_sync_en       = "Full sync"
 preset_turbulence_cs = "Turbulence"
@@ -190,8 +190,8 @@ preset_turbulence_en = "Turbulence"
 # Postcard snapshot strings
 snap_title_cs = "Synchronizace oscilátorů"
 snap_title_en = "Synchronisation Dynamics"
-snap_sub_cs   = "Tvoje nastavení propojení vytvořilo tyto vlny"
-snap_sub_en   = "Your connection settings shaped these waves"
+snap_sub_cs   = "Jedno jednoduché pravidlo, tisíckrát zopakované, vytvořilo něco krásného."
+snap_sub_en   = "A simple rule, repeated a thousand times, made something beautiful."
 
 
 # -------------------------------------------------------------
@@ -204,8 +204,8 @@ tab_cs = "Hejna"
 tab_en = "Flocking"
 
 # Short description
-desc_cs = "Tři jednoduchá pravidla — separace, zarovnání a soudržnost — stačí k tomu, aby vzniklo složité hejnové chování, jako u ptáků nebo ryb. Klikněte levým tlačítkem pro přitahování, pravým pro odpuzování."
-desc_en = "Three simple rules — separation, alignment, and cohesion — are enough to produce complex flocking behaviour, like in birds or fish. Left-click to attract, right-click to repel."
+desc_cs = "Tři jednoduchá pravidla — nesrážej se, leť stejným směrem, drž se blízko skupiny — a vznikne hejno, jako u ptáků nebo ryb. Klikněte levým tlačítkem pro přitahování, pravým pro odpuzování. Hejna špačků a hejna sardinek fungují přesně stejně — bez velitele."
+desc_en = "Three simple rules — don't crash, fly the same way, stay close to the group — and a flock emerges, just like birds or fish. Left-click to attract, right-click to repel. Starling murmurations and sardine bait balls emerge from exactly these rules, with no leader."
 
 # Mode selector label
 lbl_mode_cs = "Režim"
@@ -254,8 +254,8 @@ eq_coh_desc_cs  = "drž se blízko skupiny"
 eq_coh_desc_en  = "stay near the group"
 
 # Equation footnote
-eq_note_cs = "steer(d) = normalize(d) · v_max − v_i, omezeno na maximální sílu."
-eq_note_en = "steer(d) = normalize(d) · v_max − v_i, clamped to max force."
+eq_note_cs = "Každý jedinec vnímá jen nejbližší sousedy — a přesto spolu tvoří vzory, které nikdo z nich neplánoval."
+eq_note_en = "Each individual only perceives its nearest neighbours — yet together they produce patterns no individual planned."
 
 # Preset names
 preset_murmuration_cs = "Ptačí hejno"
@@ -272,5 +272,5 @@ preset_chaos_en       = "Chaos"
 # Postcard snapshot strings
 snap_title_cs = "Hejna"
 snap_title_en = "Flocking"
-snap_sub_cs   = "Emergentní kolektivní pohyb"
-snap_sub_en   = "Emergent collective motion"
+snap_sub_cs   = "Tisíc jedinců. Žádný velitel. Jeden pohyb."
+snap_sub_en   = "A thousand individuals. Zero leaders. One movement."

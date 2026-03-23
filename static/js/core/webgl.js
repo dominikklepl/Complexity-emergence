@@ -29,6 +29,13 @@ let gl = null;
 let canvas = null;
 let quadBuffer = null;
 
+// ── Location caches ──────────────────────────────────────────────
+/** @type {Map<WebGLProgram, Map<string, WebGLUniformLocation>>} */
+const _uniformCache = new Map();
+
+/** @type {Map<WebGLProgram, number>} */
+const _attribCache = new Map();
+
 /**
  * Initialise WebGL on the given canvas element.
  * @param {HTMLCanvasElement} canvasEl
@@ -170,14 +177,45 @@ export function createFramebuffer(tex) {
 }
 
 /**
+ * Remove cached locations for a program (call before gl.deleteProgram).
+ * @param {WebGLProgram} prog
+ */
+export function deleteProgram(prog) {
+    _uniformCache.delete(prog);
+    _attribCache.delete(prog);
+    gl.deleteProgram(prog);
+}
+
+/**
+ * Pre-fetch and cache uniform locations for a program.
+ * Call once after createProgram() to avoid per-frame driver roundtrips.
+ * @param {WebGLProgram} prog
+ * @param {string[]} names  Uniform names to cache
+ */
+export function cacheUniformLocations(prog, names) {
+    let map = _uniformCache.get(prog);
+    if (!map) {
+        map = new Map();
+        _uniformCache.set(prog, map);
+    }
+    for (const name of names) {
+        map.set(name, gl.getUniformLocation(prog, name));
+    }
+}
+
+/**
  * Draw a full-screen quad using the given program.
  * The program must have an `a_position` attribute.
+ * Assumes the program is already bound (gl.useProgram called by caller).
  * @param {WebGLProgram} program
  */
 export function drawQuad(program) {
-    gl.useProgram(program);
+    let posLoc = _attribCache.get(program);
+    if (posLoc === undefined) {
+        posLoc = gl.getAttribLocation(program, "a_position");
+        _attribCache.set(program, posLoc);
+    }
 
-    const posLoc = gl.getAttribLocation(program, "a_position");
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
     gl.enableVertexAttribArray(posLoc);
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
@@ -186,15 +224,16 @@ export function drawQuad(program) {
 }
 
 /**
- * Set a uniform on a program.
+ * Set a uniform on a program (uses cached location if available).
  * @param {WebGLProgram} prog
  * @param {string} name
  * @param {"1f"|"2f"|"1i"} type
  * @param {...number} values
  */
 export function setUniform(prog, name, type, ...values) {
-    const loc = gl.getUniformLocation(prog, name);
-    if (loc === null) return;
+    const map = _uniformCache.get(prog);
+    const loc = map ? map.get(name) : gl.getUniformLocation(prog, name);
+    if (loc === null || loc === undefined) return;
     if (type === "1f") gl.uniform1f(loc, values[0]);
     else if (type === "2f") gl.uniform2f(loc, values[0], values[1]);
     else if (type === "1i") gl.uniform1i(loc, values[0]);
