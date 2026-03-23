@@ -24,6 +24,10 @@ enabled = true
 id      = "boids"   # Boids flocking / crowd / predator-prey
 enabled = true
 
+[[simulations]]
+id      = "neural"  # Neural criticality / brain avalanches
+enabled = true
+
 
 # -------------------------------------------------------------
 #  BRANDING — text shown in the UI sidebar
@@ -274,3 +278,40 @@ snap_title_cs = "Hejna"
 snap_title_en = "Flocking"
 snap_sub_cs   = "Tisíc jedinců. Žádný velitel. Jeden pohyb."
 snap_sub_en   = "A thousand individuals. Zero leaders. One movement."
+
+# -------------------------------------------------------------
+# Neural Criticality
+# -------------------------------------------------------------
+
+[content.neural]
+# Tab label
+tab_cs = "Mozková aktivita"
+tab_en = "Neural Criticality"
+
+# Short description
+desc_cs = "Váš mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: záchvat. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech — a právě tam mozek pracuje nejlépe. Posuňte propojení a sledujte přechod."
+desc_en = "Your brain lives on the edge. Too little connection: silence. Too much: seizure. At the critical point between them, cascades of activity appear in all sizes — and that's where the brain works best. Adjust connectivity and watch the transition."
+
+# Slider labels
+lbl_spread_cs = "Propojení (σ)"
+lbl_spread_en = "Connectivity (σ)"
+lbl_input_cs  = "Pozadí (ε)"
+lbl_input_en  = "Background noise (ε)"
+lbl_leak_cs   = "Paměť (1−λ)"
+lbl_leak_en   = "Memory (1−λ)"
+
+# Preset names
+preset_critical_cs = "Kritický bod"
+preset_critical_en = "Critical point"
+preset_seizure_cs  = "Záchvat"
+preset_seizure_en  = "Seizure"
+preset_silence_cs  = "Ticho"
+preset_silence_en  = "Silence"
+preset_cascade_cs  = "Vlna"
+preset_cascade_en  = "Wave"
+
+# Postcard snapshot strings
+snap_title_cs = "Mozková aktivita"
+snap_title_en = "Neural Criticality"
+snap_sub_cs   = "Váš mozek, na hraně mezi tichem a bouří."
+snap_sub_en   = "Your brain, on the edge between silence and storm."

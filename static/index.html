@@ -85,8 +85,9 @@
         import rdSim from "/static/js/sims/reaction-diffusion.js";
         import oscSim from "/static/js/sims/kuramoto.js";
         import boidsSim from "/static/js/sims/boids.js";
+        import neuralSim from "/static/js/sims/neural-criticality.js";
 
-        const ALL_SIMS = { rd: rdSim, osc: oscSim, boids: boidsSim };
+        const ALL_SIMS = { rd: rdSim, osc: oscSim, boids: boidsSim, neural: neuralSim };
 
         // Fetch config from server, then boot
         fetch("/api/config")
