@@ -53,6 +53,7 @@ Each sim exports a standard interface: `id`, `setup(gl, canvas)`, `teardown(gl)`
 - **`reaction-diffusion.js`** — Gray-Scott model via GLSL (Laplacian diffusion + nonlinear reaction), 5 colour schemes, 5 presets. Extends `fieldSim.js`.
 - **`kuramoto.js`** — Coupled phase oscillators; phase/frequency stored in texture; touch injects spiral waves. Extends `fieldSim.js`.
 - **`boids.js`** — 1024 agents in a 32×32 texture; GPU N² neighbour scan; three modes (flocking/crowd/predator-prey); trail texture for motion blur. Does NOT extend `fieldSim.js`.
+- **`neural-criticality.js`** — Beggs & Plenz (2003) SOC model. Runs on a **96×64 texture** (not 768×512) set via `simW`/`simH` in fieldSim config; each sim pixel = one visual neuron at 8× canvas scale. State: R=charge, G=refractory, B=trail. Long-range connections via deterministic hash (small-world topology). Cell-based display shader: sample state SHARPLY at cell centre → colour → Gaussian glow (never average raw state before colour-mapping or colour thresholds break). Extends `fieldSim.js`.
 
 Use `static/js/sims/_template.js` when adding a new simulation.
 
@@ -65,3 +66,22 @@ All UI text, parameter labels/ranges, presets, and branding live in `config.toml
 - Postcard output is 6×4" at 300 DPI (1800×1200 px); page size is configurable in `config.toml`
 - Server binds to `0.0.0.0:5000` for network access from exhibition devices
 - All UI text must support Czech (`_cs`) and English (`_en`) variants
+
+## Display Shader Pattern (critical — easy to break)
+
+When writing display shaders for field sims, always follow this order:
+1. Sample state **sharply** at cell/pixel centre — no averaging
+2. Compute colour from sharp state values (thresholds work correctly)
+3. Multiply colour by Gaussian glow weight
+
+**Never** average raw state channels over a kernel before colour-mapping. Bloom/blur must operate on *colours*, not state values. Averaging `refr=1.0` over an N×N kernel dilutes it below colour thresholds → black canvas.
+
+GLSL functions must be declared before use — colour helpers before any function that calls them.
+
+## Testing
+
+Playwright is installed via uv. Use:
+```bash
+/home/dominikklepl/.local/share/uv/tools/playwright/bin/python script.py
+```
+Headless Chrome needs `--enable-webgl --use-gl=swiftshader`. Tabs are a `<select class="sim-select">` dropdown.

@@ -93,10 +93,10 @@ export function buildControls(sim, container, callbacks) {
             id: "_speed",
             min: sim.speedSlider.min,
             max: sim.speedSlider.max,
-            step: 1,
+            step: sim.speedSlider.step ?? 1,
             default: sim.speedSlider.default,
             i18nLabel: "speed",
-            format: 0,
+            format: sim.speedSlider.step != null && sim.speedSlider.step < 1 ? 1 : 0,
         };
         container.appendChild(buildSlider(speedCtrl, {}));
     }
@@ -149,7 +149,7 @@ export function buildControls(sim, container, callbacks) {
 
         getSpeed() {
             const el = container.querySelector('[data-param-id="_speed"]');
-            return el ? parseInt(el.value) : (sim.speedSlider ? sim.speedSlider.default : 1);
+            return el ? parseFloat(el.value) : (sim.speedSlider ? sim.speedSlider.default : 1);
         },
 
         getColourScheme() {

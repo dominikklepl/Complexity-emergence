@@ -263,34 +263,43 @@ canvas {
     opacity: 1;
 }
 
-/* ---- Tab buttons ---- */
+/* ---- Simulation selector dropdown ---- */
 .tabs {
-    display: flex;
-    gap: 4px;
+    margin-bottom: 4px;
 }
 
-.tab-btn {
-    flex: 1;
-    padding: 10px 8px;
-    border: 1px solid #c8b88a44;
-    background: transparent;
-    color: #c8b88a88;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    cursor: pointer;
+.sim-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #c8b88a55;
     border-radius: 4px;
-    transition: all 0.2s;
-}
-
-.tab-btn.active {
-    background: #c8b88a22;
+    background: #1a1710;
     color: #c8b88a;
-    border-color: #c8b88a88;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c8b88a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    transition: border-color 0.2s;
 }
 
-.tab-btn:hover {
-    background: #c8b88a15;
+.sim-select:hover {
+    border-color: #c8b88a99;
+}
+
+.sim-select:focus {
+    outline: none;
+    border-color: #c8b88a;
+}
+
+.sim-select option {
+    background: #1a1710;
+    color: #c8b88a;
 }
 
 /* ---- Section titles ---- */

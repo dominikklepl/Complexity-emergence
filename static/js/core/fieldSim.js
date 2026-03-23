@@ -44,6 +44,8 @@ export function fieldSim(config) {
     let textures = [null, null];
     let framebuffers = [null, null];
     let currentTex = 0;
+    const simW = config.simW || SIM_W;
+    const simH = config.simH || SIM_H;
 
     return {
         // --- Metadata (passed through from config) ---
@@ -89,11 +91,11 @@ export function fieldSim(config) {
                 ...((config.getDisplayUniforms ? (config.getDisplayUniforms(0) || []).map(u => u.name) : []))]);
 
             // Create initial state texture data
-            const initData = config.initState(SIM_W, SIM_H, params);
+            const initData = config.initState(simW, simH, params);
 
             // Create ping-pong texture pair
-            textures[0] = createTexture(SIM_W, SIM_H, initData);
-            textures[1] = createTexture(SIM_W, SIM_H, initData);
+            textures[0] = createTexture(simW, simH, initData);
+            textures[1] = createTexture(simW, simH, initData);
             framebuffers[0] = createFramebuffer(textures[0]);
             framebuffers[1] = createFramebuffer(textures[1]);
             currentTex = 0;
@@ -130,7 +132,7 @@ export function fieldSim(config) {
             gl.useProgram(stepProg);
 
             // Set standard resolution uniform
-            setUniform(stepProg, "u_resolution", "2f", SIM_W, SIM_H);
+            setUniform(stepProg, "u_resolution", "2f", simW, simH);
 
             // Set touch uniforms
             const touchRadius = config.touchRadius || 0.03;
@@ -155,7 +157,7 @@ export function fieldSim(config) {
             // Render to the other texture
             const target = 1 - currentTex;
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[target]);
-            gl.viewport(0, 0, SIM_W, SIM_H);
+            gl.viewport(0, 0, simW, simH);
             drawQuad(stepProg);
 
             currentTex = target;

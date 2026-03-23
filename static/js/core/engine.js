@@ -24,6 +24,9 @@ const simOrder = [];
 /** @type {Object|null} Currently active simulation module */
 let activeSim = null;
 
+/** Fractional step accumulator — allows speed < 1 (e.g. 0.2 = 1 step every 5 frames) */
+let _stepAccum = 0;
+
 /** @type {{ getParams: Function, getSpeed: Function, getColourScheme: Function }|null} */
 let activeControls = null;
 
@@ -143,18 +146,26 @@ function buildTabs() {
     const tabsContainer = document.getElementById("sim-tabs");
     if (!tabsContainer) return;
 
-    tabsContainer.innerHTML = "";
-
-    for (const id of simOrder) {
-        const sim = registry.get(id);
-        const btn = document.createElement("button");
-        btn.className = "tab-btn";
-        btn.dataset.tab = id;
-        btn.dataset.i18n = "tab_" + id;
-        btn.textContent = t("tab_" + id);
-        btn.addEventListener("click", () => switchSim(id));
-        tabsContainer.appendChild(btn);
+    // Re-use existing <select> if already built, otherwise create it
+    let sel = tabsContainer.querySelector("select.sim-select");
+    if (!sel) {
+        sel = document.createElement("select");
+        sel.className = "sim-select";
+        sel.addEventListener("change", () => switchSim(sel.value));
+        tabsContainer.appendChild(sel);
     }
+
+    // Rebuild options (called on lang switch too, so labels must update)
+    sel.innerHTML = "";
+    for (const id of simOrder) {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.dataset.i18n = "tab_" + id;
+        opt.textContent = t("tab_" + id);
+        sel.appendChild(opt);
+    }
+
+    if (activeSim) sel.value = activeSim.id;
 }
 
 function switchSim(id) {
@@ -170,16 +181,16 @@ function switchSim(id) {
     }
 
     activeSim = sim;
+    _stepAccum = 0; // reset so a new sim starts cleanly
 
     // Re-merge translations so shared keys (e.g. 'desc') reflect the active sim
     if (sim.translations) {
         mergeTranslations(sim.translations);
     }
 
-    // Update tab buttons
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === id);
-    });
+    // Update dropdown selection
+    const sel = document.querySelector(".sim-select");
+    if (sel) sel.value = id;
 
     // Build controls in sidebar
     const controlsContainer = document.getElementById("sim-controls");
@@ -219,12 +230,16 @@ function animate() {
 
         const touch = { pos: touchPos, active: touchActive, button: touchButton };
 
-        // Run multiple simulation steps per frame, but respect a time budget
-        // so that high speed values don't stall the frame and cause visible stutter.
+        // Fractional-speed accumulator: supports speed < 1 (e.g. 0.2 = 1 step/5 frames).
+        // For speed >= 1 this behaves identically to the old integer loop.
         const frameDeadline = performance.now() + 13; // ~13ms leaves margin for render + browser overhead
-        for (let i = 0; i < speed; i++) {
+        _stepAccum += speed;
+        let didStep = false;
+        while (_stepAccum >= 1.0) {
             activeSim.step(params, touch);
-            if (i > 0 && performance.now() > frameDeadline) break;
+            _stepAccum -= 1.0;
+            didStep = true;
+            if (didStep && performance.now() > frameDeadline) { _stepAccum = 0; break; }
         }
 
         // Display
@@ -253,15 +268,8 @@ function onLangSwitch(lang) {
         activeControls = buildControls(activeSim, controlsContainer, callbacks);
     }
 
-    // Rebuild tabs
+    // Rebuild dropdown (updates translated labels, keeps active selection)
     buildTabs();
-
-    // Mark the active tab
-    if (activeSim) {
-        document.querySelectorAll(".tab-btn").forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.tab === activeSim.id);
-        });
-    }
 }
 
 function waitForKaTeX(callback) {

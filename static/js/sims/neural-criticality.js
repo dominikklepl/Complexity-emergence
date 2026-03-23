@@ -16,7 +16,6 @@
  */
 
 import { fieldSim } from "../core/fieldSim.js";
-import { SIM_W, SIM_H } from "../core/webgl.js";
 
 // ─── GLSL Shaders ────────────────────────────────────────────────
 
@@ -35,8 +34,9 @@ uniform float u_touchButton; // 0 = left (stimulate), 1 = right (silence)
 
 varying vec2 v_uv;
 
-const float THRESHOLD = 1.0;
-const float REFRAC_DECAY = 0.75; // refractory signal halves per ~3 steps
+const float THRESHOLD  = 1.0;
+const float REFRAC_DECAY = 0.75;  // refractory halves per ~3 steps
+const float TRAIL_DECAY  = 0.95;  // trail visible for ~20 steps
 
 float rand(vec2 co) {
     return fract(sin(dot(co + u_seed, vec2(12.9898, 78.233))) * 43758.5453);
@@ -46,34 +46,48 @@ void main() {
     vec2 dx = vec2(1.0 / u_resolution.x, 0.0);
     vec2 dy = vec2(0.0,  1.0 / u_resolution.y);
 
-    vec2 here = texture2D(u_state, v_uv).rg;
-    float u    = here.r;
-    float refr = here.g;
+    vec3 here = texture2D(u_state, v_uv).rgb;
+    float u     = here.r;
+    float refr  = here.g;
+    float trail = here.b;
 
     // Neighbours: fire = 1 if charge was ≥ threshold last step
     float n_up    = step(THRESHOLD, texture2D(u_state, v_uv + dy).r);
     float n_down  = step(THRESHOLD, texture2D(u_state, v_uv - dy).r);
     float n_left  = step(THRESHOLD, texture2D(u_state, v_uv - dx).r);
     float n_right = step(THRESHOLD, texture2D(u_state, v_uv + dx).r);
-    float incoming = (n_up + n_down + n_left + n_right) * u_spread;
+
+    // Long-range connection: each neuron has a fixed pseudo-random distant partner.
+    // Creates hub nodes and spatial clustering (small-world topology) without extra textures.
+    float h1 = fract(sin(dot(v_uv, vec2(127.1, 311.7))) * 43758.5);
+    float h2 = fract(sin(dot(v_uv, vec2(269.5, 183.3))) * 43758.5);
+    vec2 longUV = fract(v_uv + vec2(h1, h2) * 0.6 + vec2(0.2));
+    float n_long = step(THRESHOLD, texture2D(u_state, longUV).r);
+
+    float incoming = (n_up + n_down + n_left + n_right + n_long * 0.6) * u_spread;
 
     float new_u;
     float new_refr;
+    bool  fired = false;
 
     if (refr > 0.5) {
-        // Absolute refractory: cell cannot fire again yet, charge stays at 0
+        // Absolute refractory: cell cannot fire again, charge stays at 0
         new_u    = 0.0;
         new_refr = refr * REFRAC_DECAY;
     } else if (u >= THRESHOLD) {
         // Cell fires this step
         new_u    = 0.0;
         new_refr = 1.0;
+        fired    = true;
     } else {
         // Normal accumulation: leak + incoming + random spark
         float noise = step(1.0 - u_input, rand(v_uv)) * 0.5;
         new_u    = clamp(u * (1.0 - u_leak) + incoming + noise, 0.0, 2.0);
         new_refr = refr * REFRAC_DECAY;
     }
+
+    // Trail accumulator: decays every step, injected when cell fires
+    float new_trail = trail * TRAIL_DECAY + (fired ? 1.0 : 0.0);
 
     // Touch: stimulate (left) or silence (right)
     if (u_touch.x >= 0.0) {
@@ -83,12 +97,13 @@ void main() {
             if (u_touchButton < 0.5) {
                 new_u += str * 0.5;  // inject charge
             } else {
-                new_u *= (1.0 - str * 0.9);  // drain charge
+                new_u    *= (1.0 - str * 0.9);  // drain charge
+                new_trail *= (1.0 - str * 0.5);
             }
         }
     }
 
-    gl_FragColor = vec4(new_u, new_refr, 0.0, 1.0);
+    gl_FragColor = vec4(new_u, new_refr, new_trail, 1.0);
 }
 `;
 
@@ -96,65 +111,107 @@ const DISPLAY_SHADER = `
 precision highp float;
 
 uniform sampler2D u_state;
-uniform int u_colourScheme;
+uniform int       u_colourScheme;
+uniform vec2      u_resolution;   // simulation texture size for bloom kernel
+
 varying vec2 v_uv;
 
 const float THRESHOLD = 1.0;
 
-// Scheme 0: Neural scan — purple glow, white fire flash
-vec3 neural_scan(float t, float refr) {
-    if (refr > 0.05) {
-        // Recently fired: bright white-cyan flash decaying to purple
-        vec3 flash = vec3(0.8, 0.95, 1.0);
-        vec3 after = vec3(0.15, 0.02, 0.28);
-        return mix(after, flash, refr * refr);
-    }
-    // Charging: dark purple → bright magenta at threshold
-    vec3 dark = vec3(0.02, 0.0, 0.06);
-    vec3 hot  = vec3(0.75, 0.1, 0.9);
-    return mix(dark, hot, clamp(t * 1.2, 0.0, 1.0));
+// Cell-based rendering: 12×12 simulation-pixel cells → 64×43 visible "neurons".
+// Each pixel samples state SHARPLY at its cell centre (no averaging) so colour
+// thresholds work correctly.  A Gaussian glow makes each cell a distinct ~10px circle.
+// Simulation is 96×64; display canvas is 768×512 → scale factor = 8.
+// CELL=1 means each sim pixel = one visual "neuron".
+// GLOW_SIG2 in sim-pixel units: sigma²=0.55 → sigma≈0.74 sim px → ~12 canvas px glow radius.
+const float CELL      = 1.0;
+const float GLOW_SIG2 = 0.32;  // sigma≈0.57 sim px → ~9 canvas px radius, crisp circle gaps
+
+// ── Colour scheme helpers ──────────────────────────────────────────
+// Each receives: t=charge/threshold, refr, trail — all in [0,1].
+// Design principle: trail is the PRIMARY visual channel (wave history).
+// Background is near-black; active sites have intense HDR contrast.
+
+// 0: Neural Glow — violet-magenta trail, icy-blue refractory, white fire
+vec3 neural_glow(float t, float refr, float trail) {
+    vec3 col = vec3(0.01, 0.0, 0.03);                                       // near-black purple
+    col += vec3(0.55, 0.08, 0.70) * trail * 1.2;                            // violet-magenta trail glow
+    col += vec3(0.20, 0.01, 0.05) * clamp(t * 0.8, 0.0, 1.0);             // dim red ember (charging)
+    col  = mix(col, vec3(0.15, 0.50, 1.00), clamp((refr - 0.1) / 0.7, 0.0, 1.0));   // icy-blue refractory
+    col  = mix(col, vec3(1.00, 0.95, 1.00), clamp((refr - 0.75) / 0.25, 0.0, 1.0)); // white fire burst
+    return col;
 }
 
-// Scheme 1: Heatmap — dark → red → orange → yellow
-vec3 heatmap(float t, float refr) {
-    float v = refr > 0.05 ? 1.0 : t;
-    if (v < 0.33) return mix(vec3(0.02, 0.0, 0.0), vec3(0.7, 0.0, 0.05), v / 0.33);
-    if (v < 0.66) return mix(vec3(0.7, 0.0, 0.05), vec3(1.0, 0.55, 0.0), (v - 0.33) / 0.33);
-    return mix(vec3(1.0, 0.55, 0.0), vec3(1.0, 1.0, 0.7), (v - 0.66) / 0.34);
+// 1: Ember — amber-orange trail, maroon refractory, yellow-white fire
+vec3 ember(float t, float refr, float trail) {
+    vec3 col = vec3(0.02, 0.01, 0.0);                                        // near-black warm
+    col += vec3(0.85, 0.30, 0.02) * trail * 1.1;                             // amber-orange trail glow
+    col += vec3(0.15, 0.02, 0.0) * clamp(t * 0.7, 0.0, 1.0);               // dim red ember
+    col  = mix(col, vec3(0.55, 0.08, 0.02), clamp((refr - 0.1) / 0.7, 0.0, 1.0));   // dark maroon
+    col  = mix(col, vec3(1.00, 0.97, 0.65), clamp((refr - 0.75) / 0.25, 0.0, 1.0)); // yellow-white burst
+    return col;
 }
 
-// Scheme 2: Bioluminescence — deep ocean blue, teal/cyan fire
-vec3 bioluminescence(float t, float refr) {
-    if (refr > 0.05) {
-        vec3 flash = vec3(0.5, 1.0, 0.95);
-        vec3 after = vec3(0.0, 0.25, 0.35);
-        return mix(after, flash, refr * refr);
-    }
-    vec3 deep  = vec3(0.0, 0.02, 0.10);
-    vec3 glow  = vec3(0.0, 0.65, 0.72);
-    return mix(deep, glow, clamp(t * 1.1, 0.0, 1.0));
+// 2: Bioluminescence — teal-aqua trail, deep ocean background, aqua fire
+vec3 bioluminescence(float t, float refr, float trail) {
+    vec3 col = vec3(0.0, 0.01, 0.06);                                        // deep ocean black
+    col += vec3(0.0, 0.65, 0.60) * trail * 1.2;                              // teal trail glow
+    col += vec3(0.0, 0.08, 0.10) * clamp(t * 0.7, 0.0, 1.0);               // dim teal ember
+    col  = mix(col, vec3(0.02, 0.08, 0.50), clamp((refr - 0.1) / 0.7, 0.0, 1.0));   // deep royal blue
+    col  = mix(col, vec3(0.65, 1.00, 0.96), clamp((refr - 0.75) / 0.25, 0.0, 1.0)); // aqua-white burst
+    return col;
 }
 
-// Scheme 3: Monochrome — greyscale, very clean
-vec3 monochrome(float t, float refr) {
-    float v = refr > 0.05 ? mix(0.7, 1.0, refr * refr) : t * 0.9;
+// 3: Monochrome — silver trail, mid-grey refractory, white fire
+vec3 monochrome(float t, float refr, float trail) {
+    float v = 0.0;
+    v += trail * 0.75;                                                        // trail: bright silver
+    v += clamp(t * 0.25, 0.0, 1.0);                                         // charge: dim ember
+    v  = mix(v, 0.30, clamp((refr - 0.1) / 0.7, 0.0, 1.0));                // refractory: mid grey
+    v  = mix(v, 1.00, clamp((refr - 0.75) / 0.25, 0.0, 1.0));              // fire: white
     return vec3(v);
 }
 
+// Sample sharp state at uv and return its colour.
+// Must be defined AFTER the colour functions it calls.
+vec3 neuronColor(vec2 uv) {
+    vec3  st    = texture2D(u_state, uv).rgb;
+    float t     = clamp(st.r / THRESHOLD, 0.0, 1.0);
+    float refr  = st.g;
+    float trail = st.b;
+    if      (u_colourScheme == 0) return neural_glow(t, refr, trail);
+    else if (u_colourScheme == 1) return ember(t, refr, trail);
+    else if (u_colourScheme == 2) return bioluminescence(t, refr, trail);
+    else                          return monochrome(t, refr, trail);
+}
+
 void main() {
-    vec2 state = texture2D(u_state, v_uv).rg;
-    float u    = state.r;
-    float refr = state.g;
+    vec2 simPx     = v_uv * u_resolution;
+    vec2 cellIdx   = floor(simPx / CELL);
+    vec2 cellCtrPx = (cellIdx + 0.5) * CELL;
+    vec2 cellCtrUV = cellCtrPx / u_resolution;
 
-    float t = clamp(u / THRESHOLD, 0.0, 1.0);
+    // Primary neuron: Gaussian glow centred on this cell
+    float d2   = dot(simPx - cellCtrPx, simPx - cellCtrPx);
+    float glow = exp(-d2 / GLOW_SIG2);
+    vec3  col  = neuronColor(cellCtrUV) * glow;
 
-    vec3 col;
-    if      (u_colourScheme == 0) col = neural_scan(t, refr);
-    else if (u_colourScheme == 1) col = heatmap(t, refr);
-    else if (u_colourScheme == 2) col = bioluminescence(t, refr);
-    else                          col = monochrome(t, refr);
+    // Soft ambient from 8 neighbouring cells — active neighbours bleed into
+    // the gap, creating organic connection-like bridges between co-active neurons.
+    for (int ni = -1; ni <= 1; ni++) {
+        for (int nj = -1; nj <= 1; nj++) {
+            if (ni == 0 && nj == 0) continue;
+            vec2 nCtrPx = (cellIdx + vec2(float(ni), float(nj)) + 0.5) * CELL;
+            vec2 nUV    = nCtrPx / u_resolution;
+            vec3 nSt    = texture2D(u_state, nUV).rgb;
+            if (nSt.b < 0.05 && nSt.g < 0.05) continue;   // skip silent neighbours
+            float nd2      = dot(simPx - nCtrPx, simPx - nCtrPx);
+            float nAmbient = exp(-nd2 / (GLOW_SIG2 * 2.0)) * 0.18;
+            col += neuronColor(nUV) * nAmbient;
+        }
+    }
 
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
 `;
 
@@ -163,10 +220,18 @@ let _stepCount = 0;
 
 // ─── Simulation ─────────────────────────────────────────────────
 
+// Neural simulation runs on a coarser 96×64 grid (6144 neurons).
+// Each sim pixel IS one visual neuron — no sampling artefacts.
+const NEURAL_W = 96;
+const NEURAL_H = 64;
+
 export default fieldSim({
     id: "neural",
 
     shaders: { step: STEP_SHADER, display: DISPLAY_SHADER },
+
+    simW: NEURAL_W,
+    simH: NEURAL_H,
 
     touchRadius: 0.06,
 
@@ -174,12 +239,12 @@ export default fieldSim({
         const data = new Float32Array(width * height * 4);
         for (let i = 0; i < width * height; i++) {
             const r = Math.random();
-            // Seed most cells at low charge; a few near threshold to kick off activity
-            const charge = r < 0.15
-                ? 0.5 + Math.random() * 0.45   // 15% near threshold
-                : Math.random() * 0.25;          // 85% low charge
+            // 50% near threshold for fast activity ramp-up (no simultaneous burst = no cold reset)
+            const charge = r < 0.50
+                ? 0.55 + Math.random() * 0.43   // near threshold, staggered → natural cascade ramp
+                : Math.random() * 0.20;          // rest low
             data[i * 4 + 0] = charge;
-            data[i * 4 + 1] = 0.0; // no refractory at start
+            data[i * 4 + 1] = 0.0;
             data[i * 4 + 2] = 0.0;
             data[i * 4 + 3] = 1.0;
         }
@@ -197,7 +262,9 @@ export default fieldSim({
     },
 
     getDisplayUniforms() {
-        return [];
+        return [
+            { name: "u_resolution", type: "2f", values: [NEURAL_W, NEURAL_H] },
+        ];
     },
 
     // ─── Controls ────────────────────────────────────────────────
@@ -205,36 +272,36 @@ export default fieldSim({
     controls: [
         {
             type: "slider", id: "spread",
-            min: 0.05, max: 0.45, step: 0.01, default: 0.25,
+            min: 0.05, max: 0.45, step: 0.01, default: 0.35,
             i18nLabel: "lbl_spread", format: 2,
         },
         {
             type: "slider", id: "input",
-            min: 0.001, max: 0.04, step: 0.001, default: 0.005,
+            min: 0.001, max: 0.04, step: 0.001, default: 0.004,
             i18nLabel: "lbl_input", format: 3,
         },
         {
             type: "slider", id: "leak",
-            min: 0.005, max: 0.15, step: 0.005, default: 0.02,
+            min: 0.005, max: 0.15, step: 0.005, default: 0.012,
             i18nLabel: "lbl_leak", format: 3,
         },
     ],
 
     presets: [
-        { i18nLabel: "preset_critical", params: { spread: 0.25, input: 0.005, leak: 0.020 } },
-        { i18nLabel: "preset_seizure",  params: { spread: 0.40, input: 0.020, leak: 0.005 } },
-        { i18nLabel: "preset_silence",  params: { spread: 0.10, input: 0.003, leak: 0.060 } },
-        { i18nLabel: "preset_cascade",  params: { spread: 0.32, input: 0.002, leak: 0.010 } },
+        { i18nLabel: "preset_critical", params: { spread: 0.26, input: 0.004, leak: 0.015 } },
+        { i18nLabel: "preset_seizure",  params: { spread: 0.38, input: 0.015, leak: 0.005 } },
+        { i18nLabel: "preset_silence",  params: { spread: 0.09, input: 0.002, leak: 0.050 } },
+        { i18nLabel: "preset_cascade",  params: { spread: 0.32, input: 0.008, leak: 0.005 } },
     ],
 
     colours: [
-        { gradient: "linear-gradient(135deg, #060010, #7a10aa, #e0f0ff)", i18nTitle: "Neural scan" },
-        { gradient: "linear-gradient(135deg, #050000, #c01010, #ffee80)", i18nTitle: "Heatmap" },
-        { gradient: "linear-gradient(135deg, #000510, #007880, #80ffee)", i18nTitle: "Bioluminescence" },
-        { gradient: "linear-gradient(135deg, #000, #666, #fff)", i18nTitle: "Monochrome" },
+        { gradient: "linear-gradient(135deg, #030008, #7010b0, #f0f5ff)", i18nTitle: "Neural Glow" },
+        { gradient: "linear-gradient(135deg, #050200, #c05000, #fff5a0)", i18nTitle: "Ember" },
+        { gradient: "linear-gradient(135deg, #000210, #00a090, #a0ffee)", i18nTitle: "Bioluminescence" },
+        { gradient: "linear-gradient(135deg, #000, #888, #fff)", i18nTitle: "Monochrome" },
     ],
 
-    speedSlider: { min: 1, max: 15, default: 4 },
+    speedSlider: { min: 0.2, max: 1.5, step: 0.1, default: 0.5 },
 
     // ─── Equations ───────────────────────────────────────────────
 
