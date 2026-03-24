@@ -223,7 +223,7 @@ export default fieldSim({
     ],
 
     presets: [
-        { i18nLabel: "preset_labyrinth", params: { f: 0.042, k: 0.063 } },
+        { i18nLabel: "preset_labyrinth", params: { f: 0.037, k: 0.060 } },
         { i18nLabel: "preset_spots", params: { f: 0.035, k: 0.065 } },
         { i18nLabel: "preset_waves", params: { f: 0.014, k: 0.054 } },
         { i18nLabel: "preset_worms", params: { f: 0.046, k: 0.063 } },
@@ -237,7 +237,7 @@ export default fieldSim({
         { gradient: "linear-gradient(135deg, #0f0f14, #645f5a, #f5f0eb)", i18nTitle: "Inkoust" },
     ],
 
-    speedSlider: { min: 1, max: 30, default: 10 },
+    speedSlider: { min: 1, max: 30, step: 1, default: 15 },
 
     // ─── Equations ──────────────────────────────────────────────
 

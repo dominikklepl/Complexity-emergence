@@ -16,6 +16,7 @@
  */
 
 import { fieldSim } from "../core/fieldSim.js";
+import { getGL, createTexture } from "../core/webgl.js";
 
 // ─── GLSL Shaders ────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ const STEP_SHADER = `
 precision highp float;
 
 uniform sampler2D u_state;
+uniform sampler2D u_mask;    // R = regionId/10 (0=dead, 0.1-0.5=region 1-5)
 uniform vec2  u_resolution;
 uniform float u_spread;      // charge per fired neighbour (≈0.25 = critical)
 uniform float u_input;       // probability a resting cell gets a random spike
@@ -43,6 +45,13 @@ float rand(vec2 co) {
 }
 
 void main() {
+    // Dead cells (outside brain silhouette) do nothing
+    float regionVal = texture2D(u_mask, v_uv).r;
+    if (regionVal < 0.05) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
+
     vec2 dx = vec2(1.0 / u_resolution.x, 0.0);
     vec2 dy = vec2(0.0,  1.0 / u_resolution.y);
 
@@ -58,13 +67,36 @@ void main() {
     float n_right = step(THRESHOLD, texture2D(u_state, v_uv + dx).r);
 
     // Long-range connection: each neuron has a fixed pseudo-random distant partner.
-    // Creates hub nodes and spatial clustering (small-world topology) without extra textures.
+    // Constrained to stay inside the brain (dead cells rejected).
     float h1 = fract(sin(dot(v_uv, vec2(127.1, 311.7))) * 43758.5);
     float h2 = fract(sin(dot(v_uv, vec2(269.5, 183.3))) * 43758.5);
     vec2 longUV = fract(v_uv + vec2(h1, h2) * 0.6 + vec2(0.2));
-    float n_long = step(THRESHOLD, texture2D(u_state, longUV).r);
+    float longMask = texture2D(u_mask, longUV).r;
+    float n_long = (longMask > 0.05) ? step(THRESHOLD, texture2D(u_state, longUV).r) : 0.0;
 
     float incoming = (n_up + n_down + n_left + n_right + n_long * 0.6) * u_spread;
+
+    // Anatomical pathway: biased long-range connection toward the region this neuron projects to.
+    // Regions: 1=visual, 2=prefrontal, 3=parietal, 4=motor, 5=temporal
+    // Pathways: visual→parietal, parietal→motor, prefrontal→motor, temporal→prefrontal
+    float rId = regionVal * 10.0;
+    vec2 aTarget = v_uv;  // default: no strong anatomical target
+    if (rId > 0.5 && rId < 1.5) {        // visual → parietal
+        aTarget = vec2(0.60, 0.70);
+    } else if (rId > 1.5 && rId < 2.5) { // prefrontal → motor
+        aTarget = vec2(0.38, 0.66);
+    } else if (rId > 2.5 && rId < 3.5) { // parietal → motor
+        aTarget = vec2(0.38, 0.63);
+    } else if (rId > 4.5 && rId < 5.5) { // temporal → prefrontal
+        aTarget = vec2(0.20, 0.58);
+    }
+    // Hash jitter within target region so connections are distributed, not a single point
+    float j1 = fract(sin(dot(v_uv, vec2(93.7,  217.3))) * 43758.5) - 0.5;
+    float j2 = fract(sin(dot(v_uv, vec2(311.1, 127.9))) * 43758.5) - 0.5;
+    vec2 aUV = clamp(aTarget + vec2(j1, j2) * 0.12, 0.0, 1.0);
+    float aMask = texture2D(u_mask, aUV).r;
+    float n_anat = (aMask > 0.05) ? step(THRESHOLD, texture2D(u_state, aUV).r) : 0.0;
+    incoming += n_anat * u_spread * 0.5;
 
     float new_u;
     float new_refr;
@@ -111,6 +143,7 @@ const DISPLAY_SHADER = `
 precision highp float;
 
 uniform sampler2D u_state;
+uniform sampler2D u_mask;    // R = regionId/10 (0=dead, 0.1-0.5=region 1-5)
 uniform int       u_colourScheme;
 uniform vec2      u_resolution;   // simulation texture size for bloom kernel
 
@@ -118,70 +151,116 @@ varying vec2 v_uv;
 
 const float THRESHOLD = 1.0;
 
-// Cell-based rendering: 12×12 simulation-pixel cells → 64×43 visible "neurons".
+// Cell-based rendering: each sim pixel = one visual neuron at 8× canvas scale.
 // Each pixel samples state SHARPLY at its cell centre (no averaging) so colour
-// thresholds work correctly.  A Gaussian glow makes each cell a distinct ~10px circle.
+// thresholds work correctly.  A Gaussian glow makes each cell a distinct circle.
 // Simulation is 96×64; display canvas is 768×512 → scale factor = 8.
-// CELL=1 means each sim pixel = one visual "neuron".
-// GLOW_SIG2 in sim-pixel units: sigma²=0.55 → sigma≈0.74 sim px → ~12 canvas px glow radius.
 const float CELL      = 1.0;
 const float GLOW_SIG2 = 0.32;  // sigma≈0.57 sim px → ~9 canvas px radius, crisp circle gaps
 
 // ── Colour scheme helpers ──────────────────────────────────────────
 // Each receives: t=charge/threshold, refr, trail — all in [0,1].
 // Design principle: trail is the PRIMARY visual channel (wave history).
-// Background is near-black; active sites have intense HDR contrast.
+// Multi-stop trail ramps: trail drives a 3-stop hue gradient (old→mid→fresh).
 
-// 0: Neural Glow — violet-magenta trail, icy-blue refractory, white fire
-vec3 neural_glow(float t, float refr, float trail) {
-    vec3 col = vec3(0.01, 0.0, 0.03);                                       // near-black purple
-    col += vec3(0.55, 0.08, 0.70) * trail * 1.2;                            // violet-magenta trail glow
-    col += vec3(0.20, 0.01, 0.05) * clamp(t * 0.8, 0.0, 1.0);             // dim red ember (charging)
-    col  = mix(col, vec3(0.15, 0.50, 1.00), clamp((refr - 0.1) / 0.7, 0.0, 1.0));   // icy-blue refractory
-    col  = mix(col, vec3(1.00, 0.95, 1.00), clamp((refr - 0.75) / 0.25, 0.0, 1.0)); // white fire burst
+// 0: Brain Regions — each region coloured distinctly; cross-region spread visible as hue change
+//    Region IDs: 1=visual(orange), 2=prefrontal(blue), 3=parietal(teal), 4=motor(green), 5=temporal(purple)
+vec3 regionNeuronColor(float regionVal, float t, float refr, float trail) {
+    float rId = regionVal * 10.0;
+    vec3 tOld, tMid, tNew, refrCol;
+    if (rId > 0.5 && rId < 1.5) {         // visual: warm orange-red
+        tOld    = vec3(0.15, 0.02, 0.0);
+        tMid    = vec3(0.80, 0.28, 0.0);
+        tNew    = vec3(1.00, 0.72, 0.15);
+        refrCol = vec3(1.00, 0.92, 0.55);
+    } else if (rId > 1.5 && rId < 2.5) {  // prefrontal: royal blue
+        tOld    = vec3(0.02, 0.02, 0.22);
+        tMid    = vec3(0.08, 0.22, 0.92);
+        tNew    = vec3(0.50, 0.78, 1.00);
+        refrCol = vec3(0.75, 0.92, 1.00);
+    } else if (rId > 2.5 && rId < 3.5) {  // parietal: teal-cyan
+        tOld    = vec3(0.0,  0.12, 0.12);
+        tMid    = vec3(0.0,  0.65, 0.68);
+        tNew    = vec3(0.35, 1.00, 0.92);
+        refrCol = vec3(0.75, 1.00, 0.96);
+    } else if (rId > 3.5 && rId < 4.5) {  // motor: lime-green
+        tOld    = vec3(0.02, 0.12, 0.0);
+        tMid    = vec3(0.12, 0.76, 0.06);
+        tNew    = vec3(0.68, 1.00, 0.28);
+        refrCol = vec3(0.85, 1.00, 0.60);
+    } else {                                // temporal: violet-purple
+        tOld    = vec3(0.10, 0.0,  0.16);
+        tMid    = vec3(0.55, 0.05, 0.88);
+        tNew    = vec3(0.88, 0.52, 1.00);
+        refrCol = vec3(0.96, 0.82, 1.00);
+    }
+    vec3 tCol = trail < 0.4
+        ? mix(tOld, tMid, trail / 0.4)
+        : mix(tMid, tNew, (trail - 0.4) / 0.6);
+    vec3 col = tOld * 0.12;
+    col += tCol * trail * 1.3;
+    col += tMid * 0.06 * clamp(t * 0.8, 0.0, 1.0);                          // charge glow in region hue
+    col  = mix(col, refrCol, clamp((refr - 0.1) / 0.7, 0.0, 1.0));         // bright refractory
+    col  = mix(col, vec3(1.0, 1.0, 0.96), clamp((refr - 0.75) / 0.25, 0.0, 1.0)); // white fire burst
     return col;
 }
 
-// 1: Ember — amber-orange trail, maroon refractory, yellow-white fire
+// 1: Plasma — fresh=cyan-white → electric blue → deep navy; orange charge; magenta refr
+vec3 plasma(float t, float refr, float trail) {
+    vec3 tOld = vec3(0.02, 0.05, 0.25);
+    vec3 tMid = vec3(0.10, 0.40, 1.00);
+    vec3 tNew = vec3(0.70, 0.95, 1.00);
+    vec3 tCol = trail < 0.3
+        ? mix(tOld, tMid, trail / 0.3)
+        : mix(tMid, tNew, (trail - 0.3) / 0.7);
+    vec3 col = tOld * 0.2;
+    col += tCol * trail * 1.3;
+    col += vec3(0.30, 0.10, 0.0) * clamp(t * 0.9, 0.0, 1.0);
+    col  = mix(col, vec3(0.90, 0.05, 0.55), clamp((refr - 0.1) / 0.7, 0.0, 1.0));
+    col  = mix(col, vec3(1.00, 0.95, 1.00), clamp((refr - 0.75) / 0.25, 0.0, 1.0));
+    return col;
+}
+
+// 2: Ember — fresh=bright yellow → amber → dark maroon; teal charge; orange refr
 vec3 ember(float t, float refr, float trail) {
-    vec3 col = vec3(0.02, 0.01, 0.0);                                        // near-black warm
-    col += vec3(0.85, 0.30, 0.02) * trail * 1.1;                             // amber-orange trail glow
-    col += vec3(0.15, 0.02, 0.0) * clamp(t * 0.7, 0.0, 1.0);               // dim red ember
-    col  = mix(col, vec3(0.55, 0.08, 0.02), clamp((refr - 0.1) / 0.7, 0.0, 1.0));   // dark maroon
-    col  = mix(col, vec3(1.00, 0.97, 0.65), clamp((refr - 0.75) / 0.25, 0.0, 1.0)); // yellow-white burst
-    return col;
-}
-
-// 2: Bioluminescence — teal-aqua trail, deep ocean background, aqua fire
-vec3 bioluminescence(float t, float refr, float trail) {
-    vec3 col = vec3(0.0, 0.01, 0.06);                                        // deep ocean black
-    col += vec3(0.0, 0.65, 0.60) * trail * 1.2;                              // teal trail glow
-    col += vec3(0.0, 0.08, 0.10) * clamp(t * 0.7, 0.0, 1.0);               // dim teal ember
-    col  = mix(col, vec3(0.02, 0.08, 0.50), clamp((refr - 0.1) / 0.7, 0.0, 1.0));   // deep royal blue
-    col  = mix(col, vec3(0.65, 1.00, 0.96), clamp((refr - 0.75) / 0.25, 0.0, 1.0)); // aqua-white burst
+    vec3 tOld = vec3(0.20, 0.02, 0.04);
+    vec3 tMid = vec3(0.85, 0.32, 0.02);
+    vec3 tNew = vec3(1.00, 0.95, 0.30);
+    vec3 tCol = trail < 0.4
+        ? mix(tOld, tMid, trail / 0.4)
+        : mix(tMid, tNew, (trail - 0.4) / 0.6);
+    vec3 col = tOld * 0.15;
+    col += tCol * trail * 1.2;
+    col += vec3(0.0, 0.08, 0.15) * clamp(t * 0.8, 0.0, 1.0);
+    col  = mix(col, vec3(0.75, 0.15, 0.0), clamp((refr - 0.1) / 0.7, 0.0, 1.0));
+    col  = mix(col, vec3(1.00, 0.97, 0.65), clamp((refr - 0.75) / 0.25, 0.0, 1.0));
     return col;
 }
 
 // 3: Monochrome — silver trail, mid-grey refractory, white fire
 vec3 monochrome(float t, float refr, float trail) {
     float v = 0.0;
-    v += trail * 0.75;                                                        // trail: bright silver
-    v += clamp(t * 0.25, 0.0, 1.0);                                         // charge: dim ember
-    v  = mix(v, 0.30, clamp((refr - 0.1) / 0.7, 0.0, 1.0));                // refractory: mid grey
-    v  = mix(v, 1.00, clamp((refr - 0.75) / 0.25, 0.0, 1.0));              // fire: white
+    v += trail * 0.75;
+    v += clamp(t * 0.25, 0.0, 1.0);
+    v  = mix(v, 0.30, clamp((refr - 0.1) / 0.7, 0.0, 1.0));
+    v  = mix(v, 1.00, clamp((refr - 0.75) / 0.25, 0.0, 1.0));
     return vec3(v);
 }
 
 // Sample sharp state at uv and return its colour.
 // Must be defined AFTER the colour functions it calls.
+// Samples mask to get region ID for the region-aware scheme.
 vec3 neuronColor(vec2 uv) {
     vec3  st    = texture2D(u_state, uv).rgb;
     float t     = clamp(st.r / THRESHOLD, 0.0, 1.0);
     float refr  = st.g;
     float trail = st.b;
-    if      (u_colourScheme == 0) return neural_glow(t, refr, trail);
-    else if (u_colourScheme == 1) return ember(t, refr, trail);
-    else if (u_colourScheme == 2) return bioluminescence(t, refr, trail);
+    if (u_colourScheme == 0) return plasma(t, refr, trail);
+    else if (u_colourScheme == 1) {
+        float rVal = texture2D(u_mask, uv).r;
+        return regionNeuronColor(rVal, t, refr, trail);
+    }
+    else if (u_colourScheme == 2) return ember(t, refr, trail);
     else                          return monochrome(t, refr, trail);
 }
 
@@ -191,9 +270,27 @@ void main() {
     vec2 cellCtrPx = (cellIdx + 0.5) * CELL;
     vec2 cellCtrUV = cellCtrPx / u_resolution;
 
-    // Primary neuron: Gaussian glow centred on this cell
+    // Gaussian glow weight for this pixel relative to its cell centre
     float d2   = dot(simPx - cellCtrPx, simPx - cellCtrPx);
     float glow = exp(-d2 / GLOW_SIG2);
+
+    // Brain mask: dead cells render as a faint silhouette outline only
+    float maskVal = texture2D(u_mask, cellCtrUV).r;
+    if (maskVal < 0.05) {
+        // Check cardinal neighbours to detect brain boundary for outline glow
+        vec2 md = vec2(1.0 / u_resolution.x, 0.0);
+        vec2 mu = vec2(0.0, 1.0 / u_resolution.y);
+        float edge = 0.0;
+        edge += step(0.05, texture2D(u_mask, cellCtrUV + md).r);
+        edge += step(0.05, texture2D(u_mask, cellCtrUV - md).r);
+        edge += step(0.05, texture2D(u_mask, cellCtrUV + mu).r);
+        edge += step(0.05, texture2D(u_mask, cellCtrUV - mu).r);
+        // Faint blue-grey glow at boundary, invisible deeper outside
+        gl_FragColor = vec4(vec3(0.05, 0.07, 0.14) * clamp(edge / 4.0, 0.0, 1.0) * glow * 2.5, 1.0);
+        return;
+    }
+
+    // Primary neuron: Gaussian glow centred on this cell
     vec3  col  = neuronColor(cellCtrUV) * glow;
 
     // Soft ambient from 8 neighbouring cells — active neighbours bleed into
@@ -211,12 +308,67 @@ void main() {
         }
     }
 
+    // Very subtle region-based background tint — helps visitors orient without distracting
+    float rId = maskVal * 10.0;
+    vec3 regionTint = vec3(0.0);
+    if      (rId > 0.5 && rId < 1.5) regionTint = vec3(0.06, 0.02, 0.0);   // visual: warm red
+    else if (rId > 1.5 && rId < 2.5) regionTint = vec3(0.0,  0.01, 0.07);  // prefrontal: blue
+    else if (rId > 2.5 && rId < 3.5) regionTint = vec3(0.0,  0.04, 0.05);  // parietal: teal
+    else if (rId > 3.5 && rId < 4.5) regionTint = vec3(0.0,  0.05, 0.01);  // motor: green
+    else if (rId > 4.5 && rId < 5.5) regionTint = vec3(0.04, 0.0,  0.06);  // temporal: purple
+    col += regionTint;
+
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
 `;
 
 // ─── Frame counter for per-step noise seed ────────────────────────
 let _stepCount = 0;
+
+// ─── Brain mask ──────────────────────────────────────────────────
+// Lateral view of left hemisphere (UV: x=0 front/prefrontal, x=1 back/occipital, y=0 bottom)
+// Two-lobe analytic shape: main cortex ellipse + temporal lobe bump.
+// Region IDs: 0=dead, 1=visual, 2=prefrontal, 3=parietal, 4=motor, 5=temporal
+// Stored as R=regionId/10 in a Float32Array RGBA texture.
+
+function _insideBrain(u, v) {
+    if (v < 0.10) return false;
+    // Main cortex dome — scaled to fill canvas, same ~2:1 physical aspect ratio.
+    const dx1 = (u - 0.50) / 0.43, dy1 = (v - 0.63) / 0.32;
+    if (dx1 * dx1 + dy1 * dy1 <= 1.0) return true;
+    // Frontal pole — fills in the lower-front of the frontal lobe
+    const dx2 = (u - 0.14) / 0.085, dy2 = (v - 0.52) / 0.24;
+    if (dx2 * dx2 + dy2 * dy2 <= 1.0) return true;
+    // Temporal lobe — hangs below the Sylvian fissure, forward-biased
+    const dx3 = (u - 0.38) / 0.25, dy3 = (v - 0.23) / 0.18;
+    return dx3 * dx3 + dy3 * dy3 <= 1.0 && v < 0.42;
+}
+
+function _getRegion(u, v) {
+    if (!_insideBrain(u, v)) return 0;
+    if (u > 0.74)                              return 1; // visual/occipital (back ~20%)
+    if (v < 0.42 && u > 0.14 && u < 0.66)    return 5; // temporal (lower lobe)
+    if (u > 0.50 && v > 0.60)                 return 3; // parietal (upper-back)
+    if (u > 0.28 && u <= 0.50 && v > 0.56)   return 4; // motor (upper-centre)
+    return 2;                                             // prefrontal (front)
+}
+
+function buildBrainMask(W, H) {
+    const data = new Float32Array(W * H * 4);
+    for (let j = 0; j < H; j++) {
+        for (let i = 0; i < W; i++) {
+            const u = (i + 0.5) / W;
+            const v = (j + 0.5) / H;
+            const region = _getRegion(u, v);
+            const idx = (j * W + i) * 4;
+            data[idx]     = region / 10.0;  // R: regionId/10
+            data[idx + 3] = 1.0;
+        }
+    }
+    return data;
+}
+
+let maskTex = null;
 
 // ─── Simulation ─────────────────────────────────────────────────
 
@@ -236,8 +388,13 @@ export default fieldSim({
     touchRadius: 0.06,
 
     initState(width, height, _params) {
+        const mask = buildBrainMask(width, height);
         const data = new Float32Array(width * height * 4);
         for (let i = 0; i < width * height; i++) {
+            if (mask[i * 4] < 0.05) {
+                data[i * 4 + 3] = 1.0;
+                continue; // dead cell → zero charge
+            }
             const r = Math.random();
             // 50% near threshold for fast activity ramp-up (no simultaneous burst = no cold reset)
             const charge = r < 0.50
@@ -253,18 +410,35 @@ export default fieldSim({
 
     getStepUniforms(params) {
         _stepCount++;
+        if (!maskTex) maskTex = createTexture(NEURAL_W, NEURAL_H, buildBrainMask(NEURAL_W, NEURAL_H));
+        const gl = getGL();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, maskTex);
         return [
-            { name: "u_spread",      type: "1f", values: [params.spread] },
-            { name: "u_input",       type: "1f", values: [params.input] },
-            { name: "u_leak",        type: "1f", values: [params.leak] },
-            { name: "u_seed",        type: "1f", values: [_stepCount * 0.00137] },
+            { name: "u_mask",   type: "1i", values: [1] },
+            { name: "u_spread", type: "1f", values: [params.spread || 0.32] },
+            { name: "u_input",  type: "1f", values: [params.input  || 0.008] },
+            { name: "u_leak",   type: "1f", values: [params.leak   || 0.005] },
+            { name: "u_seed",   type: "1f", values: [_stepCount * 0.00137] },
         ];
     },
 
     getDisplayUniforms() {
+        if (maskTex) {
+            const gl = getGL();
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, maskTex);
+        }
         return [
+            { name: "u_mask",       type: "1i", values: [1] },
             { name: "u_resolution", type: "2f", values: [NEURAL_W, NEURAL_H] },
         ];
+    },
+
+    onSetup() {
+        // Remove any pre-existing region overlay from a previous sim switch
+        const existing = document.getElementById("neural-region-overlay");
+        if (existing) existing.remove();
     },
 
     // ─── Controls ────────────────────────────────────────────────
@@ -272,36 +446,36 @@ export default fieldSim({
     controls: [
         {
             type: "slider", id: "spread",
-            min: 0.05, max: 0.45, step: 0.01, default: 0.35,
+            min: 0.05, max: 0.45, step: 0.01, default: 0.32,
             i18nLabel: "lbl_spread", format: 2,
         },
         {
             type: "slider", id: "input",
-            min: 0.001, max: 0.04, step: 0.001, default: 0.004,
+            min: 0.001, max: 0.04, step: 0.001, default: 0.008,
             i18nLabel: "lbl_input", format: 3,
         },
         {
             type: "slider", id: "leak",
-            min: 0.005, max: 0.15, step: 0.005, default: 0.012,
+            min: 0.005, max: 0.15, step: 0.005, default: 0.005,
             i18nLabel: "lbl_leak", format: 3,
         },
     ],
 
     presets: [
-        { i18nLabel: "preset_critical", params: { spread: 0.26, input: 0.004, leak: 0.015 } },
+        { i18nLabel: "preset_critical", params: { spread: 0.28, input: 0.012, leak: 0.008 } },
         { i18nLabel: "preset_seizure",  params: { spread: 0.38, input: 0.015, leak: 0.005 } },
         { i18nLabel: "preset_silence",  params: { spread: 0.09, input: 0.002, leak: 0.050 } },
         { i18nLabel: "preset_cascade",  params: { spread: 0.32, input: 0.008, leak: 0.005 } },
     ],
 
     colours: [
-        { gradient: "linear-gradient(135deg, #030008, #7010b0, #f0f5ff)", i18nTitle: "Neural Glow" },
-        { gradient: "linear-gradient(135deg, #050200, #c05000, #fff5a0)", i18nTitle: "Ember" },
-        { gradient: "linear-gradient(135deg, #000210, #00a090, #a0ffee)", i18nTitle: "Bioluminescence" },
-        { gradient: "linear-gradient(135deg, #000, #888, #fff)", i18nTitle: "Monochrome" },
+        { gradient: "linear-gradient(135deg, #040e28, #1a60ff, #b0f0ff)", i18nTitle: "Plasma" },
+        { gradient: "linear-gradient(135deg, #100220, #8010d0, #20e890)", i18nTitle: "Brain Regions" },
+        { gradient: "linear-gradient(135deg, #330508, #c05000, #fff080)", i18nTitle: "Ember" },
+        { gradient: "linear-gradient(135deg, #000, #888, #fff)",          i18nTitle: "Monochrome" },
     ],
 
-    speedSlider: { min: 0.2, max: 1.5, step: 0.1, default: 0.5 },
+    speedSlider: { min: 0.05, max: 0.35, step: 0.05, default: 0.2 },
 
     // ─── Equations ───────────────────────────────────────────────
 
@@ -379,6 +553,11 @@ export default fieldSim({
         preset_seizure:  { cs: "Záchvat",          en: "Seizure" },
         preset_silence:  { cs: "Ticho",            en: "Silence" },
         preset_cascade:  { cs: "Vlna",             en: "Wave" },
+        region_visual:     { cs: "Zraková kůra",      en: "Visual cortex" },
+        region_parietal:   { cs: "Temenní lalok",    en: "Parietal lobe" },
+        region_motor:      { cs: "Motorická kůra",   en: "Motor cortex" },
+        region_prefrontal: { cs: "Prefrontální kůra",en: "Prefrontal" },
+        region_temporal:   { cs: "Spánkový lalok",   en: "Temporal lobe" },
         snap_title_neural: { cs: "Mozková aktivita", en: "Neural Criticality" },
         snap_sub_neural: {
             cs: "Váš mozek, na hraně mezi tichem a bouří.",

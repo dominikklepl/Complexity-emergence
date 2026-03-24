@@ -33,6 +33,9 @@ let activeControls = null;
 /** @type {number|null} requestAnimationFrame ID */
 let rafId = null;
 
+/** @type {boolean} Whether the animation is paused by the user */
+let paused = false;
+
 // ─── Public API ─────────────────────────────────────────────────
 
 /**
@@ -75,12 +78,15 @@ export function init(defaultLang) {
 
     // Wire up action buttons
     document.getElementById("btn-reset").addEventListener("click", resetSim);
-    document.getElementById("btn-snapshot").addEventListener("click", () => {
-        if (!activeSim) return;
-        const gl = getGL();
-        const canvas = getCanvas();
-        const cs = activeControls ? activeControls.getColourScheme() : 0;
-        takeSnapshot(canvas, activeSim, () => activeSim.render(gl, canvas, cs));
+    document.getElementById("btn-pause").addEventListener("click", togglePause);
+    document.getElementById("btn-snapshot").addEventListener("click", doSnapshot);
+
+    // Keyboard shortcuts: S = snapshot, P = pause/resume, R = reset
+    document.addEventListener("keydown", (e) => {
+        if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+        if (e.key === "s" || e.key === "S") doSnapshot();
+        else if (e.key === "p" || e.key === "P") togglePause();
+        else if (e.key === "r" || e.key === "R") resetSim();
     });
 
     // Wire up equation panel toggle
@@ -101,7 +107,7 @@ export function init(defaultLang) {
                 cancelAnimationFrame(rafId);
                 rafId = null;
             }
-        } else if (rafId === null) {
+        } else if (rafId === null && !paused) {
             animate();
         }
     });
@@ -124,7 +130,7 @@ export function init(defaultLang) {
             const params = activeControls.getParams();
             activeSim.setup(result.gl, result.canvas, params);
         }
-        animate();
+        if (!paused) animate();
     });
 
     // Wait for KaTeX then start
@@ -208,6 +214,32 @@ function switchSim(id) {
 
     // Render equations
     renderEquations(sim, getLang());
+}
+
+function doSnapshot() {
+    if (!activeSim) return;
+    const gl = getGL();
+    const canvas = getCanvas();
+    const cs = activeControls ? activeControls.getColourScheme() : 0;
+    takeSnapshot(canvas, activeSim, () => activeSim.render(gl, canvas, cs));
+}
+
+function togglePause() {
+    paused = !paused;
+    const btn = document.getElementById("btn-pause");
+    if (btn) {
+        btn.dataset.i18n = paused ? "resume" : "pause";
+        btn.textContent = t(btn.dataset.i18n);
+        btn.classList.toggle("btn-paused", paused);
+    }
+    if (paused) {
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+    } else {
+        animate();
+    }
 }
 
 function resetSim() {

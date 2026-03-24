@@ -99,6 +99,9 @@ export function fieldSim(config) {
             framebuffers[0] = createFramebuffer(textures[0]);
             framebuffers[1] = createFramebuffer(textures[1]);
             currentTex = 0;
+
+            // Optional post-setup hook (e.g. for HTML overlay creation)
+            if (config.onSetup) config.onSetup(gl, canvas, simW, simH, params);
         },
 
         /**

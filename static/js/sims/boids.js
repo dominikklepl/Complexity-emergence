@@ -523,7 +523,7 @@ export default {
         { gradient: "linear-gradient(135deg, #1a0a00, #ffab40)", i18nTitle: "Firefly" },
     ],
 
-    speedSlider: { min: 1, max: 5, default: 1 },
+    speedSlider: { min: 0.5, max: 5, step: 0.5, default: 2.5 },
 
     // ── Equations ───────────────────────────────────────────────
 

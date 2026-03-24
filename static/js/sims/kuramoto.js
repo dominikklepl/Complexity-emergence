@@ -258,7 +258,7 @@ export default fieldSim({
         { gradient: "conic-gradient(#0a0f32, #145078, #3cb4aa, #1e3c64, #0a0f32)", i18nTitle: "Oceán" },
     ],
 
-    speedSlider: { min: 1, max: 15, default: 2 },
+    speedSlider: { min: 0.5, max: 5, step: 0.5, default: 2.5 },
 
     // ─── Equations ──────────────────────────────────────────────
 
