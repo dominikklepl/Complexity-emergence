@@ -29,14 +29,6 @@ const translations = {
     toast_saved: { cs: "Uloženo", en: "Saved" },
     toast_downloaded: { cs: "Pohlednice stažena", en: "Postcard downloaded" },
     ui_what_am_i_seeing: { cs: "Co vidím?", en: "What am I seeing?" },
-    exhibit_about_title: { cs: "O exponátu", en: "About the exhibit" },
-    exhibit_about_text: {
-        cs: "Stejné rovnice, které popisují kůži zebry, synchronizaci světlušek a hejno špaček, běží právě teď ve vašem prohlížeči. Zkoušejte, hrajte si — a pokud se vám vzor líbí, vytiskneme vám ho.",
-        en: "The same equations that describe zebra stripes, synchronised fireflies, and a flock of starlings are running in your browser right now. Explore, play — and if you like the pattern, we'll print it for you.",
-    },
-    exhibit_hook_1: { cs: "— jedno pravidlo", en: "— one rule" },
-    exhibit_hook_2: { cs: "— bez velitele", en: "— no leader" },
-    exhibit_hook_3: { cs: "— jedna rovnice", en: "— one equation" },
 };
 
 /**

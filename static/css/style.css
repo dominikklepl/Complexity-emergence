@@ -425,35 +425,6 @@ canvas {
     background: var(--bg-2);
 }
 
-/* ── Static "O exponátu" sidebar section ────────────────────── */
-.exhibit-about {
-    padding: 14px 0;
-    border-top: 1px solid var(--rule-2);
-}
-
-.exhibit-about-title {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin-bottom: 10px;
-}
-
-.exhibit-about-text {
-    font-size: 13px;
-    color: var(--ink-2);
-    line-height: 1.65;
-    margin-bottom: 12px;
-}
-
-.exhibit-hooks {
-    list-style: none;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--ink-2);
-    line-height: 2;
-}
 
 /* Description (injected first by controls.js) */
 .description {
