@@ -13,6 +13,10 @@ import { buildControls } from "./controls.js";
 import { renderEquations, toggleEquations } from "./equations.js";
 import { takeSnapshot } from "./snapshot.js";
 
+// Leave ~3ms margin before the 16.7ms frame budget expires.
+// This prevents the simulation loop from starving the render pass.
+const FRAME_DEADLINE_MS = 13;
+
 // ─── State ──────────────────────────────────────────────────────
 
 /** @type {Map<string, Object>} Registered simulation modules */
@@ -24,8 +28,7 @@ const simOrder = [];
 /** @type {Object|null} Currently active simulation module */
 let activeSim = null;
 
-/** Fractional step accumulator — allows speed < 1 (e.g. 0.2 = 1 step every 5 frames) */
-let _stepAccum = 0;
+let stepAccum = 0; // Accumulates fractional steps when speed < 1
 
 /** @type {{ getParams: Function, getSpeed: Function, getColourScheme: Function }|null} */
 let activeControls = null;
@@ -198,7 +201,7 @@ function switchSim(id) {
     }
 
     activeSim = sim;
-    _stepAccum = 0; // reset so a new sim starts cleanly
+    stepAccum = 0; // reset so a new sim starts cleanly
 
     // Re-merge translations so shared keys (e.g. 'desc') reflect the active sim
     if (sim.translations) {
@@ -275,14 +278,14 @@ function animate() {
 
         // Fractional-speed accumulator: supports speed < 1 (e.g. 0.2 = 1 step/5 frames).
         // For speed >= 1 this behaves identically to the old integer loop.
-        const frameDeadline = performance.now() + 13; // ~13ms leaves margin for render + browser overhead
-        _stepAccum += speed;
+        const frameDeadline = performance.now() + FRAME_DEADLINE_MS;
+        stepAccum += speed;
         let didStep = false;
-        while (_stepAccum >= 1.0) {
+        while (stepAccum >= 1.0) {
             activeSim.step(params, touch);
-            _stepAccum -= 1.0;
+            stepAccum -= 1.0;
             didStep = true;
-            if (didStep && performance.now() > frameDeadline) { _stepAccum = 0; break; }
+            if (didStep && performance.now() > frameDeadline) { stepAccum = 0; break; }
         }
 
         // Display

@@ -43,7 +43,11 @@ export function fieldSim(config) {
     let displayProg = null;
     let textures = [null, null];
     let framebuffers = [null, null];
-    let currentTex = 0;
+    // Double-buffering (ping-pong): the GPU can't read and write the same texture
+    // in the same draw call. We keep two textures — one for reading (source),
+    // one for writing (destination). After each step they swap roles.
+    let readTex  = 0;   // index into textures[] / framebuffers[] — currently being read
+    let writeTex = 1;   // currently being written
     const simW = config.simW || SIM_W;
     const simH = config.simH || SIM_H;
 
@@ -98,7 +102,8 @@ export function fieldSim(config) {
             textures[1] = createTexture(simW, simH, initData);
             framebuffers[0] = createFramebuffer(textures[0]);
             framebuffers[1] = createFramebuffer(textures[1]);
-            currentTex = 0;
+            readTex  = 0;
+            writeTex = 1;
 
             // Optional post-setup hook (e.g. for HTML overlay creation)
             if (config.onSetup) config.onSetup(gl, canvas, simW, simH, params);
@@ -120,7 +125,8 @@ export function fieldSim(config) {
             framebuffers = [null, null];
             stepProg = null;
             displayProg = null;
-            currentTex = 0;
+            readTex  = 0;
+            writeTex = 1;
         },
 
         /**
@@ -138,7 +144,8 @@ export function fieldSim(config) {
             setUniform(stepProg, "u_resolution", "2f", simW, simH);
 
             // Set touch uniforms
-            const touchRadius = config.touchRadius || 0.03;
+            const DEFAULT_TOUCH_RADIUS = 0.03;  // UV space (0–1); 0.03 ≈ 3% of sim width
+            const touchRadius = config.touchRadius ?? DEFAULT_TOUCH_RADIUS;
             setUniform(stepProg, "u_touchRadius", "1f", touchRadius);
             if (touch.active) {
                 setUniform(stepProg, "u_touch", "2f", touch.pos[0], touch.pos[1]);
@@ -152,18 +159,18 @@ export function fieldSim(config) {
                 setUniform(stepProg, u.name, u.type, ...u.values);
             }
 
-            // Bind current state texture
+            // Bind current state texture (read source)
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, textures[currentTex]);
+            gl.bindTexture(gl.TEXTURE_2D, textures[readTex]);
             setUniform(stepProg, "u_state", "1i", 0);
 
-            // Render to the other texture
-            const target = 1 - currentTex;
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[target]);
+            // Render into the write target's framebuffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[writeTex]);
             gl.viewport(0, 0, simW, simH);
             drawQuad(stepProg);
 
-            currentTex = target;
+            // Swap read/write roles for next step.
+            [readTex, writeTex] = [writeTex, readTex];
         },
 
         /**
@@ -177,7 +184,7 @@ export function fieldSim(config) {
 
             gl.useProgram(displayProg);
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, textures[currentTex]);
+            gl.bindTexture(gl.TEXTURE_2D, textures[readTex]);
             setUniform(displayProg, "u_state", "1i", 0);
             setUniform(displayProg, "u_colourScheme", "1i", colourScheme);
 
