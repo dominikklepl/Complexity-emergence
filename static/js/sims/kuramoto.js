@@ -249,6 +249,7 @@ export default fieldSim({
         { i18nLabel: "preset_chimera", params: { K: 0.5, spread: 0.8, omega: 0.6 } },
         { i18nLabel: "preset_sync", params: { K: 3.0, spread: 0.2, omega: 0.4 } },
         { i18nLabel: "preset_turbulence", params: { K: 0.2, spread: 0.6, omega: 0.8 } },
+        { i18nLabel: "preset_slow_sync", params: { K: 1.8, spread: 0.3, omega: 0.5 } },
     ],
 
     colours: [
@@ -311,6 +312,7 @@ export default fieldSim({
         preset_chimera: { cs: "Chiméra", en: "Chimera" },
         preset_sync: { cs: "Plná synchronizace", en: "Full sync" },
         preset_turbulence: { cs: "Turbulence", en: "Turbulence" },
+        preset_slow_sync: { cs: "Pomalá synchronizace", en: "Slow sync" },
         snap_title_osc: { cs: "Synchronizace oscilátorů", en: "Synchronisation Dynamics" },
         snap_sub_osc: {
             cs: "Tvoje nastavení propojení vytvořilo tyto vlny",
@@ -360,6 +362,7 @@ export default fieldSim({
         setTr("preset_chimera", cfg.preset_chimera_cs, cfg.preset_chimera_en);
         setTr("preset_sync", cfg.preset_sync_cs, cfg.preset_sync_en);
         setTr("preset_turbulence", cfg.preset_turbulence_cs, cfg.preset_turbulence_en);
+        setTr("preset_slow_sync", cfg.preset_slow_sync_cs, cfg.preset_slow_sync_en);
         setTr("snap_title_osc", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_osc", cfg.snap_sub_cs, cfg.snap_sub_en);
         setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);

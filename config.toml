@@ -135,6 +135,10 @@ preset_worms_cs     = "Červi"
 preset_worms_en     = "Worms"
 preset_coral_cs     = "Korál"
 preset_coral_en     = "Coral"
+preset_mitosis_cs   = "Mitóza"
+preset_mitosis_en   = "Mitosis"
+preset_fingerprints_cs = "Otisky prstů"
+preset_fingerprints_en = "Fingerprints"
 
 # Postcard snapshot strings
 snap_title_cs = "Turingovy vzory"
@@ -154,7 +158,8 @@ spots     = { f = 0.035, k = 0.065 }
 waves     = { f = 0.014, k = 0.054 }
 worms     = { f = 0.046, k = 0.063 }
 coral     = { f = 0.025, k = 0.060 }
-mitosis   = { f = 0.028, k = 0.062 }
+mitosis      = { f = 0.028, k = 0.062 }
+fingerprints = { f = 0.040, k = 0.058 }
 
 
 # -------------------------------------------------------------
@@ -204,6 +209,8 @@ preset_sync_cs       = "Plná synchronizace"
 preset_sync_en       = "Full sync"
 preset_turbulence_cs = "Turbulence"
 preset_turbulence_en = "Turbulence"
+preset_slow_sync_cs  = "Pomalá synchronizace"
+preset_slow_sync_en  = "Slow sync"
 
 # Postcard snapshot strings
 snap_title_cs = "Synchronizace oscilátorů"
@@ -221,6 +228,7 @@ spiral     = { K = 1.5, spread = 0.4, omega = 0.6 }
 chimera    = { K = 0.5, spread = 0.8, omega = 0.6 }
 sync       = { K = 3.0, spread = 0.2, omega = 0.4 }
 turbulence = { K = 0.2, spread = 0.6, omega = 0.8 }
+slow_sync  = { K = 1.8, spread = 0.3, omega = 0.5 }
 
 
 # -------------------------------------------------------------
@@ -347,6 +355,8 @@ preset_silence_cs  = "Ticho"
 preset_silence_en  = "Silence"
 preset_cascade_cs  = "Vlna"
 preset_cascade_en  = "Wave"
+preset_sleep_cs    = "Spánek"
+preset_sleep_en    = "Sleep"
 
 # Postcard snapshot strings
 snap_title_cs = "Mozková aktivita"
@@ -364,3 +374,4 @@ critical = { spread = 0.28, input = 0.012, leak = 0.008 }
 seizure  = { spread = 0.38, input = 0.015, leak = 0.005 }
 silence  = { spread = 0.09, input = 0.002, leak = 0.050 }
 cascade  = { spread = 0.32, input = 0.008, leak = 0.005 }
+sleep    = { spread = 0.12, input = 0.003, leak = 0.020 }

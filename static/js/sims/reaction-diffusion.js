@@ -228,6 +228,8 @@ export default fieldSim({
         { i18nLabel: "preset_waves", params: { f: 0.014, k: 0.054 } },
         { i18nLabel: "preset_worms", params: { f: 0.046, k: 0.063 } },
         { i18nLabel: "preset_coral", params: { f: 0.025, k: 0.060 } },
+        { i18nLabel: "preset_mitosis", params: { f: 0.028, k: 0.062 } },
+        { i18nLabel: "preset_fingerprints", params: { f: 0.040, k: 0.058 } },
     ],
 
     colours: [
@@ -299,6 +301,8 @@ export default fieldSim({
         preset_waves: { cs: "Vlny", en: "Waves" },
         preset_worms: { cs: "Červi", en: "Worms" },
         preset_coral: { cs: "Korál", en: "Coral" },
+        preset_mitosis: { cs: "Mitóza", en: "Mitosis" },
+        preset_fingerprints: { cs: "Otisky prstů", en: "Fingerprints" },
         snap_title_rd: { cs: "Turingovy vzory", en: "Turing Patterns" },
         snap_sub_rd: {
             cs: "Tvoje nastavení vytvořilo tento jedinečný vzor",
@@ -351,6 +355,8 @@ export default fieldSim({
         setTr("preset_waves", cfg.preset_waves_cs, cfg.preset_waves_en);
         setTr("preset_worms", cfg.preset_worms_cs, cfg.preset_worms_en);
         setTr("preset_coral", cfg.preset_coral_cs, cfg.preset_coral_en);
+        setTr("preset_mitosis", cfg.preset_mitosis_cs, cfg.preset_mitosis_en);
+        setTr("preset_fingerprints", cfg.preset_fingerprints_cs, cfg.preset_fingerprints_en);
         setTr("snap_title_rd", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_rd", cfg.snap_sub_cs, cfg.snap_sub_en);
         setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);
