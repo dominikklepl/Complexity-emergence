@@ -41,20 +41,6 @@ export function buildControls(sim, container, callbacks) {
         container.appendChild(desc);
     }
 
-    // --- Explanation panel ---
-    // Populate the explanation panel with Level-A text for this sim.
-    // The panel lives in index.html outside the controls container — target by ID.
-    // Hide it if no explanation text is defined for this sim.
-    const explPanel = document.getElementById('explanation-panel');
-    const explBody  = document.getElementById('explanation-body');
-    if (explPanel && explBody) {
-        const lang = getLang();
-        const text = sim.translations?.explain_a?.[lang] ?? '';
-        explBody.textContent = text;
-        explPanel.hidden = !text;
-        explPanel.removeAttribute('open');
-    }
-
     // --- Presets ---
     if (sim.presets && sim.presets.length > 0) {
         const title = document.createElement("div");
