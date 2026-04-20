@@ -543,6 +543,10 @@ export default fieldSim({
 
     translations: {
         tab_neural: { cs: "Mozková aktivita", en: "Neural Criticality" },
+        tagline: {
+            cs: "Mozek na hraně mezi tichem a bouří — právě tam pracuje nejlépe.",
+            en: "The brain, on the edge of silence and storm — where it works best.",
+        },
         desc: {
             cs: "Váš mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: záchvat. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech — a právě tam mozek pracuje nejlépe. Posuňte propojení a sledujte přechod.",
             en: "Your brain lives on the edge. Too little connection: silence. Too much: seizure. At the critical point between them, cascades of activity appear in all sizes — and that's where the brain works best. Adjust connectivity and watch the transition.",
@@ -600,6 +604,8 @@ export default fieldSim({
             }
         };
         set("tab_neural",        cfg.tab_cs,              cfg.tab_en);
+        if (cfg.tagline_cs) this.translations.tagline.cs = cfg.tagline_cs;
+        if (cfg.tagline_en) this.translations.tagline.en = cfg.tagline_en;
         set("desc",              cfg.desc_cs,             cfg.desc_en);
         set("lbl_spread",        cfg.lbl_spread_cs,       cfg.lbl_spread_en);
         set("lbl_input",         cfg.lbl_input_cs,        cfg.lbl_input_en);

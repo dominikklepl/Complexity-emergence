@@ -301,6 +301,10 @@ export default fieldSim({
 
     translations: {
         tab_osc: { cs: "Synchronizace", en: "Synchronisation" },
+        tagline: {
+            cs: "Tisíce světýlek, jedno pravidlo: sladit se se sousedy.",
+            en: "Thousands of lights, one rule: match your neighbours.",
+        },
         desc: {
             cs: "Tisíce blikajících světýlek, každé s jednoduchým pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí.",
             en: "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up."
@@ -354,6 +358,8 @@ export default fieldSim({
         };
 
         setTr("tab_osc", cfg.tab_cs, cfg.tab_en);
+        if (cfg.tagline_cs) this.translations.tagline.cs = cfg.tagline_cs;
+        if (cfg.tagline_en) this.translations.tagline.en = cfg.tagline_en;
         setTr("desc", cfg.desc_cs, cfg.desc_en);
         setTr("coupling", cfg.lbl_coupling_cs, cfg.lbl_coupling_en);
         setTr("freq_spread", cfg.lbl_freq_spread_cs, cfg.lbl_freq_spread_en);

@@ -597,6 +597,10 @@ export default {
             cs: "Hejna",
             en: "Flocking",
         },
+        tagline: {
+            cs: "Tři pravidla. Žádný velitel. A přesto vzniká hejno.",
+            en: "Three rules. No leader. And still — a flock.",
+        },
         desc: {
             cs: "Tři jednoduchá pravidla — separace, zarovnání a soudržnost — stačí k tomu, aby vzniklo složité hejnové chování, jako u ptáků nebo ryb. Klikněte levým tlačítkem pro přitahování, pravým pro odpuzování.",
             en: "Three simple rules — separation, alignment, and cohesion — are enough to produce complex flocking behaviour, like in birds or fish. Left-click to attract, right-click to repel.",
@@ -657,6 +661,8 @@ export default {
         };
 
         setTr("tab_boids", cfg.tab_cs, cfg.tab_en);
+        if (cfg.tagline_cs) this.translations.tagline.cs = cfg.tagline_cs;
+        if (cfg.tagline_en) this.translations.tagline.en = cfg.tagline_en;
         setTr("desc", cfg.desc_cs, cfg.desc_en);
         setTr("mode_label", cfg.lbl_mode_cs, cfg.lbl_mode_en);
         setTr("mode_boids", cfg.lbl_mode_boids_cs, cfg.lbl_mode_boids_en);

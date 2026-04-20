@@ -92,6 +92,10 @@ art_fraction = 0.77
 tab_cs = "Turingovy vzory"
 tab_en = "Turing Patterns"
 
+# Tagline (one punchy sentence shown under the tab headline)
+tagline_cs = "Dvě látky, jedna reakce, nekonečné vzory. Stejná matematika jako na kůži leoparda."
+tagline_en = "Two chemicals, one reaction, endless patterns. The same math as a leopard's coat."
+
 # Short description shown below the tab (1–3 sentences, plain text)
 desc_cs = "Dvě jednoduchá pravidla míchání — a najednou vzniknou leopardí skvrny! Posuňte posuvníky a sledujte, co se stane. Stejné rovnice vysvětlují vzory na kůži zvířat, mušlích i v korálových útesech."
 desc_en = "Two simple mixing rules — and suddenly, leopard spots appear! Move the sliders and watch what happens. These same equations explain animal skin patterns, seashells, and coral reefs."
@@ -171,6 +175,10 @@ fingerprints = { f = 0.040, k = 0.058 }
 tab_cs = "Synchronizace"
 tab_en = "Synchronisation"
 
+# Tagline
+tagline_cs = "Tisíce světýlek, jedno pravidlo: sladit se se sousedy."
+tagline_en = "Thousands of lights, one rule: match your neighbours."
+
 # Short description
 desc_cs = "Tisíce blikajících světýlek, každé s jediným pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí. Stejný princip synchronizuje tleskání publika, blikání světlušek i buňky srdce."
 desc_en = "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up. The same rule synchronises fireflies, heart cells, and audience clapping."
@@ -239,6 +247,10 @@ slow_sync  = { K = 1.8, spread = 0.3, omega = 0.5 }
 # Tab label
 tab_cs = "Hejna"
 tab_en = "Flocking"
+
+# Tagline
+tagline_cs = "Tři pravidla. Žádný velitel. A přesto vzniká hejno."
+tagline_en = "Three rules. No leader. And still — a flock."
 
 # Short description
 desc_cs = "Tři jednoduchá pravidla — nesrážej se, leť stejným směrem, drž se blízko skupiny — a vznikne hejno, jako u ptáků nebo ryb. Klikněte levým tlačítkem pro přitahování, pravým pro odpuzování. Hejna špačků a hejna sardinek fungují přesně stejně — bez velitele."
@@ -333,6 +345,10 @@ chaos       = { mode = "boids",    separation = 0.3, alignment = 0.2, cohesion =
 # Tab label
 tab_cs = "Mozková aktivita"
 tab_en = "Neural Criticality"
+
+# Tagline
+tagline_cs = "Mozek na hraně mezi tichem a bouří — právě tam pracuje nejlépe."
+tagline_en = "The brain, on the edge of silence and storm — where it works best."
 
 # Short description
 desc_cs = "Váš mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: záchvat. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech — a právě tam mozek pracuje nejlépe. Posuňte propojení a sledujte přechod."

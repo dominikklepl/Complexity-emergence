@@ -290,6 +290,10 @@ export default fieldSim({
 
     translations: {
         tab_rd: { cs: "Turingovy vzory", en: "Turing Patterns" },
+        tagline: {
+            cs: "Dvě látky, jedna reakce, nekonečné vzory. Stejná matematika jako na kůži leoparda.",
+            en: "Two chemicals, one reaction, endless patterns. The same math as a leopard's coat.",
+        },
         desc: {
             cs: "Dvě jednoduché chemické pravidla stačí k vytvoření složitých vzorů — podobných skvrnám na kůži zvířat! Posuňte posuvníky a sledujte, co se stane.",
             en: "Two simple chemical rules are enough to create complex patterns — just like spots on animal skin! Move the sliders and watch what happens."
@@ -347,6 +351,8 @@ export default fieldSim({
         };
 
         setTr("tab_rd", cfg.tab_cs, cfg.tab_en);
+        if (cfg.tagline_cs) this.translations.tagline.cs = cfg.tagline_cs;
+        if (cfg.tagline_en) this.translations.tagline.en = cfg.tagline_en;
         setTr("desc", cfg.desc_cs, cfg.desc_en);
         setTr("feed_rate", cfg.lbl_feed_rate_cs, cfg.lbl_feed_rate_en);
         setTr("kill_rate", cfg.lbl_kill_rate_cs, cfg.lbl_kill_rate_en);
