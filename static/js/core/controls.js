@@ -8,6 +8,18 @@
 import { t, getLang } from "./i18n.js";
 
 /**
+ * Minimal DOM element factory.
+ * @param {string} tag  HTML tag name
+ * @param {Object} props  Properties to assign (className, textContent, type, etc.)
+ * @returns {HTMLElement}
+ */
+function el(tag, props = {}) {
+    const node = document.createElement(tag);
+    Object.assign(node, props);
+    return node;
+}
+
+/**
  * Build the sidebar controls for a simulation.
  *
  * @param {Object} sim  The simulation module
@@ -235,7 +247,6 @@ function buildSelect(ctrl, callbacks) {
 
     const select = document.createElement("select");
     select.dataset.paramId = ctrl.id;
-    select.style.cssText = "background:#2a2a44; color:#e0dcd4; border:1px solid #c8b88a44; border-radius:3px; padding:4px 8px; font-size:12px;";
 
     for (const opt of ctrl.options) {
         const option = document.createElement("option");
@@ -260,23 +271,13 @@ function buildSelect(ctrl, callbacks) {
 }
 
 function buildToggle(ctrl, callbacks) {
-    const group = document.createElement("div");
-    group.className = "slider-group";
-    group.style.flexDirection = "row";
-    group.style.alignItems = "center";
-    group.style.gap = "8px";
+    const group = el("div", { className: "slider-group toggle-group" });
 
-    const label = document.createElement("span");
-    label.style.fontSize = "12px";
-    label.style.color = "#aaa";
+    const label = el("span", { className: "toggle-label", textContent: t(ctrl.i18nLabel) });
     label.dataset.i18n = ctrl.i18nLabel;
-    label.textContent = t(ctrl.i18nLabel);
 
-    const input = document.createElement("input");
-    input.type = "checkbox";
+    const input = el("input", { type: "checkbox", checked: ctrl.default });
     input.dataset.paramId = ctrl.id;
-    input.checked = ctrl.default;
-    input.style.accentColor = "#c8b88a";
 
     input.addEventListener("change", () => {
         if (ctrl.resetsState && callbacks.onReset) {

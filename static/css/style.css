@@ -534,6 +534,25 @@ input[type="range"]::-moz-range-thumb {
     box-shadow: 0 0 0 2px var(--bg);
 }
 
+/* Toggle control (checkbox + label inline) */
+.toggle-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-label {
+    font-size: 13px;
+    color: var(--ink-3);
+}
+
+input[type="checkbox"] {
+    accent-color: var(--gold);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
 /* ---- Console row (action buttons + kbd hints) ---- */
 .console-row {
     display: flex;
