@@ -368,6 +368,17 @@ export default fieldSim({
             if (cfg["tip_spread_name" + suffix]) tips[lang].spread_name = cfg["tip_spread_name" + suffix];
             if (cfg["tip_spread" + suffix]) tips[lang].spread_tip = cfg["tip_spread" + suffix];
         }
+
+        // Merge preset parameter values from config.toml.
+        // cfg.preset_params = { labyrinth: { f: 0.037, k: 0.060 }, ... }
+        // i18nLabel e.g. "preset_labyrinth" → strip prefix → "labyrinth"
+        if (cfg.preset_params) {
+            for (const preset of this.presets) {
+                const name = preset.i18nLabel.replace(/^preset_/, '');
+                const overrides = cfg.preset_params[name];
+                if (overrides) Object.assign(preset.params, overrides);
+            }
+        }
     },
 });
 

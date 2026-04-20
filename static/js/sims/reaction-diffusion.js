@@ -361,6 +361,17 @@ export default fieldSim({
             overrideTip(lang, "Du", "tip_Du_name" + suffix, "tip_Du" + suffix);
             overrideTip(lang, "Dv", "tip_Dv_name" + suffix, "tip_Dv" + suffix);
         }
+
+        // Merge preset parameter values from config.toml.
+        // cfg.preset_params = { labyrinth: { f: 0.037, k: 0.060 }, ... }
+        // i18nLabel e.g. "preset_labyrinth" → strip prefix → "labyrinth"
+        if (cfg.preset_params) {
+            for (const preset of this.presets) {
+                const name = preset.i18nLabel.replace(/^preset_/, '');
+                const overrides = cfg.preset_params[name];
+                if (overrides) Object.assign(preset.params, overrides);
+            }
+        }
     },
 });
 

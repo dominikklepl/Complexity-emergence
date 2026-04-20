@@ -604,6 +604,17 @@ export default fieldSim({
         set("preset_cascade",    cfg.preset_cascade_cs,   cfg.preset_cascade_en);
         set("snap_title_neural", cfg.snap_title_cs,       cfg.snap_title_en);
         set("snap_sub_neural",   cfg.snap_sub_cs,         cfg.snap_sub_en);
+
+        // Merge preset parameter values from config.toml.
+        // cfg.preset_params = { labyrinth: { f: 0.037, k: 0.060 }, ... }
+        // i18nLabel e.g. "preset_labyrinth" → strip prefix → "labyrinth"
+        if (cfg.preset_params) {
+            for (const preset of this.presets) {
+                const name = preset.i18nLabel.replace(/^preset_/, '');
+                const overrides = cfg.preset_params[name];
+                if (overrides) Object.assign(preset.params, overrides);
+            }
+        }
     },
 });
 
