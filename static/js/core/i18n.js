@@ -22,7 +22,7 @@ const translations = {
     pause: { cs: "⏸ Pauza", en: "⏸ Pause" },
     resume: { cs: "▶ Spustit", en: "▶ Resume" },
     snapshot: { cs: "📸 Pohlednice", en: "📸 Postcard" },
-    exhibit_kicker: { cs: "Interaktivní exponát", en: "Interactive exhibit" },
+    sim_label: { cs: "SIMULACE", en: "SIMULATION" },
     tagline: { cs: "Čtyři simulace o tom, jak z malých pravidel vzniká velký vzor.", en: "Four simulations showing how big patterns arise from small rules." },
     touch_hint: { cs: "Klikněte na plátno a přidejte nové vzory", en: "Click on the canvas to add new patterns" },
     eq_title: { cs: "Jak to funguje? 🔍", en: "How does this work? 🔍" },

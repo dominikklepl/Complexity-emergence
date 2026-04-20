@@ -166,26 +166,34 @@ function buildTabs() {
     const tabsContainer = document.getElementById("sim-tabs");
     if (!tabsContainer) return;
 
-    // Re-use existing <select> if already built, otherwise create it
-    let sel = tabsContainer.querySelector("select.sim-select");
-    if (!sel) {
-        sel = document.createElement("select");
-        sel.className = "sim-select";
-        sel.addEventListener("change", () => switchSim(sel.value));
-        tabsContainer.appendChild(sel);
-    }
+    // Rebuild pill buttons on each call (also triggered on lang switch)
+    tabsContainer.innerHTML = "";
+    simOrder.forEach((id, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "tab-btn" + (activeSim?.id === id ? " active" : "");
+        btn.dataset.simId = id;
+        const label = t("tab_" + id);
+        btn.textContent = `${String(idx + 1).padStart(2, "0")}  ${label}`;
+        btn.addEventListener("click", () => switchSim(id));
+        tabsContainer.appendChild(btn);
+    });
+}
 
-    // Rebuild options (called on lang switch too, so labels must update)
-    sel.innerHTML = "";
-    for (const id of simOrder) {
-        const opt = document.createElement("option");
-        opt.value = id;
-        opt.dataset.i18n = "tab_" + id;
-        opt.textContent = t("tab_" + id);
-        sel.appendChild(opt);
-    }
+function updateHeadline() {
+    if (!activeSim) return;
 
-    if (activeSim) sel.value = activeSim.id;
+    const h1        = document.querySelector(".app-headline");
+    const tag       = document.querySelector(".app-tagline");
+    const kicker    = document.querySelector(".kicker");
+    const simNameEl = document.getElementById("canvas-sim-name");
+
+    const title = t("tab_" + activeSim.id);
+    const idx   = simOrder.indexOf(activeSim.id) + 1;
+
+    if (h1)        h1.textContent       = title;
+    if (tag)       tag.textContent      = t("tagline");
+    if (simNameEl) simNameEl.textContent = title;
+    if (kicker)    kicker.textContent   = `${String(idx).padStart(2, "0")} · ${t("sim_label")}`;
 }
 
 function switchSim(id) {
@@ -208,9 +216,13 @@ function switchSim(id) {
         mergeTranslations(sim.translations);
     }
 
-    // Update dropdown selection
-    const sel = document.querySelector(".sim-select");
-    if (sel) sel.value = id;
+    // Update active pill
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.simId === id);
+    });
+
+    // Sync headline/kicker/tagline to active sim
+    updateHeadline();
 
     // Build controls in sidebar
     const controlsContainer = document.getElementById("sim-controls");
@@ -314,8 +326,9 @@ function onLangSwitch(lang) {
         activeControls = buildControls(activeSim, controlsContainer, callbacks);
     }
 
-    // Rebuild dropdown (updates translated labels, keeps active selection)
+    // Rebuild pill buttons (updates translated labels, keeps active selection)
     buildTabs();
+    updateHeadline();
 }
 
 function waitForKaTeX(callback) {
