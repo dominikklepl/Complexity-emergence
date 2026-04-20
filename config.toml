@@ -304,6 +304,10 @@ snap_title_en = "Flocking"
 snap_sub_cs   = "Tisíc jedinců. Žádný velitel. Jeden pohyb."
 snap_sub_en   = "A thousand individuals. Zero leaders. One movement."
 
+# Level-A explanation panel
+explain_a_cs = "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Vnímání' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky."
+explain_a_en = "Each dot knows only three rules: stay close, avoid collisions, face the same way as your neighbours. No leader, no plan — yet the whole flock moves as one. Drag 'Perception range' left: the flock falls apart. Back right: it reforms. Your immune cells use the same logic to hunt bacteria."
+
 [content.boids.preset_params]
 # mode can be "boids", "crowd", or "predator"
 # Keys are i18nLabel with "preset_" stripped
@@ -349,6 +353,10 @@ snap_title_cs = "Mozková aktivita"
 snap_title_en = "Neural Criticality"
 snap_sub_cs   = "Váš mozek, na hraně mezi tichem a bouří."
 snap_sub_en   = "Your brain, on the edge between silence and storm."
+
+# Level-A explanation panel
+explain_a_cs = "Tvůj mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: záchvat. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech. Tam mozek pracuje nejlépe. Posuň 'Propojení' a sleduj přechod."
+explain_a_en = "Your brain lives on the edge. Too little connectivity: silence. Too much: seizure. At the critical point between them, avalanches of activity appear in all sizes. That is where the brain works best. Drag 'Connectivity' and watch the transition."
 
 [content.neural.preset_params]
 # spread = connectivity σ, input = background noise ε, leak = charge decay λ
