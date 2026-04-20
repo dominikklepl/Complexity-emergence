@@ -40,6 +40,7 @@ export function buildControls(sim, container, callbacks) {
         const text = sim.translations?.explain_a?.[lang] ?? '';
         explBody.textContent = text;
         explPanel.hidden = !text;
+        explPanel.removeAttribute('open');
     }
 
     // --- Presets ---
