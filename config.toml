@@ -142,6 +142,16 @@ snap_title_en = "Turing Patterns"
 snap_sub_cs   = "Tento vzor ještě nikdy neexistoval — dokud jsi ho nevytvořil."
 snap_sub_en   = "You made a pattern that has never existed before."
 
+[content.rd.preset_params]
+# Keys match the i18nLabel suffix (e.g. "preset_labyrinth" → "labyrinth")
+# Values are inline tables of parameter overrides. Must match control IDs in reaction-diffusion.js.
+labyrinth = { f = 0.037, k = 0.060 }
+spots     = { f = 0.035, k = 0.065 }
+waves     = { f = 0.014, k = 0.054 }
+worms     = { f = 0.046, k = 0.063 }
+coral     = { f = 0.025, k = 0.060 }
+mitosis   = { f = 0.028, k = 0.062 }
+
 
 # -------------------------------------------------------------
 #  KURAMOTO OSCILLATORS (Synchronisation)
@@ -196,6 +206,13 @@ snap_title_cs = "Synchronizace oscilátorů"
 snap_title_en = "Synchronisation Dynamics"
 snap_sub_cs   = "Jedno jednoduché pravidlo, tisíckrát zopakované, vytvořilo něco krásného."
 snap_sub_en   = "A simple rule, repeated a thousand times, made something beautiful."
+
+[content.osc.preset_params]
+# K = coupling strength, spread = frequency spread, omega = mean frequency
+spiral     = { K = 1.5, spread = 0.4, omega = 0.6 }
+chimera    = { K = 0.5, spread = 0.8, omega = 0.6 }
+sync       = { K = 3.0, spread = 0.2, omega = 0.4 }
+turbulence = { K = 0.2, spread = 0.6, omega = 0.8 }
 
 
 # -------------------------------------------------------------
@@ -279,6 +296,15 @@ snap_title_en = "Flocking"
 snap_sub_cs   = "Tisíc jedinců. Žádný velitel. Jeden pohyb."
 snap_sub_en   = "A thousand individuals. Zero leaders. One movement."
 
+[content.boids.preset_params]
+# mode can be "boids", "crowd", or "predator"
+# Keys are i18nLabel with "preset_" stripped
+murmuration = { mode = "boids",    separation = 1.2, alignment = 1.8, cohesion = 1.0, perception = 0.10, maxSpeed = 0.005, trailPersistence = 0.96 }
+school      = { mode = "boids",    separation = 1.8, alignment = 1.2, cohesion = 0.8, perception = 0.06, maxSpeed = 0.003, trailPersistence = 0.93 }
+predator    = { mode = "predator", separation = 2.0, alignment = 0.8, cohesion = 1.5, perception = 0.12, maxSpeed = 0.006, trailPersistence = 0.94 }
+crowd       = { mode = "crowd",    separation = 2.5, alignment = 0.3, cohesion = 0.2, perception = 0.05, maxSpeed = 0.003, trailPersistence = 0.90 }
+chaos       = { mode = "boids",    separation = 0.3, alignment = 0.2, cohesion = 0.1, perception = 0.15, maxSpeed = 0.008, trailPersistence = 0.85 }
+
 # -------------------------------------------------------------
 # Neural Criticality
 # -------------------------------------------------------------
@@ -315,3 +341,10 @@ snap_title_cs = "Mozková aktivita"
 snap_title_en = "Neural Criticality"
 snap_sub_cs   = "Váš mozek, na hraně mezi tichem a bouří."
 snap_sub_en   = "Your brain, on the edge between silence and storm."
+
+[content.neural.preset_params]
+# spread = connectivity σ, input = background noise ε, leak = charge decay λ
+critical = { spread = 0.28, input = 0.012, leak = 0.008 }
+seizure  = { spread = 0.38, input = 0.015, leak = 0.005 }
+silence  = { spread = 0.09, input = 0.002, leak = 0.050 }
+cascade  = { spread = 0.32, input = 0.008, leak = 0.005 }

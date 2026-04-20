@@ -185,8 +185,9 @@ def api_config():
     # The [content.*] sections in config.toml are flat key=value pairs;
     # we pass them through as-is so the JS can merge them freely.
     raw_content = CFG.get("content", {})
+    ALL_SIM_IDS = ["rd", "osc", "boids", "neural"]
     content = {
-        sim_id: dict(raw_content.get(sim_id, {})) for sim_id in ["rd", "osc", "boids"]
+        sim_id: dict(raw_content.get(sim_id, {})) for sim_id in ALL_SIM_IDS
     }
 
     branding = dict(CFG["branding"])
