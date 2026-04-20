@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="cs">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Z jednoduchého složité</title>
+
+    <!-- Fonts (Google). For offline kiosk, swap for a local woff2 bundle. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- KaTeX (bundled locally) -->
     <link rel="stylesheet" href="/static/vendor/katex/katex.min.css">
@@ -18,76 +22,83 @@
 
     <div class="app">
 
-        <!-- ── Left sidebar ── -->
-        <div class="sidebar">
-
-            <!-- Header: logo + title + language toggle -->
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-                <div class="sidebar-header">
-                    <img id="app-logo" src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
-                    <div class="sidebar-header-text">
-                        <div id="app-title" style="font-size:18px; font-weight:700; color:#c8b88a;" data-i18n="title">
-                            Z jednoduchého složité
-                        </div>
-                        <div id="app-subtitle" style="font-size:11px; color:#666; margin-top:2px;">
-                            ÚI AV ČR — Veletrh vědy 2026
-                        </div>
-                    </div>
-                </div>
-                <div class="lang-toggle">
-                    <button class="lang-btn active" data-lang="cs">CZ</button>
-                    <button class="lang-btn" data-lang="en">EN</button>
+        <!-- ── Top bar: brand · sim dropdown · lang toggle ── -->
+        <header class="top-bar">
+            <div class="brand">
+                <img id="app-logo" src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
+                <div class="brand-text">
+                    <div id="app-title" data-i18n="title">Z jednoduchého složité</div>
+                    <div id="app-subtitle">ÚI AV ČR — Veletrh vědy 2026</div>
                 </div>
             </div>
 
-            <!-- Simulation tabs (built dynamically by engine.js) -->
+            <!-- Simulation dropdown (controls.js injects <select class="sim-select">) -->
             <div class="tabs" id="sim-tabs"></div>
 
-            <!-- Simulation controls (built dynamically by controls.js) -->
-            <div id="sim-controls"></div>
+            <div class="lang-toggle">
+                <button class="lang-btn active" data-lang="cs">CZ</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+        </header>
 
-            <!-- Collapsible explanation panel ("What am I seeing?") -->
-            <details class="explanation-panel" id="explanation-panel">
-                <summary class="explanation-summary" data-i18n="ui_what_am_i_seeing">
-                    What am I seeing?
-                </summary>
-                <div class="explanation-body" id="explanation-body"></div>
-            </details>
+        <!-- ── Title block: editorial h1 + collapsible equation panel ── -->
+        <section class="title-block">
+            <div class="title-left">
+                <div class="kicker" data-i18n="exhibit_kicker">Interaktivní exponát</div>
+                <h1 class="app-headline" data-i18n="title">Z jednoduchého složité</h1>
+                <div class="app-tagline" data-i18n="tagline">Čtyři simulace o tom, jak z malých pravidel vzniká velký vzor.</div>
+            </div>
 
-            <!-- Action buttons -->
+            <div class="title-right">
+                <div class="equation-panel">
+                    <div class="eq-header" id="eq-header">
+                        <span class="eq-header-title" data-i18n="eq_title">Jak to funguje — rovnice</span>
+                        <span class="eq-chevron" id="eq-chevron">▼</span>
+                    </div>
+                    <div class="eq-body" id="eq-body">
+                        <div id="eq-body-content"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Stage: canvas + side column ── -->
+        <section class="stage-row">
+            <div class="canvas-wrapper">
+                <canvas id="simCanvas"></canvas>
+                <div class="canvas-meta">
+                    <span class="live-dot"></span>
+                    <span class="canvas-meta-label">LIVE</span>
+                    <span class="canvas-meta-spec">768 × 512 · 60 fps</span>
+                </div>
+                <div class="touch-hint" data-i18n="touch_hint">Klikněte na plátno a přidejte nové vzory</div>
+            </div>
+
+            <aside class="side-col">
+                <!-- Description + Presets + Parameters + Colour schemes (all built by controls.js) -->
+                <div id="sim-controls"></div>
+            </aside>
+        </section>
+
+        <!-- ── Console: action buttons ── -->
+        <footer class="console-row">
+            <div class="kbd-hints">
+                <span><kbd>R</kbd> reset</span>
+                <span><kbd>P</kbd> pauza / pause</span>
+                <span><kbd>S</kbd> pohlednice / postcard</span>
+            </div>
             <div class="actions">
                 <button class="action-btn btn-reset"    id="btn-reset"    data-i18n="reset"    data-key="R">⟲ Resetovat</button>
                 <button class="action-btn btn-pause"    id="btn-pause"    data-i18n="pause"    data-key="P">⏸ Pauza</button>
-                <button class="action-btn btn-snapshot" id="btn-snapshot" data-i18n="snapshot" data-key="S">📸 Pohlednice</button>
+                <button class="action-btn btn-snapshot" id="btn-snapshot" data-i18n="snapshot" data-key="S">◈ Pohlednice</button>
             </div>
-        </div>
-
-        <!-- ── Main canvas area ── -->
-        <div class="canvas-area">
-
-            <!-- Collapsible equation panel -->
-            <div class="equation-panel">
-                <div class="eq-header" id="eq-header">
-                    <span class="eq-header-title" data-i18n="eq_title">Jak to funguje — rovnice</span>
-                    <span class="eq-chevron" id="eq-chevron">▼</span>
-                </div>
-                <div class="eq-body" id="eq-body">
-                    <div id="eq-body-content"></div>
-                </div>
-            </div>
-
-            <div class="canvas-wrapper">
-                <canvas id="simCanvas"></canvas>
-            </div>
-
-            <div class="touch-hint" data-i18n="touch_hint">👆 Klikněte na plátno a přidejte nové vzory!</div>
-        </div>
+        </footer>
     </div>
 
     <!-- Toast notification -->
     <div class="toast" id="toast"></div>
 
-    <!-- ── Application entry point ── -->
+    <!-- ── Application entry point (unchanged) ── -->
     <script type="module">
         import { registerSim, init } from "/static/js/core/engine.js";
         import rdSim from "/static/js/sims/reaction-diffusion.js";
@@ -97,23 +108,16 @@
 
         const ALL_SIMS = { rd: rdSim, osc: oscSim, boids: boidsSim, neural: neuralSim };
 
-        // Fetch config from server, then boot
         fetch("/api/config")
             .then(r => r.json())
             .then(cfg => {
-                // Apply branding text
                 const lang = cfg.branding.default_lang || "cs";
-                const title = lang === "en"
-                    ? cfg.branding.title_en
-                    : cfg.branding.title_cs;
+                const title = lang === "en" ? cfg.branding.title_en : cfg.branding.title_cs;
                 const titleEl = document.getElementById("app-title");
                 const subtitleEl = document.getElementById("app-subtitle");
                 if (titleEl && title) titleEl.textContent = title;
-                if (subtitleEl && cfg.branding.subtitle)
-                    subtitleEl.textContent = cfg.branding.subtitle;
+                if (subtitleEl && cfg.branding.subtitle) subtitleEl.textContent = cfg.branding.subtitle;
 
-                // Logo: if a dedicated light-version logo is configured, use it
-                // (and remove the CSS invert filter since it's already light).
                 const logoEl = document.getElementById("app-logo");
                 const lightLogo = cfg.branding.logo_light_path;
                 if (logoEl && lightLogo) {
@@ -121,26 +125,20 @@
                     logoEl.style.filter = "none";
                 }
 
-                // Register only the enabled simulations (in config order)
                 for (const id of cfg.simulations) {
                     if (ALL_SIMS[id]) {
                         registerSim(ALL_SIMS[id]);
-                        // Apply content overrides from config.toml [content.*]
                         if (cfg.content && cfg.content[id] && ALL_SIMS[id].applyContent) {
                             ALL_SIMS[id].applyContent(cfg.content[id]);
                         }
                     }
                 }
-
                 init(lang);
             })
             .catch(() => {
-                // Server unreachable — register all sims with defaults
                 for (const sim of Object.values(ALL_SIMS)) registerSim(sim);
                 init();
             });
     </script>
-
 </body>
-
 </html>
