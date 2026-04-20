@@ -6,7 +6,7 @@
  * No simulation-specific code lives here.
  */
 
-import { initWebGL, getGL, getCanvas } from "./webgl.js";
+import { initWebGL, getGL, getCanvas, resizeDisplayCanvas } from "./webgl.js";
 import { mergeTranslations, setLang, getLang, t } from "./i18n.js";
 import { setupInteraction, touchPos, touchActive, touchButton, frameTick } from "./interaction.js";
 import { buildControls } from "./controls.js";
@@ -65,6 +65,17 @@ export function init(defaultLang) {
 
     const result = initWebGL(canvasEl);
     if (!result) return;
+
+    // Keep draw buffer sharp when the container is resized (e.g. window resize,
+    // devtools open/close, or the exhibit monitor changes resolution).
+    const _resizeObserver = new ResizeObserver(() => {
+        if (resizeDisplayCanvas(canvasEl) && activeSim) {
+            activeSim.render(result.gl, canvasEl, activeControls?.getColourScheme?.() ?? 0);
+        }
+    });
+    _resizeObserver.observe(canvasEl.parentElement);
+    // Initial sizing — canvas may already be displayed at a non-default size.
+    resizeDisplayCanvas(canvasEl);
 
     // Apply default language from config before building any UI
     if (defaultLang) {

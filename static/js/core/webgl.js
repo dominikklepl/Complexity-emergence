@@ -89,6 +89,26 @@ export function getCanvas() {
 }
 
 /**
+ * Update canvas draw buffer to match its CSS display size.
+ * Call whenever the canvas container changes size.
+ * Returns true if dimensions actually changed (caller should re-render).
+ *
+ * Separate from simulation texture size (SIM_W × SIM_H) — this controls
+ * output sharpness, not simulation resolution.
+ */
+export function resizeDisplayCanvas(canvas) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const w = Math.round(canvas.clientWidth * dpr);
+    const h = Math.round(canvas.clientHeight * dpr);
+    if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+        canvas.width = w;
+        canvas.height = h;
+        return true;
+    }
+    return false;
+}
+
+/**
  * Compile a shader from source string.
  * @param {number} type  gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
  * @param {string} source  GLSL source code
