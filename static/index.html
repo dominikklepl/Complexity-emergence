@@ -62,15 +62,17 @@
 
         <!-- ── Stage: canvas + side column ── -->
         <section class="stage-row">
-            <div class="canvas-wrapper">
-                <canvas id="simCanvas"></canvas>
-                <div class="canvas-meta">
-                    <span class="live-dot"></span>
-                    <span class="canvas-meta-label">LIVE</span>
-                    <span id="canvas-sim-name" class="canvas-meta-sim"></span>
+            <div class="canvas-col">
+                <div class="canvas-wrapper">
+                    <canvas id="simCanvas"></canvas>
+                    <div class="canvas-meta">
+                        <span class="live-dot"></span>
+                        <span class="canvas-meta-label">LIVE</span>
+                        <span id="canvas-sim-name" class="canvas-meta-sim"></span>
+                    </div>
                 </div>
+                <div class="touch-hint" data-i18n="touch_hint">Klikněte na plátno a přidejte nové vzory</div>
             </div>
-            <div class="touch-hint" data-i18n="touch_hint">Klikněte na plátno a přidejte nové vzory</div>
 
             <aside class="side-col">
                 <details class="explanation-panel" id="explanation-panel">

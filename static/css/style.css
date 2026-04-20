@@ -300,6 +300,12 @@ body {
     min-height: 0;
 }
 
+.canvas-col {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .canvas-wrapper {
     position: relative;
     background: var(--canvas-bg);
