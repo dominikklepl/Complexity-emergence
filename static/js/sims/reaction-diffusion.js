@@ -304,6 +304,10 @@ export default fieldSim({
             cs: "Tvoje nastavení vytvořilo tento jedinečný vzor",
             en: "Your settings created this unique pattern"
         },
+        explain_a: {
+            cs: "Dvě neviditelné chemikálie zápolí o prostor — jedna se šíří rychle, druhá pomalu. Tenhle rozdíl v rychlosti vytesává vzor. Přidej poruchu kliknutím: disturbance se neroztratí, ale rozroste se do spirály, která se točí donekonečna. Přesně takový souboj chemikálií tvoří pruhy na kůži zebry a tečky na kůži jaguára.",
+            en: "Two invisible chemicals are fighting over territory — one spreads fast, one spreads slow. That speed difference carves the pattern. Click to add a disturbance: it doesn't fade, it grows into a spinning spiral. This exact chemical competition makes zebra stripes and jaguar spots.",
+        },
     },
 
     // ─── Snapshot metadata ──────────────────────────────────────
@@ -349,6 +353,7 @@ export default fieldSim({
         setTr("preset_coral", cfg.preset_coral_cs, cfg.preset_coral_en);
         setTr("snap_title_rd", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_rd", cfg.snap_sub_cs, cfg.snap_sub_en);
+        setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);
 
         // Parameter tooltips
         const overrideTip = (lang, key, nameProp, tipProp) => {

@@ -493,6 +493,44 @@ input[type="range"]::-webkit-slider-thumb {
     border-top: 1px solid #ffffff10;
 }
 
+/* ── Explanation panel (collapsible "what am I seeing?") ──── */
+.explanation-panel {
+    border: 1px solid var(--col-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.explanation-panel summary.explanation-summary {
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: var(--font-size-base);
+    color: var(--col-accent);
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.explanation-summary::before {
+    content: '▶';
+    font-size: 8px;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.explanation-panel[open] .explanation-summary::before {
+    transform: rotate(90deg);
+}
+
+.explanation-body {
+    padding: 10px 12px 14px;
+    font-size: var(--font-size-base);
+    color: var(--col-text-muted);
+    line-height: 1.65;
+    border-top: 1px solid var(--col-border);
+}
+
 /* ---- Colour scheme selector ---- */
 .colour-btns {
     display: flex;

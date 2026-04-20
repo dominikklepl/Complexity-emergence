@@ -563,6 +563,10 @@ export default fieldSim({
             cs: "Váš mozek, na hraně mezi tichem a bouří.",
             en: "Your brain, on the edge between silence and storm.",
         },
+        explain_a: {
+            cs: "Tvůj mozek žije na hraně. Příliš málo propojení: ticho — žádná aktivita. Příliš mnoho: záchvat — aktivita se nekontrolovaně šíří. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech: malé i velké. Tam mozek pracuje nejlépe. Posuň 'Propojení' a sleduj přechod ze záchvatu do ticha.",
+            en: "Your brain lives on the edge. Too little connectivity: silence — nothing fires. Too much: seizure — activity spreads uncontrollably. At the critical point between them, avalanches of activity appear in all sizes: small and large. That is where the brain works best. Drag 'Connectivity' and watch the transition from seizure to silence.",
+        },
     },
 
     // ─── Snapshot metadata ────────────────────────────────────────
@@ -604,6 +608,7 @@ export default fieldSim({
         set("preset_cascade",    cfg.preset_cascade_cs,   cfg.preset_cascade_en);
         set("snap_title_neural", cfg.snap_title_cs,       cfg.snap_title_en);
         set("snap_sub_neural",   cfg.snap_sub_cs,         cfg.snap_sub_en);
+        set("explain_a",         cfg.explain_a_cs,        cfg.explain_a_en);
 
         // Merge preset parameter values from config.toml.
         // cfg.preset_params = { labyrinth: { f: 0.037, k: 0.060 }, ... }

@@ -26,6 +26,7 @@ const translations = {
     eq_title: { cs: "Jak to funguje? 🔍", en: "How does this work? 🔍" },
     toast_saved: { cs: "Uloženo", en: "Saved" },
     toast_downloaded: { cs: "Pohlednice stažena", en: "Postcard downloaded" },
+    ui_what_am_i_seeing: { cs: "Co vidím?", en: "What am I seeing?" },
 };
 
 /**

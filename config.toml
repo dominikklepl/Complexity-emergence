@@ -142,6 +142,10 @@ snap_title_en = "Turing Patterns"
 snap_sub_cs   = "Tento vzor ještě nikdy neexistoval — dokud jsi ho nevytvořil."
 snap_sub_en   = "You made a pattern that has never existed before."
 
+# Level-A explanation panel
+explain_a_cs = "Dvě neviditelné chemikálie zápolí o prostor — jedna se šíří rychle, druhá pomalu. Tenhle rozdíl v rychlosti vytesává vzor. Přidej poruchu kliknutím: disturbance se neroztratí, ale rozroste se do spirály. Přesně takový souboj chemikálií tvoří pruhy na kůži zebry a tečky na kůži jaguára."
+explain_a_en = "Two invisible chemicals are fighting over territory — one spreads fast, one spreads slow. That speed difference carves the pattern. Click to add a disturbance: it doesn't fade, it grows into a spinning spiral. This exact chemical competition makes zebra stripes and jaguar spots."
+
 [content.rd.preset_params]
 # Keys match the i18nLabel suffix (e.g. "preset_labyrinth" → "labyrinth")
 # Values are inline tables of parameter overrides. Must match control IDs in reaction-diffusion.js.
@@ -206,6 +210,10 @@ snap_title_cs = "Synchronizace oscilátorů"
 snap_title_en = "Synchronisation Dynamics"
 snap_sub_cs   = "Jedno jednoduché pravidlo, tisíckrát zopakované, vytvořilo něco krásného."
 snap_sub_en   = "A simple rule, repeated a thousand times, made something beautiful."
+
+# Level-A explanation panel
+explain_a_cs = "Každé světlo bliká vlastním rytmem — trochu rychleji, trochu pomaleji. Posuvník 'Kolik naslouchají' ovládá, jak moc každé světlo kopíruje sousedy. Pod určitou hodnotou: každý si jde svou cestou. Nad ní: všechna světla se synchronizují, bez dirigenta. Tak bije tvoje srdce — tisíce buněk s různým tempem se seřídí na jeden úder."
+explain_a_en = "Each light flashes at its own natural rhythm — slightly faster or slower. The slider controls how much each light copies its neighbours. Below a threshold: chaos. Above it: all lights suddenly synchronise with no conductor. This is how your heart beats — thousands of cells with different natural rates locking into one rhythm."
 
 [content.osc.preset_params]
 # K = coupling strength, spread = frequency spread, omega = mean frequency

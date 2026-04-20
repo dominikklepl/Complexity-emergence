@@ -316,6 +316,10 @@ export default fieldSim({
             cs: "Tvoje nastavení propojení vytvořilo tyto vlny",
             en: "Your connection settings shaped these waves"
         },
+        explain_a: {
+            cs: "Každé světlo bliká vlastním rytmem — trochu rychleji, trochu pomaleji. Posuvník 'Kolik naslouchají' ovládá, jak moc každé světlo kopíruje sousedy. Pod určitou hodnotou: každý si jde svou cestou. Nad ní: všechna světla se najednou synchronizují, bez dirigenta. Takto bije tvoje srdce — tisíce buněk s různým přirozeným tempem se seřídí na jeden úder.",
+            en: "Each light flashes at its own natural rhythm — slightly faster or slower. The slider controls how much each light copies its neighbours. Below a threshold: chaos. Above it: all lights suddenly synchronise with no conductor. This is how your heart beats — thousands of cells with different natural rates locking into one rhythm.",
+        },
     },
 
     // ─── Snapshot metadata ──────────────────────────────────────
@@ -358,6 +362,7 @@ export default fieldSim({
         setTr("preset_turbulence", cfg.preset_turbulence_cs, cfg.preset_turbulence_en);
         setTr("snap_title_osc", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_osc", cfg.snap_sub_cs, cfg.snap_sub_en);
+        setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);
 
         // Parameter tooltips
         for (const [lang, suffix] of [["cs", "_cs"], ["en", "_en"]]) {

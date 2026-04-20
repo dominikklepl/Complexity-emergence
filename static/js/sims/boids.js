@@ -621,6 +621,10 @@ export default {
             cs: "Emergentní kolektivní pohyb",
             en: "Emergent collective motion",
         },
+        explain_a: {
+            cs: "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Vnímání' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky při lovu bakterií.",
+            en: "Each dot knows only three rules: stay close to neighbours, avoid collisions, face the same direction as your neighbours. No leader, no plan — yet the whole flock moves as one. Drag 'Perception range' left: the flock falls apart. Back right: it reforms. Your immune cells use the same logic to hunt bacteria.",
+        },
     },
 
     // ── Snapshot metadata ───────────────────────────────────────
@@ -671,6 +675,7 @@ export default {
         setTr("preset_chaos", cfg.preset_chaos_cs, cfg.preset_chaos_en);
         setTr("snap_title_boids", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_boids", cfg.snap_sub_cs, cfg.snap_sub_en);
+        setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);
 
         // Equation text overrides (stored on both sim and equations sub-object so
         // equations.render can access them via `this._eqContent` where `this = equations`)

@@ -5,7 +5,7 @@
  * and generates the sidebar DOM. Returns a function to read current param values.
  */
 
-import { t } from "./i18n.js";
+import { t, getLang } from "./i18n.js";
 
 /**
  * Build the sidebar controls for a simulation.
@@ -27,6 +27,19 @@ export function buildControls(sim, container, callbacks) {
         desc.dataset.i18n = "desc";
         desc.textContent = t("desc");
         container.appendChild(desc);
+    }
+
+    // --- Explanation panel ---
+    // Populate the explanation panel with Level-A text for this sim.
+    // The panel lives in index.html outside the controls container — target by ID.
+    // Hide it if no explanation text is defined for this sim.
+    const explPanel = document.getElementById('explanation-panel');
+    const explBody  = document.getElementById('explanation-body');
+    if (explPanel && explBody) {
+        const lang = getLang();
+        const text = sim.translations?.explain_a?.[lang] ?? '';
+        explBody.textContent = text;
+        explPanel.hidden = !text;
     }
 
     // --- Presets ---
