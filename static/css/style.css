@@ -2,19 +2,36 @@
    style.css — Complexity emergence postcard app
    ================================================================ */
 
-/* ---- Reset & base ---- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* ── Design tokens ──────────────────────────────────────────── */
+:root {
+    --sidebar-w:        320px;
+    --col-bg-body:      #0d0d1a;
+    --col-bg-sidebar:   #15152a;
+    --col-bg-canvas:    #0a0a16;
+    --col-bg-control:   #2a2a44;
+    --col-border:       #c8b88a44;
+    --col-border-solid: #c8b88a88;
+    --col-text:         #e0dcd4;
+    --col-text-muted:   #888888;
+    --col-accent:       #c8b88a;
+    --col-accent-dim:   #c8b88a99;
+    --radius-sm:        4px;
+    --radius-md:        6px;
+    --font-size-sm:     11px;
+    --font-size-base:   12px;
+    --font-size-lg:     13px;
 }
 
+/* ── Reset & base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    background: #0d0d1a;
-    color: #e0dcd4;
-    overflow: hidden;
+    background: var(--col-bg-body);
+    color: var(--col-text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: var(--font-size-base);
     height: 100vh;
+    overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
 }
@@ -26,14 +43,15 @@ body {
 }
 
 .sidebar {
-    width: 320px;
-    min-width: 320px;
-    background: #15152a;
-    padding: 20px;
-    overflow-y: auto;
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--col-bg-sidebar);
+    padding: 20px 16px;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    overflow-y: auto;
+    flex-shrink: 0;
     border-right: 2px solid #c8b88a33;
 }
 
@@ -43,7 +61,7 @@ body {
     flex-direction: column;
     align-items: center;
     position: relative;
-    background: #0a0a16;
+    background: var(--col-bg-canvas);
     gap: 0;
     padding: 12px;
     overflow: hidden;
@@ -81,7 +99,7 @@ canvas {
     height: 100%;
     aspect-ratio: 3 / 2;
     cursor: crosshair;
-    border: 2px solid #c8b88a44;
+    border: 2px solid var(--col-border);
     border-radius: 0 0 4px 4px;
     display: block;
 }
@@ -111,9 +129,9 @@ canvas {
     display: flex;
     align-items: center;
     gap: 0;
-    font-size: 11px;
+    font-size: var(--font-size-sm);
     font-weight: 600;
-    border: 1px solid #c8b88a44;
+    border: 1px solid var(--col-border);
     border-radius: 12px;
     overflow: hidden;
     flex-shrink: 0;
@@ -125,24 +143,24 @@ canvas {
     color: #c8b88a66;
     border: none;
     cursor: pointer;
-    font-size: 11px;
+    font-size: var(--font-size-sm);
     font-weight: 600;
     transition: all 0.2s;
 }
 
 .lang-btn.active {
     background: #c8b88a22;
-    color: #c8b88a;
+    color: var(--col-accent);
 }
 
 .lang-btn:hover {
-    color: #c8b88a;
+    color: var(--col-accent);
 }
 
 /* ---- Equation panel ---- */
 .equation-panel {
     width: 100%;
-    max-width: calc(100vw - 380px);
+    max-width: calc(100vw - var(--sidebar-w) - 60px);
     flex-shrink: 0;
     margin-bottom: 0;
     border-radius: 6px 6px 0 0;
@@ -168,15 +186,15 @@ canvas {
 }
 
 .eq-header-title {
-    font-size: 13px;
+    font-size: var(--font-size-lg);
     font-weight: 600;
-    color: #c8b88a;
+    color: var(--col-accent);
     letter-spacing: 0.04em;
 }
 
 .eq-chevron {
-    font-size: 12px;
-    color: #c8b88a88;
+    font-size: var(--font-size-base);
+    color: var(--col-border-solid);
     transition: transform 0.3s;
 }
 
@@ -208,7 +226,7 @@ canvas {
 .eq-math {
     font-size: 18px;
     line-height: 1.6;
-    color: #e0dcd4;
+    color: var(--col-text);
     text-align: center;
 }
 
@@ -231,9 +249,9 @@ canvas {
     padding: 5px 12px;
     background: rgba(200, 184, 138, 0.08);
     border: 1px solid #c8b88a33;
-    border-radius: 4px;
-    font-size: 13px;
-    color: #c8b88a;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-lg);
+    color: var(--col-accent);
     cursor: help;
     transition: all 0.2s;
 }
@@ -250,7 +268,7 @@ canvas {
 
 .eq-param .eq-param-name {
     color: #aaa;
-    font-size: 12px;
+    font-size: var(--font-size-base);
 }
 
 .eq-tooltip {
@@ -259,10 +277,10 @@ canvas {
     left: 50%;
     transform: translateX(-50%);
     background: #1a1a35;
-    border: 1px solid #c8b88a44;
-    border-radius: 6px;
+    border: 1px solid var(--col-border);
+    border-radius: var(--radius-md);
     padding: 10px 14px;
-    font-size: 13px;
+    font-size: var(--font-size-lg);
     color: #ccc;
     line-height: 1.4;
     white-space: nowrap;
@@ -286,10 +304,10 @@ canvas {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #c8b88a55;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     background: #1a1710;
-    color: #c8b88a;
-    font-size: 13px;
+    color: var(--col-accent);
+    font-size: var(--font-size-lg);
     font-weight: 600;
     letter-spacing: 0.04em;
     cursor: pointer;
@@ -303,26 +321,26 @@ canvas {
 }
 
 .sim-select:hover {
-    border-color: #c8b88a99;
+    border-color: var(--col-accent-dim);
 }
 
 .sim-select:focus {
     outline: none;
-    border-color: #c8b88a;
+    border-color: var(--col-accent);
 }
 
 .sim-select option {
     background: #1a1710;
-    color: #c8b88a;
+    color: var(--col-accent);
 }
 
 /* ---- Section titles ---- */
 .section-title {
-    font-size: 11px;
+    font-size: var(--font-size-sm);
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #c8b88a;
+    color: var(--col-accent);
     margin-top: 4px;
 }
 
@@ -336,13 +354,13 @@ canvas {
 .slider-label {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: var(--font-size-base);
     color: #aaa;
 }
 
 .slider-label .val {
     font-family: 'Courier New', monospace;
-    color: #c8b88a;
+    color: var(--col-accent);
     font-weight: 600;
 }
 
@@ -352,7 +370,7 @@ input[type="range"] {
     width: 100%;
     height: 6px;
     border-radius: 3px;
-    background: #2a2a44;
+    background: var(--col-bg-control);
     outline: none;
 }
 
@@ -361,7 +379,7 @@ input[type="range"]::-webkit-slider-thumb {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #c8b88a;
+    background: var(--col-accent);
     cursor: pointer;
 }
 
@@ -374,10 +392,10 @@ input[type="range"]::-webkit-slider-thumb {
 
 .preset-btn {
     padding: 6px 10px;
-    border: 1px solid #c8b88a44;
+    border: 1px solid var(--col-border);
     background: transparent;
     color: #ccc;
-    font-size: 11px;
+    font-size: var(--font-size-sm);
     cursor: pointer;
     border-radius: 3px;
     transition: all 0.15s;
@@ -385,7 +403,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .preset-btn:hover {
     background: #c8b88a22;
-    border-color: #c8b88a;
+    border-color: var(--col-accent);
     color: #fff;
 }
 
@@ -402,8 +420,8 @@ input[type="range"]::-webkit-slider-thumb {
     height: 44px;
     padding: 10px 8px;
     border: none;
-    border-radius: 4px;
-    font-size: 13px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-lg);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;
@@ -425,7 +443,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .btn-reset {
-    background: #2a2a44;
+    background: var(--col-bg-control);
     color: #ccc;
 }
 
@@ -434,7 +452,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .btn-pause {
-    background: #2a2a44;
+    background: var(--col-bg-control);
     color: #ccc;
 }
 
@@ -452,7 +470,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .btn-snapshot {
-    background: #c8b88a;
+    background: var(--col-accent);
     color: #1a1a2e;
 }
 
@@ -462,8 +480,8 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* ---- Description text ---- */
 .description {
-    font-size: 12px;
-    color: #888;
+    font-size: var(--font-size-base);
+    color: var(--col-text-muted);
     line-height: 1.5;
     padding: 8px 0;
     border-top: 1px solid #ffffff10;
@@ -498,10 +516,10 @@ input[type="range"]::-webkit-slider-thumb {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%) translateY(80px);
-    background: #c8b88a;
+    background: var(--col-accent);
     color: #1a1a2e;
     padding: 12px 24px;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     font-weight: 600;
     font-size: 14px;
     transition: transform 0.3s ease;
@@ -519,7 +537,7 @@ input[type="range"]::-webkit-slider-thumb {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 12px;
+    font-size: var(--font-size-base);
     color: #c8b88a66;
     pointer-events: none;
 }
