@@ -4,22 +4,28 @@
 
 /* ── Design tokens ──────────────────────────────────────────── */
 :root {
-    --sidebar-w:        320px;
-    --col-bg-body:      #0d0d1a;
-    --col-bg-sidebar:   #15152a;
-    --col-bg-canvas:    #0a0a16;
-    --col-bg-control:   #2a2a44;
-    --col-border:       #c8b88a44;
-    --col-border-solid: #c8b88a88;
-    --col-text:         #e0dcd4;
-    --col-text-muted:   #888888;
-    --col-accent:       #c8b88a;
-    --col-accent-dim:   #c8b88a99;
-    --radius-sm:        4px;
-    --radius-md:        6px;
-    --font-size-sm:     11px;
-    --font-size-base:   12px;
-    --font-size-lg:     13px;
+    --sidebar-w:           320px;
+    --col-bg-body:         #0d0d1a;
+    --col-bg-sidebar:      #15152a;
+    --col-bg-canvas:       #0a0a16;
+    --col-bg-control:      #2a2a44;
+    --col-bg-control-hover:var(--col-bg-control-hover);
+    --col-border:          #c8b88a44;
+    --col-accent-muted:    #c8b88a88;   /* 53% accent — muted text / chevron */
+    --col-text:            #e0dcd4;
+    --col-text-muted:      #888888;
+    --col-accent:          #c8b88a;
+    --col-accent-dim:      #c8b88a99;
+    --col-accent-faint:    #c8b88a15;   /* 8%  accent — hairline borders */
+    --col-accent-subtle:   #c8b88a22;   /* 13% accent — hover backgrounds */
+    --col-accent-weak:     #c8b88a33;   /* 20% accent — side borders */
+    --col-accent-mid:      #c8b88a55;   /* 33% accent — select borders */
+    --col-accent-soft:     #c8b88a66;   /* 40% accent — muted text */
+    --radius-sm:           4px;
+    --radius-md:           6px;
+    --font-size-sm:        11px;
+    --font-size-base:      12px;
+    --font-size-lg:        13px;
 }
 
 /* ── Reset & base ───────────────────────────────────────────── */
@@ -28,7 +34,7 @@
 body {
     background: var(--col-bg-body);
     color: var(--col-text);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-size: var(--font-size-base);
     height: 100vh;
     overflow: hidden;
@@ -52,7 +58,7 @@ body {
     gap: 16px;
     overflow-y: auto;
     flex-shrink: 0;
-    border-right: 2px solid #c8b88a33;
+    border-right: 2px solid var(--col-accent-weak);
 }
 
 .canvas-area {
@@ -100,7 +106,7 @@ canvas {
     aspect-ratio: 3 / 2;
     cursor: crosshair;
     border: 2px solid var(--col-border);
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     display: block;
 }
 
@@ -140,7 +146,7 @@ canvas {
 .lang-btn {
     padding: 4px 8px;
     background: transparent;
-    color: #c8b88a66;
+    color: var(--col-accent-soft);
     border: none;
     cursor: pointer;
     font-size: var(--font-size-sm);
@@ -149,7 +155,7 @@ canvas {
 }
 
 .lang-btn.active {
-    background: #c8b88a22;
+    background: var(--col-accent-subtle);
     color: var(--col-accent);
 }
 
@@ -165,7 +171,7 @@ canvas {
     margin-bottom: 0;
     border-radius: 6px 6px 0 0;
     overflow: hidden;
-    border: 1px solid #c8b88a22;
+    border: 1px solid var(--col-accent-subtle);
     border-bottom: none;
     background: rgba(15, 15, 30, 0.92);
 }
@@ -177,7 +183,7 @@ canvas {
     padding: 8px 16px;
     cursor: pointer;
     background: rgba(200, 184, 138, 0.06);
-    border-bottom: 1px solid #c8b88a15;
+    border-bottom: 1px solid var(--col-accent-faint);
     transition: background 0.2s;
 }
 
@@ -194,7 +200,7 @@ canvas {
 
 .eq-chevron {
     font-size: var(--font-size-base);
-    color: var(--col-border-solid);
+    color: var(--col-accent-muted);
     transition: transform 0.3s;
 }
 
@@ -248,7 +254,7 @@ canvas {
     gap: 5px;
     padding: 5px 12px;
     background: rgba(200, 184, 138, 0.08);
-    border: 1px solid #c8b88a33;
+    border: 1px solid var(--col-accent-weak);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-lg);
     color: var(--col-accent);
@@ -258,7 +264,7 @@ canvas {
 
 .eq-param:hover {
     background: rgba(200, 184, 138, 0.18);
-    border-color: #c8b88a66;
+    border-color: var(--col-accent-soft);
 }
 
 .eq-param .eq-param-symbol {
@@ -303,7 +309,7 @@ canvas {
 .sim-select {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #c8b88a55;
+    border: 1px solid var(--col-accent-mid);
     border-radius: var(--radius-sm);
     background: #1a1710;
     color: var(--col-accent);
@@ -397,12 +403,12 @@ input[type="range"]::-webkit-slider-thumb {
     color: #ccc;
     font-size: var(--font-size-sm);
     cursor: pointer;
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     transition: all 0.15s;
 }
 
 .preset-btn:hover {
-    background: #c8b88a22;
+    background: var(--col-accent-subtle);
     border-color: var(--col-accent);
     color: #fff;
 }
@@ -448,7 +454,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .btn-reset:hover {
-    background: #3a3a55;
+    background: var(--col-bg-control-hover);
 }
 
 .btn-pause {
@@ -457,7 +463,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .btn-pause:hover {
-    background: #3a3a55;
+    background: var(--col-bg-control-hover);
 }
 
 .btn-pause.btn-paused {
@@ -538,6 +544,6 @@ input[type="range"]::-webkit-slider-thumb {
     left: 50%;
     transform: translateX(-50%);
     font-size: var(--font-size-base);
-    color: #c8b88a66;
+    color: var(--col-accent-soft);
     pointer-events: none;
 }
