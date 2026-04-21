@@ -50,9 +50,11 @@ default_lang = "cs"
 # -------------------------------------------------------------
 
 [postcard]
-# Footer branding lines (bottom of postcard)
-footer_left  = "Veletrh vědy 2026"
-footer_right = "www.cs.cas.cz"
+# Postcard branding (Czech only)
+footer_institution = "Ústav informatiky AV ČR"
+footer_tagline     = "Jednoduchá pravidla, složité chování"
+footer_event       = "Veletrh vědy 2026"
+qr_url             = "https://www.cs.cas.cz"
 
 # Logo image path (relative to project root)
 logo_path = "static/logo.png"
@@ -72,7 +74,7 @@ output_dir = "postcards"
 page_size = "6x4"
 
 # Fraction of page height used by the simulation image (rest = footer)
-art_fraction = 0.77
+art_fraction = 0.82
 
 
 # =============================================================
@@ -97,7 +99,7 @@ tagline_cs = "Dvě látky, jedna reakce, nekonečné vzory. Stejná matematika j
 tagline_en = "Two chemicals, one reaction, endless patterns. The same math as a leopard's coat."
 
 # Short description shown below the tab (1–3 sentences, plain text)
-desc_cs = "Dvě jednoduchá pravidla míchání — a najednou vzniknou leopardí skvrny! Posuňte posuvníky a sledujte, co se stane. Stejné rovnice vysvětlují vzory na kůži zvířat, mušlích i v korálových útesech."
+desc_cs = "Dvě jednoduchá pravidla míchání — a najednou vzniknou leopardí skvrny! Posuň posuvníky a sleduj, co se stane. Stejné rovnice vysvětlují vzory na kůži zvířat, mušlích i v korálových útesech."
 desc_en = "Two simple mixing rules — and suddenly, leopard spots appear! Move the sliders and watch what happens. These same equations explain animal skin patterns, seashells, and coral reefs."
 
 # Parameter labels (displayed next to each slider)
@@ -110,13 +112,13 @@ lbl_kill_rate_en = "Removing chemical (k)"
 # f
 tip_f_name_cs = "= přidávání"
 tip_f_name_en = "= feed"
-tip_f_cs = "Kolik nové látky se neustále přilévá — jako když pouštíš vodu do vany"
-tip_f_en = "How much new stuff keeps flowing in — like running water into a bathtub"
+tip_f_cs = "Kolik nové látky se neustále přilévá — jako když pouštíš vodu do vany. Zvyš → vzor se rozrůstá. Sniž → vzor se tenčí na tečky."
+tip_f_en = "How much new stuff keeps flowing in — like running water into a bathtub. Raise → pattern grows. Lower → pattern thins into spots."
 # k
 tip_k_name_cs = "= odbourávání"
 tip_k_name_en = "= removal"
-tip_k_cs = "Jak rychle látka mizí — jako když voda odtéká odtokem"
-tip_k_en = "How fast stuff disappears — like water draining out"
+tip_k_cs = "Jak rychle látka mizí — jako když voda odtéká odtokem. Zvyš → tečky se rozpouští. Sniž → tečky splývají do pruhů."
+tip_k_en = "How fast stuff disappears — like water draining out. Raise → dots dissolve. Lower → dots merge into stripes."
 # Du (fixed, labelled in badge)
 tip_Du_name_cs = "šíření látky 1"
 tip_Du_name_en = "spread of chem. 1"
@@ -151,8 +153,12 @@ snap_sub_cs   = "Tento vzor ještě nikdy neexistoval — dokud jsi ho nevytvoř
 snap_sub_en   = "You made a pattern that has never existed before."
 
 # Level-A explanation panel
-explain_a_cs = "Dvě neviditelné chemikálie zápolí o prostor — jedna se šíří rychle, druhá pomalu. Tenhle rozdíl v rychlosti vytesává vzor. Přidej poruchu kliknutím: disturbance se neroztratí, ale rozroste se do spirály. Přesně takový souboj chemikálií tvoří pruhy na kůži zebry a tečky na kůži jaguára."
-explain_a_en = "Two invisible chemicals are fighting over territory — one spreads fast, one spreads slow. That speed difference carves the pattern. Click to add a disturbance: it doesn't fade, it grows into a spinning spiral. This exact chemical competition makes zebra stripes and jaguar spots."
+explain_a_cs = "Dvě neviditelné chemikálie zápolí o prostor — jedna se šíří rychle, druhá pomalu. Tenhle rozdíl v rychlosti vytesává vzor. Přidej poruchu kliknutím: tvá stopa se neroztratí — rozroste se do nového vzoru, někdy do vlny, někdy do spirály. Stejný typ chemického souboje tvoří pruhy na kůži zebry a tečky na kůži jaguára."
+explain_a_en = "Two invisible chemicals are fighting over territory — one spreads fast, one spreads slow. That speed difference carves the pattern. Click to add a disturbance: your trace doesn't fade — it grows into a new pattern, sometimes a wave, sometimes a spiral. This same type of competition makes zebra stripes and jaguar spots."
+explain_b_cs = "Systém reakce a difúze: dvě chemikálie reagují a šíří se různou rychlostí. Rychlejší hraje roli inhibitoru — brání vzniku svých sousedů. Proto se vzor pravidelně rozmisťuje. Alan Turing popsal tento mechanismus v roce 1952, dvacet let před prvním experimentálním důkazem."
+explain_b_en = "A reaction–diffusion system: two chemicals react and diffuse at different speeds. The faster one acts as an inhibitor, suppressing its own kind nearby. That's why the pattern spaces itself evenly. Alan Turing described this in 1952, twenty years before experimental confirmation."
+explain_c_cs = "Gray-Scottův model s parametry f (přísun) a k (odbourávání). Poměr difuzivit D_u/D_v = 2 vyvolává Turingovu nestabilitu. Zobrazený režim leží blízko hranice přechod tečky-labyrint. Biologické realizace: pigmentace kůže (Kondo & Miura 2010), rozestup prstů v embryogenezi."
+explain_c_en = "Gray-Scott model with parameters f (feed) and k (kill). Diffusivity ratio D_u/D_v = 2 triggers Turing instability. The shown regime sits near the spot–labyrinth transition. Biological realisations: skin pigmentation (Kondo & Miura 2010), digit spacing in embryogenesis."
 
 [content.rd.preset_params]
 # Keys match the i18nLabel suffix (e.g. "preset_labyrinth" → "labyrinth")
@@ -180,7 +186,7 @@ tagline_cs = "Tisíce světýlek, jedno pravidlo: sladit se se sousedy."
 tagline_en = "Thousands of lights, one rule: match your neighbours."
 
 # Short description
-desc_cs = "Tisíce blikajících světýlek, každé s jediným pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí. Stejný princip synchronizuje tleskání publika, blikání světlušek i buňky srdce."
+desc_cs = "Tisíce blikajících světýlek, každé s jediným pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyš propojení a sleduj, jak se sladí. Stejný princip synchronizuje tleskání publika, blikání světlušek i buňky srdce."
 desc_en = "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up. The same rule synchronises fireflies, heart cells, and audience clapping."
 
 # Parameter labels
@@ -195,18 +201,18 @@ lbl_base_freq_en   = "Base tempo (ω)"
 # K
 tip_K_name_cs    = "= propojení"
 tip_K_name_en    = "= connection"
-tip_K_cs         = "Jak moc sousední světýlka ovlivňují jedno druhé — čím víc, tím spíš začnou blikat společně"
-tip_K_en         = "How much neighbouring lights influence each other — the more, the sooner they blink together"
+tip_K_cs         = "Jak moc sousední světýlka ovlivňují jedno druhé — čím víc, tím spíš začnou blikat společně. Posuň doprava → všechna světla se sladí do jednoho rytmu."
+tip_K_en         = "How much neighbouring lights influence each other — the more, the sooner they blink together. Slide right → all lights lock into one rhythm."
 # ω
 tip_omega_name_cs   = "= tempo"
 tip_omega_name_en   = "= tempo"
-tip_omega_cs        = "Jak rychle světýlka blikají sama od sebe, bez vlivu sousedů"
-tip_omega_en        = "How fast each light blinks on its own, without any neighbours"
+tip_omega_cs        = "Jak rychle světýlka blikají sama od sebe, bez vlivu sousedů. Zvyš → bliká rychleji (globálně)."
+tip_omega_en        = "How fast each light blinks on its own, without any neighbours. Raise → everything flashes faster."
 # σ (spread)
 tip_spread_name_cs  = "= rozdíly"
 tip_spread_name_en  = "= differences"
-tip_spread_cs       = "Jak moc se liší tempo jednotlivých světýlek — malý rozdíl = snáz se sladí"
-tip_spread_en       = "How different the blinking speeds are — small difference = easier to synchronise"
+tip_spread_cs       = "Jak moc se liší tempo jednotlivých světýlek — malý rozdíl = snáz se sladí. Víc rozdílů = těžší synchronizace."
+tip_spread_en       = "How different the blinking speeds are — small difference = easier to synchronise. More spread = harder to synchronise."
 
 # Preset names
 preset_spiral_cs     = "Spirálové vlny"
@@ -227,8 +233,12 @@ snap_sub_cs   = "Jedno jednoduché pravidlo, tisíckrát zopakované, vytvořilo
 snap_sub_en   = "A simple rule, repeated a thousand times, made something beautiful."
 
 # Level-A explanation panel
-explain_a_cs = "Každé světlo bliká vlastním rytmem — trochu rychleji, trochu pomaleji. Posuvník 'Kolik naslouchají' ovládá, jak moc každé světlo kopíruje sousedy. Pod určitou hodnotou: každý si jde svou cestou. Nad ní: všechna světla se synchronizují, bez dirigenta. Tak bije tvoje srdce — tisíce buněk s různým tempem se seřídí na jeden úder."
-explain_a_en = "Each light flashes at its own natural rhythm — slightly faster or slower. The slider controls how much each light copies its neighbours. Below a threshold: chaos. Above it: all lights suddenly synchronise with no conductor. This is how your heart beats — thousands of cells with different natural rates locking into one rhythm."
+explain_a_cs = "Každé světlo bliká vlastním rytmem — trochu rychleji, trochu pomaleji. Posuvník 'Síla propojení' určuje, jak moc každé světlo kopíruje sousedy. Pod určitou hodnotou: každý si jde svou cestou. Nad ní: všechna světla se synchronizují, bez dirigenta. Tak bije tvoje srdce — tisíce buněk s různým tempem se seřídí na jeden úder."
+explain_a_en = "Each light flashes at its own natural rhythm — slightly faster or slower. The 'Connection strength' slider controls how much each light copies its neighbours. Below a threshold: chaos. Above it: all lights suddenly synchronise with no conductor. This is how your heart beats — thousands of cells with different natural rates locking into one rhythm."
+explain_b_cs = "Každý oscilátor má vlastní přirozenou frekvenci z rozdělení. Pod kritickou silou vazby: fázové rozdíly rostou — nesoudržnost. Nad ní: makroskopická část oscilátorů se uzamkne do společné frekvence. Jedná se o fázový přechod: není to plynulý přechod, ale náhlý vznik řádu."
+explain_b_en = "Each oscillator has its own natural frequency from a distribution. Below critical coupling: phase differences grow — incoherence. Above it: a macroscopic fraction locks to a shared frequency. This is a phase transition: not gradual, but a sudden onset of order."
+explain_c_cs = "Kuramotův model na 2D mřížce s vazbou jen k nejbližším sousedům. Parametr řádu r = |⟨e^{iθ}⟩| měří fázovou koherenci. Kritická vazba K_c ≈ 2/(π·g(0)), kde g je rozdělení frekvencí. Dotyk injektuje spirálovou vlnu (fázový gradient); supercritický režim ji udrží, subkritický absorbuje."
+explain_c_en = "Kuramoto model on a 2D lattice, nearest-neighbour coupling. Order parameter r = |⟨e^{iθ}⟩| measures phase coherence. Critical coupling K_c ≈ 2/(π·g(0)) where g is the frequency distribution. Touch injects a spiral via phase gradient; supercritical holds it, subcritical absorbs it."
 
 [content.osc.preset_params]
 # K = coupling strength, spread = frequency spread, omega = mean frequency
@@ -253,7 +263,7 @@ tagline_cs = "Tři pravidla. Žádný velitel. A přesto vzniká hejno."
 tagline_en = "Three rules. No leader. And still — a flock."
 
 # Short description
-desc_cs = "Tři jednoduchá pravidla — nesrážej se, leť stejným směrem, drž se blízko skupiny — a vznikne hejno, jako u ptáků nebo ryb. Klikněte levým tlačítkem pro přitahování, pravým pro odpuzování. Hejna špačků a hejna sardinek fungují přesně stejně — bez velitele."
+desc_cs = "Tři jednoduchá pravidla — nesrážej se, leť stejným směrem, drž se blízko skupiny — a vznikne hejno, jako u ptáků nebo ryb. Klikni levým tlačítkem pro přitahování, pravým pro odpuzování. Hejna špačků a hejna sardinek fungují přesně stejně — bez velitele."
 desc_en = "Three simple rules — don't crash, fly the same way, stay close to the group — and a flock emerges, just like birds or fish. Left-click to attract, right-click to repel. Starling murmurations and sardine bait balls emerge from exactly these rules, with no leader."
 
 # Mode selector label
@@ -275,8 +285,8 @@ lbl_alignment_cs  = "Zarovnání"
 lbl_alignment_en  = "Alignment"
 lbl_cohesion_cs   = "Soudržnost"
 lbl_cohesion_en   = "Cohesion"
-lbl_perception_cs = "Vnímání"
-lbl_perception_en = "Perception"
+lbl_perception_cs = "Dosah vnímání"
+lbl_perception_en = "Perception range"
 lbl_max_speed_cs  = "Max. rychlost"
 lbl_max_speed_en  = "Max speed"
 lbl_trail_cs      = "Stopa"
@@ -325,8 +335,12 @@ snap_sub_cs   = "Tisíc jedinců. Žádný velitel. Jeden pohyb."
 snap_sub_en   = "A thousand individuals. Zero leaders. One movement."
 
 # Level-A explanation panel
-explain_a_cs = "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Vnímání' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky."
+explain_a_cs = "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Dosah vnímání' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky."
 explain_a_en = "Each dot knows only three rules: stay close, avoid collisions, face the same way as your neighbours. No leader, no plan — yet the whole flock moves as one. Drag 'Perception range' left: the flock falls apart. Back right: it reforms. Your immune cells use the same logic to hunt bacteria."
+explain_b_cs = "Reynoldsův model z roku 1987: tři místní pravidla (separace, zarovnání, soudržnost) produkují globální koordinaci bez centrálního řízení. Klíčový rys emergence: žádná ze složek nemá mapu celku. Podobné modely popisují pohyb hejn špačků, hejn sardinek i mraveniště."
+explain_b_en = "Reynolds' 1987 model: three local rules (separation, alignment, cohesion) produce global coordination without central control. A textbook case of emergence: no component holds the global picture. Similar models describe starling murmurations, sardine schools, ant colonies."
+explain_c_cs = "1024 agentů na GPU (32×32 textura). Každý krok: N² skenování sousedů s váženými vektory tří sil, omezení na maximální rychlost a sílu. Predátor-režim přidá antagonistu s jinou cílovou funkcí. Model je prototyp skupinové robotiky a davové simulace."
+explain_c_en = "1024 GPU agents (32×32 texture). Each step: N² neighbour scan with weighted vectors from the three forces, clamped to max speed and force. Predator mode adds an antagonist with a different objective. The model is a prototype for swarm robotics and crowd simulation."
 
 [content.boids.preset_params]
 # mode can be "boids", "crowd", or "predator"
@@ -347,12 +361,12 @@ tab_cs = "Mozková aktivita"
 tab_en = "Neural Criticality"
 
 # Tagline
-tagline_cs = "Mozek na hraně mezi tichem a bouří — právě tam pracuje nejlépe."
-tagline_en = "The brain, on the edge of silence and storm — where it works best."
+tagline_cs = "Mozek na hraně mezi tichem a bouří — právě tam zvládne zpracovat jak šepot, tak bouři."
+tagline_en = "The brain, on the edge of silence and storm — where it can process both a whisper and a thunderclap."
 
 # Short description
-desc_cs = "Váš mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: záchvat. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech — a právě tam mozek pracuje nejlépe. Posuňte propojení a sledujte přechod."
-desc_en = "Your brain lives on the edge. Too little connection: silence. Too much: seizure. At the critical point between them, cascades of activity appear in all sizes — and that's where the brain works best. Adjust connectivity and watch the transition."
+desc_cs = "Tvůj mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: lavina se nezastaví — mozek „hoří” jako při záchvatu. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech — a právě tam zvládne zpracovat jak šepot, tak bouři. Posuň propojení a sleduj přechod."
+desc_en = "Your brain lives on the edge. Too little connection: silence. Too much: the avalanche never stops — the brain 'runs away' like in a seizure. At the critical point between them, cascades of activity appear in all sizes — and that's where it can process both a whisper and a thunderclap. Adjust connectivity and watch the transition."
 
 # Slider labels
 lbl_spread_cs = "Propojení (σ)"
@@ -361,6 +375,23 @@ lbl_input_cs  = "Pozadí (ε)"
 lbl_input_en  = "Background noise (ε)"
 lbl_leak_cs   = "Paměť (1−λ)"
 lbl_leak_en   = "Memory (1−λ)"
+
+# Parameter tooltips
+# σ (connectivity)
+tip_sigma_name_cs = "= propojení"
+tip_sigma_name_en = "= connectivity"
+tip_sigma_cs = "Jak silně neuron nabudí své sousedy, když sám vystřelí. Zvyš → vlny se rozrůstají. Sniž → ticho."
+tip_sigma_en = "How strongly a firing neuron excites its neighbours. Raise → cascades grow. Lower → silence."
+# ε (background noise)
+tip_eps_name_cs = "= pozadí"
+tip_eps_name_en = "= background"
+tip_eps_cs = "Kolik spontánních výbojů vzniká samo od sebe. Zvyš → víc lavin začíná."
+tip_eps_en = "How many spontaneous sparks arise. Raise → more avalanches start."
+# λ (memory / leak)
+tip_lambda_name_cs = "= paměť"
+tip_lambda_name_en = "= memory"
+tip_lambda_cs = "Jak dlouho si neuron pamatuje předchozí nabuzení. Vyšší paměť → delší dozvuky."
+tip_lambda_en = "How long a neuron remembers past charge. Higher memory → longer echoes."
 
 # Preset names
 preset_critical_cs = "Kritický bod"
@@ -377,12 +408,16 @@ preset_sleep_en    = "Sleep"
 # Postcard snapshot strings
 snap_title_cs = "Mozková aktivita"
 snap_title_en = "Neural Criticality"
-snap_sub_cs   = "Váš mozek, na hraně mezi tichem a bouří."
+snap_sub_cs   = "Tvůj mozek, na hraně mezi tichem a bouří."
 snap_sub_en   = "Your brain, on the edge between silence and storm."
 
 # Level-A explanation panel
-explain_a_cs = "Tvůj mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: záchvat. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech. Tam mozek pracuje nejlépe. Posuň 'Propojení' a sleduj přechod."
-explain_a_en = "Your brain lives on the edge. Too little connectivity: silence. Too much: seizure. At the critical point between them, avalanches of activity appear in all sizes. That is where the brain works best. Drag 'Connectivity' and watch the transition."
+explain_a_cs = "Tvůj mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: lavina se nezastaví — mozek „hoří” jako při záchvatu. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech. Právě tam zvládne zpracovat jak šepot, tak bouři. Posuň 'Propojení' a sleduj přechod."
+explain_a_en = "Your brain lives on the edge. Too little connectivity: silence. Too much: the avalanche never stops — the brain 'runs away' like in a seizure. At the critical point between them, avalanches of activity appear in all sizes. That is where it can process both a whisper and a thunderclap. Drag 'Connectivity' and watch the transition."
+explain_b_cs = "Samoorganizovaná kritičnost (SOC): síť neuronů naladěná na přechod mezi útlumem a explozí. Na kritickém bodě se velikosti lavin řídí mocninným rozdělením — žádná typická velikost. Takový stav maximalizuje rozsah reakcí, které mozek zvládne: jemné i hrubé podněty."
+explain_b_en = "Self-organised criticality (SOC): a neural network tuned to the edge between quiescence and runaway activity. At the critical point, avalanche sizes follow a power law — no typical scale. This maximises the range of responses the brain can produce: subtle to dramatic."
+explain_c_cs = "Beggs & Plenz (2003) model neuronové lavinové dynamiky. Stav: R=náboj, G=refrakterní fáze, B=stopa. Deterministický hash generuje dalekodosahová spojení — topologie malého světa. Při σ ≈ 1 (subkritická vazba upravená pro síť) leží systém na hranici; exponent velikostí lavin α ≈ −3/2 je univerzální."
+explain_c_en = "Beggs & Plenz (2003) neuronal avalanche model. State: R=charge, G=refractory, B=trail. Deterministic hash seeds long-range links — small-world topology. Near σ ≈ 1 (network-adjusted coupling) the system sits at criticality; avalanche size exponent α ≈ −3/2 is universal."
 
 [content.neural.preset_params]
 # spread = connectivity σ, input = background noise ε, leak = charge decay λ

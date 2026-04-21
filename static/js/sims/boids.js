@@ -224,7 +224,7 @@ varying float v_speed;
 void main() {
     vec2  pc = gl_PointCoord - 0.5;
     float d  = length(pc) * 2.0;           // 0 centre, 1 edge
-    float a  = exp(-d * d * 3.5);          // gaussian glow
+    float a  = exp(-d * d * 7.0);          // gaussian glow
 
     // Encode: R=intensity  G=angle*intensity  B=speed*intensity
     gl_FragColor = vec4(a, v_angle * a, v_speed * a, 1.0);
@@ -247,30 +247,44 @@ vec3 hsv2rgb(vec3 c) {
 void main() {
     vec4  t         = texture2D(u_trail, v_uv);
     float intensity = t.r;
+    float glow      = clamp(intensity / 0.8, 0.0, 1.0);
 
-    float glow = sqrt(clamp(intensity / 1.4, 0.0, 1.0));
+    // Recover per-pixel averages (guard against zero intensity)
+    float angle = intensity > 0.02 ? t.g / t.r : 0.0; // 0-1 maps to 0-2pi heading
+    float speed = intensity > 0.02 ? clamp(t.b / t.r, 0.0, 1.0) : 0.0;
 
     vec3 col;
     if (u_colourScheme == 0) {
-        // Murmuration — silvery white on deep indigo
-        col = vec3(0.82, 0.86, 0.94) * glow;
+        // Polar — warm (East/right) vs cool (West/left) by heading
+        float h = cos(angle * 6.2832); // -1=left, +1=right
+        vec3 warm = vec3(1.0, 0.45, 0.05);
+        vec3 cool = vec3(0.05, 0.65, 0.95);
+        col = mix(cool, warm, clamp(h * 0.5 + 0.5, 0.0, 1.0)) * glow;
+
     } else if (u_colourScheme == 1) {
-        // Spectrum — rainbow by velocity direction
-        float angle = intensity > 0.01 ? t.g / t.r : 0.0;
+        // Spectrum — full rainbow by heading (HSV hue from angle)
         col = hsv2rgb(vec3(angle, 0.75, glow));
+
     } else if (u_colourScheme == 2) {
-        // Ocean — teal-to-cyan
-        col = vec3(0.06, 0.35, 0.55) * glow + vec3(0.0, 0.15, 0.25) * glow * glow;
+        // Velocity — slow=deep blue, medium=teal, fast=yellow
+        vec3 slow_col = vec3(0.05, 0.10, 0.55);
+        vec3 mid_col  = vec3(0.05, 0.75, 0.65);
+        vec3 fast_col = vec3(1.00, 0.90, 0.30);
+        vec3 speed_col = speed < 0.5
+            ? mix(slow_col, mid_col,  speed * 2.0)
+            : mix(mid_col,  fast_col, speed * 2.0 - 1.0);
+        col = speed_col * glow;
+
     } else {
-        // Firefly — warm amber
-        col = vec3(1.0, 0.68, 0.12) * glow;
+        // Cardinal — RGB encodes heading quadrant (R=East, G=North, B=West)
+        float a  = angle * 6.2832;
+        float cx = cos(a) * 0.5 + 0.5; // 0=West, 1=East
+        float cy = sin(a) * 0.5 + 0.5; // 0=South, 1=North
+        col = vec3(cx, cy * 0.8, 1.0 - cx) * glow;
     }
 
-    // Dark background
     vec3 bg = vec3(0.015, 0.015, 0.03);
-    col += bg;
-
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = vec4(col + bg, 1.0);
 }
 `;
 
@@ -440,7 +454,7 @@ export default {
         setUniform(boidDrawProg, "u_state", "1i", 0);
         setUniform(boidDrawProg, "u_stateRes", "1f", AGENT_RES);
         setUniform(boidDrawProg, "u_maxSpeed", "1f", params.maxSpeed);
-        setUniform(boidDrawProg, "u_pointSize", "1f", 5.0);
+        setUniform(boidDrawProg, "u_pointSize", "1f", 5.0 * (SIM_W / 768));
 
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE);   // additive
@@ -490,40 +504,41 @@ export default {
         { type: "slider", id: "cohesion", min: 0, max: 3, step: 0.1, default: 1.0, i18nLabel: "lbl_cohesion", format: 1 },
         { type: "slider", id: "perception", min: 0.02, max: 0.2, step: 0.01, default: 0.08, i18nLabel: "lbl_perception", format: 2 },
         { type: "slider", id: "maxSpeed", min: 0.001, max: 0.008, step: 0.001, default: 0.004, i18nLabel: "lbl_max_speed", format: 3 },
-        { type: "slider", id: "trailPersistence", min: 0.80, max: 0.99, step: 0.01, default: 0.96, i18nLabel: "lbl_trail", format: 2 },
+        { type: "slider", id: "trailPersistence", min: 0.80, max: 0.99, step: 0.01, default: 0.88, i18nLabel: "lbl_trail", format: 2 },
     ],
 
     presets: [
         {
             i18nLabel: "preset_murmuration",
-            params: { mode: "boids", separation: 1.2, alignment: 1.8, cohesion: 1.0, perception: 0.10, maxSpeed: 0.005, trailPersistence: 0.96 },
+            params: { mode: "boids", separation: 1.2, alignment: 1.8, cohesion: 1.0, perception: 0.10, maxSpeed: 0.005, trailPersistence: 0.92 },
         },
         {
             i18nLabel: "preset_school",
-            params: { mode: "boids", separation: 1.8, alignment: 1.2, cohesion: 0.8, perception: 0.06, maxSpeed: 0.003, trailPersistence: 0.93 },
+            params: { mode: "boids", separation: 1.8, alignment: 1.2, cohesion: 0.8, perception: 0.06, maxSpeed: 0.003, trailPersistence: 0.88 },
         },
         {
             i18nLabel: "preset_predator",
-            params: { mode: "predator", separation: 2.0, alignment: 0.8, cohesion: 1.5, perception: 0.12, maxSpeed: 0.006, trailPersistence: 0.94 },
+            params: { mode: "predator", separation: 2.0, alignment: 0.8, cohesion: 1.5, perception: 0.12, maxSpeed: 0.006, trailPersistence: 0.90 },
         },
         {
             i18nLabel: "preset_crowd",
-            params: { mode: "crowd", separation: 2.5, alignment: 0.3, cohesion: 0.2, perception: 0.05, maxSpeed: 0.003, trailPersistence: 0.90 },
+            params: { mode: "crowd", separation: 2.5, alignment: 0.3, cohesion: 0.2, perception: 0.05, maxSpeed: 0.003, trailPersistence: 0.85 },
         },
         {
             i18nLabel: "preset_chaos",
-            params: { mode: "boids", separation: 0.3, alignment: 0.2, cohesion: 0.1, perception: 0.15, maxSpeed: 0.008, trailPersistence: 0.85 },
+            params: { mode: "boids", separation: 0.3, alignment: 0.2, cohesion: 0.1, perception: 0.15, maxSpeed: 0.008, trailPersistence: 0.80 },
         },
     ],
 
     colours: [
-        { gradient: "linear-gradient(135deg, #1a1a2e, #ccc)", i18nTitle: "Murmuration" },
-        { gradient: "linear-gradient(135deg, #e53, #3b3, #33e)", i18nTitle: "Spectrum" },
-        { gradient: "linear-gradient(135deg, #0a1628, #4fc3f7)", i18nTitle: "Ocean" },
-        { gradient: "linear-gradient(135deg, #1a0a00, #ffab40)", i18nTitle: "Firefly" },
+        { gradient: "linear-gradient(135deg, #0d6efd, #fd7e14)",         i18nTitle: "Polar" },
+        { gradient: "linear-gradient(135deg, #e53, #3b3, #33e)",         i18nTitle: "Spectrum" },
+        { gradient: "linear-gradient(135deg, #0d1b8e, #00bfa5, #ffd740)", i18nTitle: "Velocity" },
+        { gradient: "linear-gradient(135deg, #f44, #4f4, #44f)",         i18nTitle: "Cardinal" },
     ],
 
-    speedSlider: { min: 0.5, max: 5, step: 0.5, default: 2.5 },
+    speedSlider: { min: 0.1, max: 0.9, step: 0.1, default: 0.5 },
+    defaultColourScheme: 1,
 
     // ── Equations ───────────────────────────────────────────────
 
@@ -546,17 +561,17 @@ export default {
                 {
                     label: lang === "cs" ? (_eq.sep_label_cs || "Separace") : (_eq.sep_label_en || "Separation"),
                     desc: lang === "cs" ? (_eq.sep_desc_cs || "nesrážej se") : (_eq.sep_desc_en || "avoid collisions"),
-                    tex: "\\vec{F}_{\\text{sep}} = w_s \\cdot \\operatorname{steer}\\!\\left(\\frac{1}{|N_s|}\\sum_{j \\in N_s} \\frac{\\vec{r}_i - \\vec{r}_j}{\\|\\vec{r}_i - \\vec{r}_j\\|}\\right)",
+                    tex: "\\vec{F}_{\\text{sep}} = {\\color{#c8b88a}w_s} \\cdot \\operatorname{steer}\\!\\left(\\sum_{j \\in N_s} \\hat{r}_{ij}\\right)",
                 },
                 {
                     label: lang === "cs" ? (_eq.ali_label_cs || "Zarovnání") : (_eq.ali_label_en || "Alignment"),
                     desc: lang === "cs" ? (_eq.ali_desc_cs || "leť stejným směrem") : (_eq.ali_desc_en || "match heading"),
-                    tex: "\\vec{F}_{\\text{ali}} = w_a \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{v}}_{N} - \\vec{v}_i\\right)",
+                    tex: "\\vec{F}_{\\text{ali}} = {\\color{#c8b88a}w_a} \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{v}}_{N} - \\vec{v}_i\\right)",
                 },
                 {
                     label: lang === "cs" ? (_eq.coh_label_cs || "Soudržnost") : (_eq.coh_label_en || "Cohesion"),
                     desc: lang === "cs" ? (_eq.coh_desc_cs || "drž se blízko skupiny") : (_eq.coh_desc_en || "stay near the group"),
-                    tex: "\\vec{F}_{\\text{coh}} = w_c \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{r}}_{N} - \\vec{r}_i\\right)",
+                    tex: "\\vec{F}_{\\text{coh}} = {\\color{#c8b88a}w_c} \\cdot \\operatorname{steer}\\!\\left(\\bar{\\vec{r}}_{N} - \\vec{r}_i\\right)",
                 },
             ];
 
@@ -569,9 +584,10 @@ export default {
                 lbl.textContent = item.label + " — " + item.desc;
                 row.appendChild(lbl);
 
-                const math = document.createElement("span");
+                const math = document.createElement("div");
+                math.className = "eq-math";
                 try {
-                    katex.render(item.tex, math, { throwOnError: false, displayMode: false });
+                    katex.render(item.tex, math, { throwOnError: false, displayMode: true });
                 } catch (_) {
                     math.textContent = item.tex;
                 }
@@ -602,7 +618,7 @@ export default {
             en: "Three rules. No leader. And still — a flock.",
         },
         desc: {
-            cs: "Tři jednoduchá pravidla — separace, zarovnání a soudržnost — stačí k tomu, aby vzniklo složité hejnové chování, jako u ptáků nebo ryb. Klikněte levým tlačítkem pro přitahování, pravým pro odpuzování.",
+            cs: "Tři jednoduchá pravidla — separace, zarovnání a soudržnost — stačí k tomu, aby vzniklo složité hejnové chování, jako u ptáků nebo ryb. Klikni levým tlačítkem pro přitahování, pravým pro odpuzování.",
             en: "Three simple rules — separation, alignment, and cohesion — are enough to produce complex flocking behaviour, like in birds or fish. Left-click to attract, right-click to repel.",
         },
         mode_label: { cs: "Režim", en: "Mode" },
@@ -612,7 +628,7 @@ export default {
         lbl_separation: { cs: "Separace", en: "Separation" },
         lbl_alignment: { cs: "Zarovnání", en: "Alignment" },
         lbl_cohesion: { cs: "Soudržnost", en: "Cohesion" },
-        lbl_perception: { cs: "Vnímání", en: "Perception" },
+        lbl_perception: { cs: "Dosah vnímání", en: "Perception range" },
         lbl_max_speed: { cs: "Max. rychlost", en: "Max speed" },
         lbl_trail: { cs: "Stopa", en: "Trail" },
         preset_murmuration: { cs: "Ptačí hejno", en: "Murmuration" },
@@ -626,7 +642,7 @@ export default {
             en: "Emergent collective motion",
         },
         explain_a: {
-            cs: "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Vnímání' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky při lovu bakterií.",
+            cs: "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Dosah vnímání' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky při lovu bakterií.",
             en: "Each dot knows only three rules: stay close to neighbours, avoid collisions, face the same direction as your neighbours. No leader, no plan — yet the whole flock moves as one. Drag 'Perception range' left: the flock falls apart. Back right: it reforms. Your immune cells use the same logic to hunt bacteria.",
         },
     },

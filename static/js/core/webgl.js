@@ -7,8 +7,8 @@
  */
 
 /** Simulation texture dimensions (3:2 aspect) */
-export const SIM_W = 768;
-export const SIM_H = 512;
+export const SIM_W = 1536;
+export const SIM_H = 1024;
 
 /** Export resolution for print-quality postcards (300 DPI @ 6×4 inches) */
 export const EXPORT_W = 1800;

@@ -51,13 +51,15 @@ def _load_config():
             "default_lang": "cs",
         },
         "postcard": {
-            "footer_left": "Veletrh vědy 2026",
-            "footer_right": "www.cs.cas.cz",
+            "footer_institution": "Ústav informatiky AV ČR",
+            "footer_tagline": "Jednoduchá pravidla, složité chování",
+            "footer_event": "Veletrh vědy 2026",
+            "qr_url": "https://www.cs.cas.cz",
             "logo_path": "static/logo.png",
             "logo_light_path": "",
             "output_dir": "postcards",
             "page_size": "6x4",
-            "art_fraction": 0.77,
+            "art_fraction": 0.82,
         },
         "content": {},
     }
@@ -133,6 +135,30 @@ try:
 except ImportError:
     HAS_REPORTLAB = False
     print("⚠ ReportLab not installed — PDF postcards disabled (pip install reportlab)")
+
+# --- Optional: QR code generation ---
+try:
+    import qrcode
+
+    HAS_QRCODE = True
+except ImportError:
+    HAS_QRCODE = False
+    print("⚠ qrcode not installed — postcards will skip QR code")
+
+
+def _make_qr_image(url, box_size=10, border=0):
+    """Generate a QR code as a PIL Image with dark navy modules on transparent bg."""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=box_size,
+        border=border,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    return qr.make_image(fill_color=(26, 26, 46), back_color=(250, 248, 243)).convert(
+        "RGB"
+    )
 
 
 # =============================================================
@@ -250,6 +276,10 @@ def snapshot():
         pdf_path = POSTCARD_DIR / f"postcard_{sim_type}_{timestamp}.pdf"
         assemble_pdf_postcard(pattern_img, title, subtitle, pdf_path)
 
+        # Also save the sharpened PNG for easy preview
+        png_preview = POSTCARD_DIR / f"postcard_{sim_type}_{timestamp}.png"
+        pattern_img.save(png_preview, "PNG", optimize=False)
+
         result["pdf_filename"] = pdf_path.name
         result["filename"] = pdf_path.name
         print(
@@ -285,82 +315,104 @@ def snapshot():
 def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
     """
     Creates a 6×4 inch PDF postcard:
-      - Simulation image fills the top ~77% (embedded at full resolution)
-      - Gold accent line (vector)
-      - Vector text: title, subtitle, footer branding
-      - ÚI logo (raster, embedded)
+      - Simulation image fills top portion
+      - Gold accent line
+      - Title row: sim name (bold serif) + ICS logo (right)
+      - Separator
+      - Branding row: institution name (left) + QR code (right)
+      - Tagline + event year (bottom left, grey)
 
-    Text is rendered as vector paths → infinitely crisp at any print size.
+    Footer is laid out bottom-up to guarantee nothing clips below page edge.
     """
+    pc = CFG["postcard"]
+    margin = 12
+
     c = pdf_canvas.Canvas(str(output_path), pagesize=(PAGE_W, PAGE_H))
 
     # -- Background (cream) --
     c.setFillColor(Color(250 / 255, 248 / 255, 243 / 255))
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
 
+    # ── Layout footer bottom-up ──
+    # Row 3 (bottom): tagline + event — baseline at 6pt from page bottom
+    tagline_y = 6
+    # Row 2: institution name — baseline 12pt above tagline
+    inst_y = tagline_y + 13
+    # Separator line — above institution
+    sep_y = inst_y + 12
+    # Row 1: title baseline — above separator, with room for 40pt logo
+    title_y = sep_y + 18
+    # Gold accent line top = title baseline + ascender + logo headroom
+    footer_top = title_y + 28
+    # Accent line sits on top of footer
+    accent_bottom = footer_top
+    art_bottom = accent_bottom + ACCENT_H
+
     # -- Simulation image (top portion) --
-    # ReportLab places images from bottom-left; our art starts at the top
-    art_bottom = PAGE_H - ART_H
     img_reader = ImageReader(pattern_img)
     c.drawImage(
-        img_reader, 0, art_bottom, width=PAGE_W, height=ART_H, preserveAspectRatio=False
+        img_reader, 0, art_bottom, width=PAGE_W, height=PAGE_H - art_bottom,
+        preserveAspectRatio=False,
     )
 
     # -- Gold accent line --
-    accent_y = art_bottom
     c.setFillColor(Color(200 / 255, 184 / 255, 138 / 255))
-    c.rect(0, accent_y - ACCENT_H, PAGE_W, ACCENT_H, fill=1, stroke=0)
+    c.rect(0, accent_bottom, PAGE_W, ACCENT_H, fill=1, stroke=0)
 
-    # -- Footer text (vector) --
-    footer_top = accent_y - ACCENT_H
-
-    # Title — bold serif, ~14pt equivalent (DejaVu supports Czech diacritics)
+    # -- Title row: sim name + ICS logo --
     c.setFont("DejaVuSerif-Bold", 14)
     c.setFillColor(Color(26 / 255, 26 / 255, 46 / 255))
-    c.drawString(12, footer_top - 18, title)
+    c.drawString(margin, title_y, title)
 
-    # Subtitle — italic, ~9pt
-    c.setFont("DejaVuSerif-Italic", 9)
-    c.setFillColor(Color(120 / 255, 120 / 255, 120 / 255))
-    c.drawString(12, footer_top - 32, subtitle)
-
-    # -- ÚI logo --
-    logo_size = 40  # points (~0.55 inches)
-    logo_x = PAGE_W - logo_size - 12
-    logo_y = footer_top - logo_size - 6
+    # ICS logo — right side of title row, must not exceed accent line
+    logo_size = min(40, accent_bottom - sep_y - 4)
+    logo_x = PAGE_W - logo_size - margin
+    logo_y = accent_bottom - logo_size - 2  # top edge 2pt below accent
     try:
         if LOGO_PATH.exists():
             logo_reader = ImageReader(str(LOGO_PATH))
             c.drawImage(
-                logo_reader,
-                logo_x,
-                logo_y,
-                width=logo_size,
-                height=logo_size,
-                preserveAspectRatio=True,
-                mask="auto",
+                logo_reader, logo_x, logo_y,
+                width=logo_size, height=logo_size,
+                preserveAspectRatio=True, mask="auto",
             )
         else:
             raise FileNotFoundError
     except Exception:
-        # Fallback: draw text logo
         c.setFont("DejaVuSans-Bold", 10)
         c.setFillColor(Color(200 / 255, 184 / 255, 138 / 255))
-        c.drawString(logo_x + 6, logo_y + 24, "ÚI")
-        c.setFont("DejaVuSans", 7)
-        c.drawString(logo_x + 2, logo_y + 14, "AV ČR")
+        c.drawString(logo_x + 4, logo_y + 10, "ICS")
 
-    # -- Thin separator line --
-    line_y = logo_y - 4
+    # -- Thin separator --
     c.setStrokeColor(Color(224 / 255, 220 / 255, 212 / 255))
     c.setLineWidth(0.5)
-    c.line(12, line_y, PAGE_W - 12, line_y)
+    sep_end = margin + (logo_x - 8 - margin) * 0.5
+    c.line(margin, sep_y, sep_end, sep_y)
 
-    # -- Bottom footer --
-    c.setFont("DejaVuSans", 7)
-    c.setFillColor(Color(160 / 255, 160 / 255, 160 / 255))
-    c.drawString(12, line_y - 10, CFG["postcard"]["footer_left"])
-    c.drawRightString(PAGE_W - 12, line_y - 10, CFG["postcard"]["footer_right"])
+    # -- Institution name --
+    c.setFont("DejaVuSans-Bold", 8)
+    c.setFillColor(Color(26 / 255, 26 / 255, 46 / 255))
+    c.drawString(margin, inst_y, pc["footer_institution"])
+
+    # -- Tagline + event --
+    c.setFont("DejaVuSans", 6.5)
+    c.setFillColor(Color(140 / 255, 140 / 255, 140 / 255))
+    c.drawString(margin, tagline_y, f"{pc['footer_tagline']} · {pc['footer_event']}")
+
+    # -- QR code (right side, spanning inst+tagline rows) --
+    if HAS_QRCODE and HAS_PIL:
+        qr_size = 28
+        # Centre QR horizontally under the logo
+        logo_centre_x = logo_x + logo_size / 2
+        qr_x = logo_centre_x - qr_size / 2
+        qr_y = tagline_y
+        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=0)
+        qr_reader = ImageReader(qr_img)
+        c.drawImage(
+            qr_reader, qr_x, qr_y,
+            width=qr_size, height=qr_size,
+            preserveAspectRatio=True,
+        )
 
     c.save()
 
@@ -372,32 +424,21 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
 
 def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
     """
-    Fallback: assembles a high-res raster postcard.
-    Uses the incoming image resolution to determine output size.
+    Fallback: assembles a high-res raster postcard (same layout as PDF).
     """
     from PIL import ImageDraw, ImageFont
 
-    # Use the incoming image width, scale height proportionally
+    pc = CFG["postcard"]
     src_w, src_h = pattern_img.size
-    # Target 3:2 aspect with 77% art
     PW = max(src_w, 1800)
     PH = int(PW * 2 / 3)
     PATTERN_H = int(PH * ART_FRAC)
 
     card = Image.new("RGB", (PW, PH), (250, 248, 243))
-
-    # Resize pattern to fill the art area
     pat = pattern_img.resize((PW, PATTERN_H), Image.LANCZOS)
     card.paste(pat, (0, 0))
 
     draw = ImageDraw.Draw(card)
-
-    # Gold accent line
-    accent_h = max(4, PH // 150)
-    draw.rectangle([(0, PATTERN_H), (PW, PATTERN_H + accent_h)], fill=(200, 184, 138))
-    footer_y = PATTERN_H + accent_h
-
-    # Scale font sizes to output resolution
     scale = PW / 900
 
     def load_font(name, size):
@@ -413,23 +454,23 @@ def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
                 continue
         return ImageFont.load_default()
 
-    ft = load_font("DejaVuSerif-Bold", 28)
-    ft_sub = load_font("DejaVuSerif-Italic", 16)
+    ft_title = load_font("DejaVuSerif-Bold", 28)
+    ft_inst = load_font("DejaVuSans-Bold", 16)
     ft_sm = load_font("DejaVuSans", 13)
-
     margin = int(24 * scale)
-    draw.text((margin, footer_y + int(16 * scale)), title, fill=(26, 26, 46), font=ft)
-    draw.text(
-        (margin, footer_y + int(52 * scale)),
-        subtitle,
-        fill=(120, 120, 120),
-        font=ft_sub,
-    )
 
-    # ÚI logo
-    logo_dim = int(80 * scale)
+    # Gold accent line
+    accent_h = max(4, PH // 150)
+    draw.rectangle([(0, PATTERN_H), (PW, PATTERN_H + accent_h)], fill=(200, 184, 138))
+    footer_y = PATTERN_H + accent_h
+
+    # Title row: sim name + ICS logo
+    logo_dim = int(72 * scale)
     lx = PW - logo_dim - margin
-    ly = footer_y + int(10 * scale)
+    ly = footer_y + int(6 * scale)
+
+    draw.text((margin, footer_y + int(14 * scale)), title, fill=(26, 26, 46), font=ft_title)
+
     try:
         if LOGO_PATH.exists():
             logo = Image.open(LOGO_PATH).convert("RGBA")
@@ -439,43 +480,28 @@ def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
             raise FileNotFoundError
     except Exception:
         ft_logo = load_font("DejaVuSans-Bold", 16)
-        draw.rounded_rectangle(
-            [(lx, ly), (lx + int(70 * scale), ly + int(70 * scale))],
-            radius=int(6 * scale),
-            fill=(26, 26, 46),
-        )
-        draw.text(
-            (lx + int(16 * scale), ly + int(12 * scale)),
-            "ÚI",
-            fill=(200, 184, 138),
-            font=ft_logo,
-        )
-        draw.text(
-            (lx + int(8 * scale), ly + int(34 * scale)),
-            "AV ČR",
-            fill=(200, 184, 138),
-            font=ft_sm,
-        )
+        draw.text((lx + int(10 * scale), ly + int(16 * scale)), "ICS", fill=(200, 184, 138), font=ft_logo)
 
-    # Footer line
-    line_y = footer_y + int(96 * scale)
-    draw.line(
-        [(margin, line_y), (PW - margin, line_y)],
-        fill=(224, 220, 212),
-        width=max(1, int(scale)),
-    )
+    # Separator
+    sep_y = footer_y + int(56 * scale)
+    sep_end_png = margin + (lx - int(8 * scale) - margin) // 2
+    draw.line([(margin, sep_y), (sep_end_png, sep_y)], fill=(224, 220, 212), width=max(1, int(scale)))
+
+    # Branding row: institution + QR
+    draw.text((margin, sep_y + int(8 * scale)), pc["footer_institution"], fill=(26, 26, 46), font=ft_inst)
     draw.text(
-        (margin, line_y + int(8 * scale)),
-        CFG["postcard"]["footer_left"],
-        fill=(160, 160, 160),
+        (margin, sep_y + int(28 * scale)),
+        f"{pc['footer_tagline']} · {pc['footer_event']}",
+        fill=(140, 140, 140),
         font=ft_sm,
     )
-    draw.text(
-        (PW - int(180 * scale), line_y + int(8 * scale)),
-        CFG["postcard"]["footer_right"],
-        fill=(160, 160, 160),
-        font=ft_sm,
-    )
+
+    # QR code
+    if HAS_QRCODE:
+        qr_dim = int(60 * scale)
+        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=0)
+        qr_img = qr_img.resize((qr_dim, qr_dim), Image.NEAREST)
+        card.paste(qr_img, (PW - qr_dim - margin, sep_y + int(4 * scale)))
 
     return card
 

@@ -35,13 +35,13 @@ body {
     font-feature-settings: "ss01";
 }
 
-/* ---- Layout: 4-row editorial grid ---- */
+/* ---- Layout: 3-row grid (title moved into side-col) ---- */
 .app {
     display: grid;
-    grid-template-rows: auto auto 1fr auto;
+    grid-template-rows: auto 1fr auto;
     height: 100vh;
-    padding: 28px 40px 24px;
-    gap: 22px;
+    padding: 20px 40px 20px;
+    gap: 16px;
 }
 
 /* ---- Top bar ---- */
@@ -49,7 +49,7 @@ body {
     display: flex;
     align-items: center;
     gap: 28px;
-    padding-bottom: 18px;
+    padding-bottom: 14px;
     border-bottom: 1px solid var(--rule);
 }
 
@@ -61,7 +61,7 @@ body {
 }
 
 .brand img {
-    height: 36px;
+    height: 108px;
     width: auto;
     border-radius: 3px;
 }
@@ -80,10 +80,9 @@ body {
 
 #app-subtitle {
     font-family: var(--mono);
-    font-size: 11px;
-    color: var(--ink-3);
-    letter-spacing: .04em;
-    margin-top: 2px;
+    font-size: 18px;
+    color: var(--ink-2);
+    letter-spacing: .03em;
 }
 
 /* Navigation pills — engine.js injects .tab-btn buttons into #sim-tabs */
@@ -99,9 +98,9 @@ body {
     border: none;
     cursor: pointer;
     font-family: var(--mono);
-    font-size: 13px;
+    font-size: 15px;
     color: var(--ink-3);
-    padding: 6px 16px;
+    padding: 8px 18px;
     border-radius: 20px;
     white-space: nowrap;
     transition: background 0.15s, color 0.15s;
@@ -149,44 +148,39 @@ body {
 .lang-btn:hover { color: var(--ink); }
 .lang-btn.active { background: var(--ink); color: var(--bg); }
 
-/* ---- Title block (editorial h1 + equation panel) ---- */
-.title-block {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 48px;
-    align-items: end;
+/* ---- Sim header (title area inside side-col) ---- */
+.sim-header {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    flex-shrink: 0;
 }
 
 .kicker {
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: .18em;
     text-transform: uppercase;
     color: var(--ink-3);
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 .app-headline {
-    font-size: 64px;
-    font-weight: 400;
-    letter-spacing: -0.03em;
-    line-height: 0.95;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
     color: var(--ink);
 }
 
 .app-tagline {
-    font-size: 18px;
-    margin-top: 12px;
-    color: var(--ink-2);
-    max-width: 520px;
-    line-height: 1.35;
-    text-wrap: balance;
+    display: none; /* tagline duplicates description — hidden to reduce clutter */
 }
 
 /* ---- Equation panel (collapsible; engine toggles .open via #eq-header click) ---- */
 .equation-panel {
     border-left: 2px solid var(--gold);
-    padding-left: 20px;
+    padding-left: 16px;
+    margin-top: 12px;
 }
 
 .eq-header {
@@ -201,8 +195,8 @@ body {
 
 .eq-header-title {
     font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: .16em;
+    font-size: 13px;
+    letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--ink-3);
     transition: color .15s;
@@ -220,7 +214,7 @@ body {
     overflow: hidden;
     transition: max-height .35s ease;
 }
-.eq-body.open { max-height: 360px; }
+.eq-body.open { max-height: 560px; }
 
 .eq-content {
     display: flex;
@@ -336,46 +330,23 @@ canvas {
     pointer-events: none;
 }
 
-.canvas-meta {
-    position: absolute;
-    top: 14px;
-    left: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: .08em;
-    color: oklch(0.98 0.01 85);
-    text-shadow: 0 0 8px oklch(0 0 0 / .8);
-    z-index: 3;
-    pointer-events: none;
-}
-.canvas-meta-spec { color: oklch(0.98 0.01 85 / .65); margin-left: 6px; }
-
-.live-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: oklch(0.72 0.18 25);
-    box-shadow: 0 0 0 3px oklch(0.72 0.18 25 / .25);
-    animation: live-pulse 1.6s ease-in-out infinite;
-}
-@keyframes live-pulse { 50% { box-shadow: 0 0 0 6px oklch(0.72 0.18 25 / 0); } }
 
 .touch-hint {
     text-align: center;
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 13px;
     color: var(--ink-3);
-    padding: 4px 0 0;
+    padding: 6px 0 0;
     letter-spacing: 0.04em;
 }
 
-/* ---- Side column (contains #sim-controls) ---- */
+/* ---- Side column (title + controls) ---- */
 .side-col {
     display: flex;
     flex-direction: column;
     min-height: 0;
     overflow-y: auto;
+    gap: 14px;
 }
 
 #sim-controls {
@@ -394,8 +365,8 @@ canvas {
 
 .explanation-panel summary.explanation-summary {
     cursor: pointer;
-    padding: 8px 12px;
-    font-size: 12px;
+    padding: 10px 14px;
+    font-size: 15px;
     font-weight: 500;
     color: var(--gold-ink);
     user-select: none;
@@ -417,8 +388,8 @@ canvas {
 }
 
 .explanation-body {
-    padding: 10px 12px 14px;
-    font-size: 12px;
+    padding: 12px 14px 16px;
+    font-size: 15px;
     color: var(--ink-2);
     line-height: 1.65;
     border-top: 1px solid var(--rule);
@@ -428,8 +399,8 @@ canvas {
 
 /* Description (injected first by controls.js) */
 .description {
-    font-size: 15px;
-    line-height: 1.5;
+    font-size: 17px;
+    line-height: 1.55;
     color: var(--ink-2);
     text-wrap: pretty;
     padding-bottom: 18px;
@@ -439,9 +410,9 @@ canvas {
 /* Section titles (.section-title): "Predvolby", "Parametry", "Barevné schéma" */
 .section-title {
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 500;
-    letter-spacing: .18em;
+    letter-spacing: .14em;
     text-transform: uppercase;
     color: var(--ink-3);
     margin-top: 2px;
@@ -455,12 +426,12 @@ canvas {
 }
 
 .preset-btn {
-    padding: 7px 12px;
+    padding: 9px 16px;
     border: 1px solid var(--rule);
     background: transparent;
     color: var(--ink-2);
     font-family: var(--sans);
-    font-size: 12px;
+    font-size: 14px;
     cursor: pointer;
     border-radius: 999px;
     transition: all .15s;
@@ -481,13 +452,13 @@ canvas {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    font-size: 13px;
+    font-size: 15px;
     color: var(--ink-2);
 }
 
 .slider-label .val {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 14px;
     color: var(--gold-ink);
     font-weight: 500;
 }
@@ -496,26 +467,26 @@ input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 2px;
-    border-radius: 1px;
+    height: 3px;
+    border-radius: 2px;
     background: var(--rule);
     outline: none;
 }
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: var(--ink);
     cursor: pointer;
-    box-shadow: 0 0 0 3px oklch(0.18 0.01 260 / .08);
+    box-shadow: 0 0 0 4px oklch(0.18 0.01 260 / .08);
     transition: box-shadow .15s;
 }
 input[type="range"]::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 0 5px oklch(0.18 0.01 260 / .15);
+    box-shadow: 0 0 0 7px oklch(0.18 0.01 260 / .15);
 }
 input[type="range"]::-moz-range-thumb {
-    width: 14px; height: 14px; border-radius: 50%;
+    width: 22px; height: 22px; border-radius: 50%;
     background: var(--ink); cursor: pointer; border: none;
 }
 
@@ -525,9 +496,9 @@ input[type="range"]::-moz-range-thumb {
     color: var(--ink);
     border: 1px solid var(--rule);
     border-radius: 4px;
-    padding: 6px 10px;
+    padding: 8px 12px;
     font-family: var(--sans);
-    font-size: 13px;
+    font-size: 15px;
     cursor: pointer;
 }
 
@@ -537,8 +508,8 @@ input[type="range"]::-moz-range-thumb {
     gap: 8px;
 }
 .colour-btn {
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 2px solid transparent;
     cursor: pointer;
@@ -583,7 +554,7 @@ input[type="checkbox"] {
     display: flex;
     gap: 24px;
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 13px;
     color: var(--ink-3);
     letter-spacing: .04em;
 }
@@ -607,18 +578,18 @@ input[type="checkbox"] {
 
 .action-btn {
     position: relative;
-    padding: 12px 20px;
+    padding: 13px 22px;
     border: 1px solid var(--rule);
     border-radius: 6px;
     background: transparent;
     color: var(--ink);
     font-family: var(--sans);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     cursor: pointer;
     transition: all .15s;
     white-space: nowrap;
-    min-width: 132px;
+    min-width: 140px;
 }
 .action-btn[data-key]::after {
     content: attr(data-key);
@@ -674,8 +645,6 @@ input[type="checkbox"] {
 
 /* ---- Responsive collapse (narrow kiosks / portrait) ---- */
 @media (max-width: 1200px) {
-    .title-block { grid-template-columns: 1fr; gap: 20px; }
     .stage-row   { grid-template-columns: 1fr; }
-    .app-headline { font-size: 48px; }
     .side-col { max-height: 320px; }
 }

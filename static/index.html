@@ -25,7 +25,6 @@
             <div class="brand">
                 <img id="app-logo" src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
                 <div class="brand-text">
-                    <div id="app-title" data-i18n="title">Z jednoduchého složité</div>
                     <div id="app-subtitle">ÚI AV ČR — Veletrh vědy 2026</div>
                 </div>
             </div>
@@ -39,43 +38,32 @@
             </div>
         </header>
 
-        <!-- ── Title block: editorial h1 + collapsible equation panel ── -->
-        <section class="title-block">
-            <div class="title-left">
-                <div class="kicker"></div>
-                <h1 class="app-headline"></h1>
-                <div class="app-tagline"></div>
-            </div>
-
-            <div class="title-right">
-                <div class="equation-panel">
-                    <div class="eq-header" id="eq-header">
-                        <span class="eq-header-title" data-i18n="eq_title">Jak to funguje — rovnice</span>
-                        <span class="eq-chevron" id="eq-chevron">▼</span>
-                    </div>
-                    <div class="eq-body" id="eq-body">
-                        <div id="eq-body-content"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- ── Stage: canvas + side column ── -->
         <section class="stage-row">
             <div class="canvas-col">
                 <div class="canvas-wrapper">
                     <canvas id="simCanvas"></canvas>
-                    <div class="canvas-meta">
-                        <span class="live-dot"></span>
-                        <span class="canvas-meta-label">LIVE</span>
-                        <span id="canvas-sim-name" class="canvas-meta-sim"></span>
-                    </div>
                 </div>
-                <div class="touch-hint" data-i18n="touch_hint">Klikněte na plátno a přidejte nové vzory</div>
+                <div class="touch-hint" data-i18n="touch_hint">Klikni na plátno a přidej nové vzory</div>
             </div>
 
             <aside class="side-col">
-<!-- Description + Presets + Parameters + Colour schemes (all built by controls.js) -->
+                <!-- Sim title + equation panel (was title-block) -->
+                <div class="sim-header">
+                    <div class="kicker"></div>
+                    <h1 class="app-headline"></h1>
+                    <div class="app-tagline"></div>
+                    <div class="equation-panel">
+                        <div class="eq-header" id="eq-header">
+                            <span class="eq-header-title" data-i18n="eq_title">Rovnice za tím 🔍</span>
+                            <span class="eq-chevron" id="eq-chevron">▼</span>
+                        </div>
+                        <div class="eq-body" id="eq-body">
+                            <div id="eq-body-content"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Description + Presets + Parameters + Colour schemes (all built by controls.js) -->
                 <div id="sim-controls"></div>
             </aside>
         </section>

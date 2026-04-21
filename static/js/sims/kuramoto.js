@@ -259,7 +259,8 @@ export default fieldSim({
         { gradient: "conic-gradient(#0a0f32, #145078, #3cb4aa, #1e3c64, #0a0f32)", i18nTitle: "Oceán" },
     ],
 
-    speedSlider: { min: 0.5, max: 5, step: 0.5, default: 2.5 },
+    speedSlider: { min: 0.2, max: 1.8, step: 0.2, default: 1.0 },
+    defaultColourScheme: 2,
 
     // ─── Equations ──────────────────────────────────────────────
 
@@ -273,7 +274,7 @@ export default fieldSim({
 
             if (typeof katex !== "undefined") {
                 katex.render(
-                    "\\frac{d\\theta_i}{dt} = \\color{#c8b88a}{\\omega_i} \\;+\\; \\frac{\\color{#c8b88a}{K}}{4} \\sum_{j \\in \\mathcal{N}} \\sin(\\theta_j - \\theta_i)",
+                    "\\frac{d\\theta_i}{dt} = {\\color{#c8b88a}\\omega_i} \\;+\\; \\frac{{\\color{#c8b88a}K}}{4} \\sum_{j \\in \\mathcal{N}} \\sin(\\theta_j - \\theta_i)",
                     eq1, { displayMode: true, throwOnError: false }
                 );
             } else {
@@ -306,7 +307,7 @@ export default fieldSim({
             en: "Thousands of lights, one rule: match your neighbours.",
         },
         desc: {
-            cs: "Tisíce blikajících světýlek, každé s jednoduchým pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyšte propojení a sledujte, jak se sladí.",
+            cs: "Tisíce blikajících světýlek, každé s jednoduchým pravidlem: přizpůsob se sousedům. Z toho vznikají spirály, vlny i chaos! Zvyš propojení a sleduj, jak se sladí.",
             en: "Thousands of blinking lights, each with one simple rule: match your neighbours. That creates spirals, waves, and chaos! Increase the connection and watch them sync up."
         },
         coupling: { cs: "Síla propojení (K)", en: "Connection strength (K)" },
@@ -323,8 +324,8 @@ export default fieldSim({
             en: "Your connection settings shaped these waves"
         },
         explain_a: {
-            cs: "Každé světlo bliká vlastním rytmem — trochu rychleji, trochu pomaleji. Posuvník 'Kolik naslouchají' ovládá, jak moc každé světlo kopíruje sousedy. Pod určitou hodnotou: každý si jde svou cestou. Nad ní: všechna světla se najednou synchronizují, bez dirigenta. Takto bije tvoje srdce — tisíce buněk s různým přirozeným tempem se seřídí na jeden úder.",
-            en: "Each light flashes at its own natural rhythm — slightly faster or slower. The slider controls how much each light copies its neighbours. Below a threshold: chaos. Above it: all lights suddenly synchronise with no conductor. This is how your heart beats — thousands of cells with different natural rates locking into one rhythm.",
+            cs: "Každé světlo bliká vlastním rytmem — trochu rychleji, trochu pomaleji. Posuvník 'Síla propojení' určuje, jak moc každé světlo kopíruje sousedy. Pod určitou hodnotou: každý si jde svou cestou. Nad ní: všechna světla se najednou synchronizují, bez dirigenta. Takto bije tvoje srdce — tisíce buněk s různým přirozeným tempem se seřídí na jeden úder.",
+            en: "Each light flashes at its own natural rhythm — slightly faster or slower. The 'Connection strength' slider controls how much each light copies its neighbours. Below a threshold: chaos. Above it: all lights suddenly synchronise with no conductor. This is how your heart beats — thousands of cells with different natural rates locking into one rhythm.",
         },
     },
 

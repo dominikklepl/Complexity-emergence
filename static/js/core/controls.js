@@ -30,7 +30,7 @@ function el(tag, props = {}) {
 export function buildControls(sim, container, callbacks) {
     container.innerHTML = "";
 
-    let colourScheme = 0;
+    let colourScheme = sim.defaultColourScheme ?? 0;
 
     // --- Description ---
     if (sim.translations.desc) {
@@ -126,7 +126,7 @@ export function buildControls(sim, container, callbacks) {
 
         sim.colours.forEach((colour, idx) => {
             const btn = document.createElement("button");
-            btn.className = "colour-btn" + (idx === 0 ? " active" : "");
+            btn.className = "colour-btn" + (idx === colourScheme ? " active" : "");
             btn.style.background = colour.gradient;
             btn.title = colour.i18nTitle || "";
             btn.addEventListener("click", () => {

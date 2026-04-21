@@ -239,7 +239,7 @@ export default fieldSim({
         { gradient: "linear-gradient(135deg, #0f0f14, #645f5a, #f5f0eb)", i18nTitle: "Inkoust" },
     ],
 
-    speedSlider: { min: 1, max: 30, step: 1, default: 15 },
+    speedSlider: { min: 0, max: 60, step: 1, default: 30 },
 
     // ─── Equations ──────────────────────────────────────────────
 
@@ -295,7 +295,7 @@ export default fieldSim({
             en: "Two chemicals, one reaction, endless patterns. The same math as a leopard's coat.",
         },
         desc: {
-            cs: "Dvě jednoduché chemické pravidla stačí k vytvoření složitých vzorů — podobných skvrnám na kůži zvířat! Posuňte posuvníky a sledujte, co se stane.",
+            cs: "Dvě jednoduchá chemická pravidla stačí k vytvoření složitých vzorů — podobných skvrnám na kůži zvířat! Posuň posuvníky a sleduj, co se stane.",
             en: "Two simple chemical rules are enough to create complex patterns — just like spots on animal skin! Move the sliders and watch what happens."
         },
         feed_rate: { cs: "Přidávání látky (f)", en: "Adding chemical (f)" },
@@ -313,8 +313,8 @@ export default fieldSim({
             en: "Your settings created this unique pattern"
         },
         explain_a: {
-            cs: "Dvě neviditelné chemikálie zápolí o prostor — jedna se šíří rychle, druhá pomalu. Tenhle rozdíl v rychlosti vytesává vzor. Přidej poruchu kliknutím: disturbance se neroztratí, ale rozroste se do spirály, která se točí donekonečna. Přesně takový souboj chemikálií tvoří pruhy na kůži zebry a tečky na kůži jaguára.",
-            en: "Two invisible chemicals are fighting over territory — one spreads fast, one spreads slow. That speed difference carves the pattern. Click to add a disturbance: it doesn't fade, it grows into a spinning spiral. This exact chemical competition makes zebra stripes and jaguar spots.",
+            cs: "Dvě neviditelné chemikálie zápolí o prostor — jedna se šíří rychle, druhá pomalu. Tenhle rozdíl v rychlosti vytesává vzor. Přidej poruchu kliknutím: tvá stopa se neroztratí — rozroste se do nového vzoru, někdy do vlny, někdy do spirály. Stejný typ chemického souboje tvoří pruhy na kůži zebry a tečky na kůži jaguára.",
+            en: "Two invisible chemicals are fighting over territory — one spreads fast, one spreads slow. That speed difference carves the pattern. Click to add a disturbance: your trace doesn't fade — it grows into a new pattern, sometimes a wave, sometimes a spiral. This same type of competition makes zebra stripes and jaguar spots.",
         },
     },
 

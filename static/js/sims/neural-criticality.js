@@ -501,11 +501,11 @@ export default fieldSim({
 
             if (typeof katex !== "undefined") {
                 katex.render(
-                    "u_i(t+1) = u_i(t)\\cdot(1-\\lambda) \\;+\\; \\color{#c8b88a}{\\sigma}\\!\\sum_{j\\in N_i} \\mathbf{1}[u_j \\geq \\theta] \\;+\\; \\varepsilon_i",
+                    "\\begin{aligned} u_i(t+1) &= u_i(t)\\cdot(1-{\\color{#c8b88a}\\lambda}) \\\\ &\\;+\\; {\\color{#c8b88a}\\sigma}\\sum_{j\\in N_i} \\mathbf{1}[u_j \\geq {\\color{#c8b88a}\\theta}] + {\\color{#c8b88a}\\varepsilon}_i \\end{aligned}",
                     eq1, { displayMode: true, throwOnError: false }
                 );
                 katex.render(
-                    "\\text{if }u_i \\geq \\color{#c8b88a}{\\theta}: \\quad u_i := 0 \\quad \\text{(fire, then rest)}",
+                    "\\text{if }u_i \\geq \\theta: \\quad u_i := 0 \\quad \\text{(fire, then rest)}",
                     eq2, { displayMode: true, throwOnError: false }
                 );
             } else {
@@ -524,8 +524,8 @@ export default fieldSim({
             params.innerHTML =
                 badge("σ", "#c8b88a", tips.spread_name, tips.spread_tip) +
                 badge("λ", "#c8b88a", tips.leak_name,   tips.leak_tip) +
-                badge("θ", "#887550", "= 1.0 (" + tips.threshold_name + ")", tips.threshold_tip) +
-                badge("ε", "#887550", tips.noise_name,  tips.noise_tip);
+                badge("θ", "#c8b88a", "= 1.0 (" + tips.threshold_name + ")", tips.threshold_tip) +
+                badge("ε", "#c8b88a", tips.noise_name,  tips.noise_tip);
             div.appendChild(params);
 
             const note = document.createElement("p");
@@ -544,12 +544,12 @@ export default fieldSim({
     translations: {
         tab_neural: { cs: "Mozková aktivita", en: "Neural Criticality" },
         tagline: {
-            cs: "Mozek na hraně mezi tichem a bouří — právě tam pracuje nejlépe.",
-            en: "The brain, on the edge of silence and storm — where it works best.",
+            cs: "Mozek na hraně mezi tichem a bouří — právě tam zvládne zpracovat jak šepot, tak bouři.",
+            en: "The brain, on the edge of silence and storm — where it can process both a whisper and a thunderclap.",
         },
         desc: {
-            cs: "Váš mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: záchvat. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech — a právě tam mozek pracuje nejlépe. Posuňte propojení a sledujte přechod.",
-            en: "Your brain lives on the edge. Too little connection: silence. Too much: seizure. At the critical point between them, cascades of activity appear in all sizes — and that's where the brain works best. Adjust connectivity and watch the transition.",
+            cs: "Tvůj mozek žije na hraně. Příliš málo propojení: ticho. Příliš mnoho: lavina se nezastaví — mozek „hoří” jako při záchvatu. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech — a právě tam zvládne zpracovat jak šepot, tak bouři. Posuň propojení a sleduj přechod.",
+            en: "Your brain lives on the edge. Too little connection: silence. Too much: the avalanche never stops — the brain 'runs away' like in a seizure. At the critical point between them, cascades of activity appear in all sizes — and that's where it can process both a whisper and a thunderclap. Adjust connectivity and watch the transition.",
         },
         lbl_spread:  { cs: "Propojení (σ)",       en: "Connectivity (σ)" },
         lbl_input:   { cs: "Pozadí (ε)",           en: "Background noise (ε)" },
@@ -566,12 +566,12 @@ export default fieldSim({
         region_temporal:   { cs: "Spánkový lalok",   en: "Temporal lobe" },
         snap_title_neural: { cs: "Mozková aktivita", en: "Neural Criticality" },
         snap_sub_neural: {
-            cs: "Váš mozek, na hraně mezi tichem a bouří.",
+            cs: "Tvůj mozek, na hraně mezi tichem a bouří.",
             en: "Your brain, on the edge between silence and storm.",
         },
         explain_a: {
-            cs: "Tvůj mozek žije na hraně. Příliš málo propojení: ticho — žádná aktivita. Příliš mnoho: záchvat — aktivita se nekontrolovaně šíří. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech: malé i velké. Tam mozek pracuje nejlépe. Posuň 'Propojení' a sleduj přechod ze záchvatu do ticha.",
-            en: "Your brain lives on the edge. Too little connectivity: silence — nothing fires. Too much: seizure — activity spreads uncontrollably. At the critical point between them, avalanches of activity appear in all sizes: small and large. That is where the brain works best. Drag 'Connectivity' and watch the transition from seizure to silence.",
+            cs: "Tvůj mozek žije na hraně. Příliš málo propojení: ticho — žádná aktivita. Příliš mnoho: lavina se nezastaví — mozek „hoří” jako při záchvatu. Přesně na kritickém bodě mezi nimi vznikají laviny aktivity ve všech velikostech: malé i velké. Právě tam zvládne zpracovat jak šepot, tak bouři. Posuň 'Propojení' a sleduj přechod ze záchvatu do ticha.",
+            en: "Your brain lives on the edge. Too little connectivity: silence — nothing fires. Too much: the avalanche never stops — the brain 'runs away' like in a seizure. At the critical point between them, avalanches of activity appear in all sizes: small and large. That is where it can process both a whisper and a thunderclap. Drag 'Connectivity' and watch the transition from seizure to silence.",
         },
     },
 
