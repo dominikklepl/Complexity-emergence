@@ -87,6 +87,10 @@ export function init(defaultLang) {
 
     setupInteraction(canvasEl);
 
+    // Paused-drawing: fire after interaction.js has already updated touchPos
+    canvasEl.addEventListener("pointerdown", handlePausedDraw);
+    canvasEl.addEventListener("pointermove", handlePausedDraw);
+
     // Build tab buttons
     buildTabs();
 
@@ -240,6 +244,9 @@ function switchSim(id) {
 
     // Render equations
     renderEquations(sim, getLang());
+
+    // Sync draw mode cursor/hint for new sim
+    updateDrawMode();
 }
 
 function doSnapshot() {
@@ -266,6 +273,29 @@ function togglePause() {
     } else {
         animate();
     }
+    updateDrawMode();
+}
+
+function updateDrawMode() {
+    const canvasEl = getCanvas();
+    if (!canvasEl) return;
+    const inDrawMode = paused && !!activeSim?.canPaint;
+    canvasEl.style.cursor = inDrawMode ? "crosshair" : "";
+    const hint = document.querySelector(".touch-hint");
+    if (hint) {
+        hint.dataset.i18n = inDrawMode ? "draw_hint" : "touch_hint";
+        hint.textContent = t(hint.dataset.i18n);
+    }
+}
+
+function handlePausedDraw(e) {
+    if (!paused) return;
+    if (!activeSim?.canPaint) return;
+    if (e.type === "pointermove" && e.buttons === 0) return;
+    activeSim.paintStroke(touchPos, activeControls?.getInteractionRadius() ?? activeSim.paintRadius);
+    const gl = getGL();
+    const canvas = getCanvas();
+    activeSim.render(gl, canvas, activeControls?.getColourScheme?.() ?? 0);
 }
 
 function resetSim() {
@@ -286,7 +316,7 @@ function animate() {
         const speed = activeControls.getSpeed();
         const colourScheme = activeControls.getColourScheme();
 
-        const touch = { pos: touchPos, active: touchActive, button: touchButton };
+        const touch = { pos: touchPos, active: touchActive, button: touchButton, radius: activeControls.getInteractionRadius() };
 
         // Fractional-speed accumulator: supports speed < 1 (e.g. 0.2 = 1 step/5 frames).
         // For speed >= 1 this behaves identically to the old integer loop.

@@ -17,6 +17,25 @@ import {
     drawQuad, setUniform,
 } from "./webgl.js";
 
+// Shader for painting chemical values directly into the state texture when paused.
+// Reads existing state, blends in paintColor within a soft circular brush.
+const PAINT_SHADER = `
+precision highp float;
+uniform sampler2D u_state;
+uniform vec2 u_paintPos;
+uniform float u_paintRadius;
+uniform vec4 u_paintColor;
+varying vec2 v_uv;
+
+void main() {
+    vec4 state = texture2D(u_state, v_uv);
+    float dist = length(v_uv - u_paintPos);
+    float t = max(0.0, 1.0 - dist / u_paintRadius);
+    t = t * t;
+    gl_FragColor = mix(state, u_paintColor, t);
+}
+`;
+
 /**
  * Create a managed field simulation from a declarative config.
  *
@@ -41,6 +60,7 @@ export function fieldSim(config) {
     // --- Internal state (populated by setup, cleaned by teardown) ---
     let stepProg = null;
     let displayProg = null;
+    let paintProg = null;
     let textures = [null, null];
     let framebuffers = [null, null];
     // Double-buffering (ping-pong): the GPU can't read and write the same texture
@@ -58,6 +78,7 @@ export function fieldSim(config) {
         presets: config.presets || [],
         colours: config.colours || [],
         speedSlider: config.speedSlider || { min: 1, max: 10, default: 5 },
+        interactionSlider: config.interactionSlider || null,
         translations: config.translations || {},
         equations: config.equations || { render() { } },
         snapshotMeta: config.snapshotMeta || (() => ({ title: "", subtitle: "" })),
@@ -105,6 +126,15 @@ export function fieldSim(config) {
             readTex  = 0;
             writeTex = 1;
 
+            // Compile paint shader if this sim supports paused drawing
+            if (config.paintColor) {
+                const paintSrc = config.paintShader ?? PAINT_SHADER;
+                paintProg = createProgram(VERTEX_SHADER_SRC, paintSrc, config.id + "/paint");
+                if (paintProg) {
+                    cacheUniformLocations(paintProg, ["u_state", "u_paintPos", "u_paintRadius", "u_paintColor"]);
+                }
+            }
+
             // Optional post-setup hook (e.g. for HTML overlay creation)
             if (config.onSetup) config.onSetup(gl, canvas, simW, simH, params);
         },
@@ -120,11 +150,13 @@ export function fieldSim(config) {
             if (framebuffers[1]) gl.deleteFramebuffer(framebuffers[1]);
             if (stepProg) deleteProgram(stepProg);
             if (displayProg) deleteProgram(displayProg);
+            if (paintProg) deleteProgram(paintProg);
 
             textures = [null, null];
             framebuffers = [null, null];
             stepProg = null;
             displayProg = null;
+            paintProg = null;
             readTex  = 0;
             writeTex = 1;
         },
@@ -143,9 +175,9 @@ export function fieldSim(config) {
             // Set standard resolution uniform
             setUniform(stepProg, "u_resolution", "2f", simW, simH);
 
-            // Set touch uniforms
-            const DEFAULT_TOUCH_RADIUS = 0.03;  // UV space (0–1); 0.03 ≈ 3% of sim width
-            const touchRadius = config.touchRadius ?? DEFAULT_TOUCH_RADIUS;
+            // Set touch uniforms — dynamic radius from slider takes priority over static config
+            const DEFAULT_TOUCH_RADIUS = 0.03;
+            const touchRadius = touch.radius ?? config.touchRadius ?? DEFAULT_TOUCH_RADIUS;
             setUniform(stepProg, "u_touchRadius", "1f", touchRadius);
             if (touch.active) {
                 setUniform(stepProg, "u_touch", "2f", touch.pos[0], touch.pos[1]);
@@ -200,5 +232,34 @@ export function fieldSim(config) {
             gl.viewport(0, 0, canvas.width, canvas.height);
             drawQuad(displayProg);
         },
+
+        /**
+         * Paint a soft circular brush stroke into the state texture (for use when paused).
+         * Runs a GPU pass: reads readTex, writes blend of state+paintColor to writeTex, swaps.
+         * Caller must re-render after this to see the result.
+         * @param {[number, number]} pos  Normalised UV position [0..1, 0..1]
+         * @param {number} radius  Brush radius in UV space (0..1)
+         */
+        paintStroke(pos, radius) {
+            const gl = getGL();
+            if (!paintProg) return;
+
+            gl.useProgram(paintProg);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, textures[readTex]);
+            setUniform(paintProg, "u_state", "1i", 0);
+            setUniform(paintProg, "u_paintPos", "2f", pos[0], pos[1]);
+            setUniform(paintProg, "u_paintRadius", "1f", radius);
+            setUniform(paintProg, "u_paintColor", "4f", ...config.paintColor);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[writeTex]);
+            gl.viewport(0, 0, simW, simH);
+            drawQuad(paintProg);
+
+            [readTex, writeTex] = [writeTex, readTex];
+        },
+
+        canPaint: !!config.paintColor,
+        paintRadius: config.paintRadius ?? 0.012,
     };
 }

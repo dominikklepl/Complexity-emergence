@@ -332,16 +332,16 @@ let _stepCount = 0;
 // Stored as R=regionId/10 in a Float32Array RGBA texture.
 
 function _insideBrain(u, v) {
-    if (v < 0.10) return false;
-    // Main cortex dome — scaled to fill canvas, same ~2:1 physical aspect ratio.
-    const dx1 = (u - 0.50) / 0.43, dy1 = (v - 0.63) / 0.32;
+    if (v < 0.08) return false;
+    // Main cortex dome — top at v=0.92 (aspect 1.37, properly rounded), sides at u=0.09/0.91
+    const dx1 = (u - 0.50) / 0.41, dy1 = (v - 0.62) / 0.30;
     if (dx1 * dx1 + dy1 * dy1 <= 1.0) return true;
-    // Frontal pole — fills in the lower-front of the frontal lobe
-    const dx2 = (u - 0.14) / 0.085, dy2 = (v - 0.52) / 0.24;
+    // Frontal lobe — fills lower-front, left edge at u=0.03
+    const dx2 = (u - 0.14) / 0.11, dy2 = (v - 0.50) / 0.20;
     if (dx2 * dx2 + dy2 * dy2 <= 1.0) return true;
-    // Temporal lobe — hangs below the Sylvian fissure, forward-biased
-    const dx3 = (u - 0.38) / 0.25, dy3 = (v - 0.23) / 0.18;
-    return dx3 * dx3 + dy3 * dy3 <= 1.0 && v < 0.42;
+    // Temporal lobe — protrudes downward, guard lowered so bottom isn't a hard flat cut
+    const dx3 = (u - 0.38) / 0.24, dy3 = (v - 0.22) / 0.14;
+    return dx3 * dx3 + dy3 * dy3 <= 1.0 && v < 0.37;
 }
 
 function _getRegion(u, v) {
@@ -477,6 +477,7 @@ export default fieldSim({
     ],
 
     speedSlider: { min: 0.05, max: 0.35, step: 0.05, default: 0.2 },
+    interactionSlider: { min: 0.01, max: 0.20, step: 0.005, default: 0.06 },
 
     // ─── Equations ───────────────────────────────────────────────
 

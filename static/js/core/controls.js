@@ -25,7 +25,7 @@ function el(tag, props = {}) {
  * @param {Object} sim  The simulation module
  * @param {HTMLElement} container  The DOM element to populate
  * @param {Object} callbacks  { onParamChange, onPreset, onColourChange, onReset }
- * @returns {{ getParams: () => Object, getSpeed: () => number, getColourScheme: () => number }}
+ * @returns {{ getParams: () => Object, getSpeed: () => number, getColourScheme: () => number, getInteractionRadius: () => number }}
  */
 export function buildControls(sim, container, callbacks) {
     container.innerHTML = "";
@@ -113,6 +113,21 @@ export function buildControls(sim, container, callbacks) {
         container.appendChild(buildSlider(speedCtrl, {}));
     }
 
+    // --- Interaction radius slider ---
+    if (sim.interactionSlider) {
+        const irCtrl = {
+            type: "slider",
+            id: "_interactionRadius",
+            min: sim.interactionSlider.min,
+            max: sim.interactionSlider.max,
+            step: sim.interactionSlider.step ?? 0.005,
+            default: sim.interactionSlider.default,
+            i18nLabel: "interaction_radius",
+            format: 2,
+        };
+        container.appendChild(buildSlider(irCtrl, {}));
+    }
+
     // --- Colour schemes ---
     if (sim.colours && sim.colours.length > 0) {
         const title = document.createElement("div");
@@ -166,6 +181,11 @@ export function buildControls(sim, container, callbacks) {
 
         getColourScheme() {
             return colourScheme;
+        },
+
+        getInteractionRadius() {
+            const el = container.querySelector('[data-param-id="_interactionRadius"]');
+            return el ? parseFloat(el.value) : (sim.interactionSlider ? sim.interactionSlider.default : 0.05);
         },
     };
 }

@@ -161,6 +161,10 @@ export default fieldSim({
     },
 
     touchRadius: 0.03,
+    // Values injected when user draws while paused: u=0 (fuel depleted), v=0.9 (activator peak)
+    // Creates active pattern seeds that grow into structure when simulation resumes.
+    paintColor: [0.0, 0.9, 0.0, 1.0],
+    paintRadius: 0.010,
 
     /**
      * Create initial state: u=1 everywhere, v=0 everywhere,
@@ -240,6 +244,7 @@ export default fieldSim({
     ],
 
     speedSlider: { min: 0, max: 60, step: 1, default: 30 },
+    interactionSlider: { min: 0.005, max: 0.12, step: 0.005, default: 0.03 },
 
     // ─── Equations ──────────────────────────────────────────────
 

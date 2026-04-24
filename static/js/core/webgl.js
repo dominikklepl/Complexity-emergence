@@ -256,5 +256,6 @@ export function setUniform(prog, name, type, ...values) {
     if (loc === null || loc === undefined) return;
     if (type === "1f") gl.uniform1f(loc, values[0]);
     else if (type === "2f") gl.uniform2f(loc, values[0], values[1]);
+    else if (type === "4f") gl.uniform4f(loc, values[0], values[1], values[2], values[3]);
     else if (type === "1i") gl.uniform1i(loc, values[0]);
 }

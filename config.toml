@@ -28,6 +28,10 @@ enabled = true
 id      = "neural"  # Neural criticality / brain avalanches
 enabled = true
 
+[[simulations]]
+id      = "pendulum"   # Double-pendulum / deterministic chaos
+enabled = true
+
 
 # -------------------------------------------------------------
 #  BRANDING — text shown in the UI sidebar
@@ -52,8 +56,6 @@ default_lang = "cs"
 [postcard]
 # Postcard branding (Czech only)
 footer_institution = "Ústav informatiky AV ČR"
-footer_tagline     = "Jednoduchá pravidla, složité chování"
-footer_event       = "Veletrh vědy 2026"
 qr_url             = "https://www.cs.cas.cz"
 
 # Logo image path (relative to project root)
@@ -426,3 +428,46 @@ seizure  = { spread = 0.38, input = 0.015, leak = 0.005 }
 silence  = { spread = 0.09, input = 0.002, leak = 0.050 }
 cascade  = { spread = 0.32, input = 0.008, leak = 0.005 }
 sleep    = { spread = 0.12, input = 0.003, leak = 0.020 }
+
+
+# -------------------------------------------------------------
+#  DOUBLE PENDULUM (Deterministic chaos)
+# -------------------------------------------------------------
+
+[content.pendulum]
+# Tab label
+tab_cs = "Dvojité kyvadlo"
+tab_en = "Double Pendulum"
+
+# Short description (shown below tab headline)
+desc_cs = "Kyvadla začínají na skoro stejném místě. Sleduj, jak se jejich dráhy rozchází — i nepatrný rozdíl na začátku vede ke zcela odlišnému pohybu. To je chaotické chování."
+desc_en = "The pendulums start at nearly the same position. Watch their paths diverge — even a tiny difference at the start leads to completely different motion. This is chaotic behaviour."
+
+# Slider labels
+lbl_initialAngle_cs = "Počáteční úhel"
+lbl_initialAngle_en = "Starting angle"
+lbl_spread_cs       = "Rozdíl podmínek"
+lbl_spread_en       = "Condition spread"
+lbl_numPendulums_cs = "Počet kyvadel"
+lbl_numPendulums_en = "Pendulums"
+lbl_trailMode_cs    = "Délka stop"
+lbl_trailMode_en    = "Trail length"
+lbl_trailFade_cs    = "Krátké"
+lbl_trailFade_en    = "Short"
+lbl_trailPersistent_cs = "Dlouhé"
+lbl_trailPersistent_en = "Long"
+lbl_armRatio_cs     = "Poměr ramen"
+lbl_armRatio_en     = "Arm ratio"
+
+# Postcard snapshot strings
+snap_title_cs = "Dvojité kyvadlo"
+snap_title_en = "Double Pendulum"
+snap_sub_cs   = "Deterministický chaos"
+snap_sub_en   = "Deterministic Chaos"
+
+# "Jak to funguje?" panel — two paragraphs (HTML allowed for <strong> etc.)
+eq_para1_cs = "Dvě kyvadla spojená v sérii. Každé rameno ovlivňuje pohyb toho druhého — systém má dva vzájemně provázané stupně volnosti (úhly θ₁ a θ₂)."
+eq_para1_en = "Two pendulums linked in series. Each arm drives the other — the system has two coupled degrees of freedom (angles θ₁ and θ₂)."
+
+eq_para2_cs = "Klíčová vlastnost: <strong>sensitivní závislost na počátečních podmínkách</strong>. Kyvadla lišící se o zlomek stupně se zpočátku pohybují shodně, pak se jejich dráhy exponenciálně rozcházejí. Deterministický systém — žádná náhoda — přesto nepředvídatelný."
+eq_para2_en = "<strong>Sensitive dependence on initial conditions</strong>: pendulums differing by a fraction of a degree start in sync, then diverge exponentially. Fully deterministic — no randomness — yet impossible to forecast."

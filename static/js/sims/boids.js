@@ -51,6 +51,7 @@ uniform float u_mode;          // 0 boids, 1 crowd, 2 predator
 uniform vec2  u_touch;
 uniform float u_touchActive;
 uniform float u_touchButton;   // 0 left (attract), 1 right (repel)
+uniform float u_touchRadius;
 
 varying vec2 v_uv;
 
@@ -150,11 +151,11 @@ void main() {
 
         if (u_mode > 1.5) {
             // Predator: flee from touch
-            if (tD < u_perception * 3.0 && tD > 0.001)
+            if (tD < u_touchRadius && tD > 0.001)
                 accel += steer(-toT, vel, u_maxSpeed, maxForce) * 3.5;
         } else {
             // Normal: left attract, right repel
-            if (tD < u_perception * 2.5 && tD > 0.001) {
+            if (tD < u_touchRadius && tD > 0.001) {
                 vec2 dir = u_touchButton < 0.5 ? toT : -toT;
                 accel += steer(dir, vel, u_maxSpeed, maxForce) * 2.5;
             }
@@ -368,7 +369,7 @@ export default {
         cacheUniformLocations(stepProg, [
             "u_state", "u_separation", "u_alignment", "u_cohesion",
             "u_perception", "u_maxSpeed", "u_mode",
-            "u_touch", "u_touchActive", "u_touchButton",
+            "u_touch", "u_touchActive", "u_touchButton", "u_touchRadius",
         ]);
         cacheUniformLocations(trailFadeProg, ["u_trail", "u_persistence"]);
         cacheUniformLocations(boidDrawProg, [
@@ -418,6 +419,7 @@ export default {
         setUniform(stepProg, "u_maxSpeed", "1f", params.maxSpeed);
         setUniform(stepProg, "u_mode", "1f", MODE_MAP[params.mode] || 0);
 
+        setUniform(stepProg, "u_touchRadius", "1f", touch.radius ?? 0.20);
         if (touch.active) {
             setUniform(stepProg, "u_touch", "2f", touch.pos[0], touch.pos[1]);
             setUniform(stepProg, "u_touchActive", "1f", 1.0);
@@ -538,6 +540,7 @@ export default {
     ],
 
     speedSlider: { min: 0.1, max: 0.9, step: 0.1, default: 0.5 },
+    interactionSlider: { min: 0.05, max: 0.35, step: 0.01, default: 0.20 },
     defaultColourScheme: 1,
 
     // ── Equations ───────────────────────────────────────────────

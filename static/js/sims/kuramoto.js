@@ -15,6 +15,33 @@ import { SIM_W, SIM_H } from "../core/webgl.js";
 
 // ─── GLSL Shaders ───────────────────────────────────────────────
 
+// When paused: stamps a frozen spiral phase pattern centred on the brush.
+// On unpause the spiral immediately starts rotating — looks like nucleating a new spiral wave.
+const PAINT_SHADER = `
+precision highp float;
+uniform sampler2D u_state;
+uniform vec2 u_paintPos;
+uniform float u_paintRadius;
+varying vec2 v_uv;
+const float PI2 = 6.28318530718;
+
+void main() {
+    vec4 state = texture2D(u_state, v_uv);
+    vec2 diff = v_uv - u_paintPos;
+    float dist = length(diff);
+    if (dist < u_paintRadius && dist > 0.001) {
+        float angle = atan(diff.y, diff.x);
+        float spiral = mod(angle + (dist / u_paintRadius) * PI2, PI2);
+        float strength = 1.0 - dist / u_paintRadius;
+        strength = strength * strength;
+        float newTheta = mix(state.r, spiral, strength * 0.9);
+        gl_FragColor = vec4(newTheta, state.g, 0.0, 1.0);
+    } else {
+        gl_FragColor = state;
+    }
+}
+`;
+
 const STEP_SHADER = `
 precision highp float;
 
@@ -175,6 +202,9 @@ export default fieldSim({
     },
 
     touchRadius: 0.06,
+    // Non-zero paintColor triggers paint mode; theta=π seed, omega=base 0.6 (unused by paintShader)
+    paintColor: [Math.PI, 0.6, 0.0, 1.0],
+    paintShader: PAINT_SHADER,
 
     /**
      * Create initial state: random phases, frequencies based on
@@ -260,6 +290,7 @@ export default fieldSim({
     ],
 
     speedSlider: { min: 0.2, max: 1.8, step: 0.2, default: 1.0 },
+    interactionSlider: { min: 0.01, max: 0.20, step: 0.005, default: 0.06 },
     defaultColourScheme: 2,
 
     // ─── Equations ──────────────────────────────────────────────

@@ -394,10 +394,6 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
     c.setFillColor(Color(26 / 255, 26 / 255, 46 / 255))
     c.drawString(margin, inst_y, pc["footer_institution"])
 
-    # -- Tagline + event --
-    c.setFont("DejaVuSans", 6.5)
-    c.setFillColor(Color(140 / 255, 140 / 255, 140 / 255))
-    c.drawString(margin, tagline_y, f"{pc['footer_tagline']} · {pc['footer_event']}")
 
     # -- QR code (right side, spanning inst+tagline rows) --
     if HAS_QRCODE and HAS_PIL:
@@ -489,12 +485,6 @@ def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
 
     # Branding row: institution + QR
     draw.text((margin, sep_y + int(8 * scale)), pc["footer_institution"], fill=(26, 26, 46), font=ft_inst)
-    draw.text(
-        (margin, sep_y + int(28 * scale)),
-        f"{pc['footer_tagline']} · {pc['footer_event']}",
-        fill=(140, 140, 140),
-        font=ft_sm,
-    )
 
     # QR code
     if HAS_QRCODE:
