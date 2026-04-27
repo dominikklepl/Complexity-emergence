@@ -17,6 +17,10 @@ import { takeSnapshot } from "./snapshot.js";
 // This prevents the simulation loop from starving the render pass.
 const FRAME_DEADLINE_MS = 13;
 
+// Cap render rate at 60fps to prevent GPU hammering on high-refresh displays.
+const MIN_FRAME_MS = 1000 / 60;
+let lastRenderTime = -Infinity; // -Infinity forces first frame to always render
+
 // ─── State ──────────────────────────────────────────────────────
 
 /** @type {Map<string, Object>} Registered simulation modules */
@@ -232,7 +236,13 @@ function switchSim(id) {
     const controlsContainer = document.getElementById("sim-controls");
     const callbacks = {
         onParamChange: () => { },  // live params — no action needed, read each frame
-        onPreset: (preset) => resetSim(),
+        onPreset: (preset) => {
+            // Pass full preset.params so non-slider flags (seed_mode, auto_pause)
+            // reach initState — getParams() only returns slider values.
+            resetSim(preset.params);
+            const wantPaused = !!preset.params?.auto_pause;
+            if (wantPaused !== paused) togglePause();
+        },
         onColourChange: () => { },  // live — read each frame
         onReset: () => resetSim(),
     };
@@ -298,43 +308,52 @@ function handlePausedDraw(e) {
     activeSim.render(gl, canvas, activeControls?.getColourScheme?.() ?? 0);
 }
 
-function resetSim() {
+function resetSim(extraParams = {}) {
     if (!activeSim || !activeControls) return;
     const gl = getGL();
     const canvas = getCanvas();
 
     activeSim.teardown(gl);
-    const params = activeControls.getParams();
+    const params = { ...activeControls.getParams(), ...extraParams };
     activeSim.setup(gl, canvas, params);
+    // Render once immediately so the new initial state is visible even when paused.
+    activeSim.render(gl, canvas, activeControls.getColourScheme());
 }
 
 function animate() {
-    if (activeSim && activeControls) {
-        const gl = getGL();
-        const canvas = getCanvas();
-        const params = activeControls.getParams();
-        const speed = activeControls.getSpeed();
-        const colourScheme = activeControls.getColourScheme();
+    const now = performance.now();
 
-        const touch = { pos: touchPos, active: touchActive, button: touchButton, radius: activeControls.getInteractionRadius() };
+    if (now - lastRenderTime >= MIN_FRAME_MS) {
+        lastRenderTime = now;
 
-        // Fractional-speed accumulator: supports speed < 1 (e.g. 0.2 = 1 step/5 frames).
-        // For speed >= 1 this behaves identically to the old integer loop.
-        const frameDeadline = performance.now() + FRAME_DEADLINE_MS;
-        stepAccum += speed;
-        let didStep = false;
-        while (stepAccum >= 1.0) {
-            activeSim.step(params, touch);
-            stepAccum -= 1.0;
-            didStep = true;
-            if (didStep && performance.now() > frameDeadline) { stepAccum = 0; break; }
+        if (activeSim && activeControls) {
+            const gl = getGL();
+            const canvas = getCanvas();
+            const params = activeControls.getParams();
+            const speed = activeControls.getSpeed();
+            const colourScheme = activeControls.getColourScheme();
+
+            const touch = { pos: touchPos, active: touchActive, button: touchButton, radius: activeControls.getInteractionRadius() };
+
+            // Fractional-speed accumulator: supports speed < 1 (e.g. 0.2 = 1 step/5 frames).
+            // For speed >= 1 this behaves identically to the old integer loop.
+            const frameDeadline = now + FRAME_DEADLINE_MS;
+            stepAccum += speed;
+            let didStep = false;
+            while (stepAccum >= 1.0) {
+                activeSim.step(params, touch);
+                stepAccum -= 1.0;
+                didStep = true;
+                if (didStep && performance.now() > frameDeadline) { stepAccum = 0; break; }
+            }
+
+            // Display
+            activeSim.render(gl, canvas, colourScheme);
         }
 
-        // Display
-        activeSim.render(gl, canvas, colourScheme);
+        frameTick();
     }
 
-    frameTick();
     rafId = requestAnimationFrame(animate);
 }
 

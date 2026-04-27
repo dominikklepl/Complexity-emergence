@@ -12,7 +12,7 @@
 
 import {
     SIM_W, SIM_H, VERTEX_SHADER_SRC,
-    getGL, getCanvas,
+    getGL, getCanvas, floatLinearAvailable,
     createProgram, deleteProgram, cacheUniformLocations, createTexture, createFramebuffer,
     drawQuad, setUniform,
 } from "./webgl.js";
@@ -217,6 +217,13 @@ export function fieldSim(config) {
             gl.useProgram(displayProg);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, textures[readTex]);
+
+            // Linear filtering for display upscaling (sim res < canvas res).
+            // Keeps NEAREST for step pass to preserve exact cell state values.
+            if (config.displayLinear && floatLinearAvailable) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            }
+
             setUniform(displayProg, "u_state", "1i", 0);
             setUniform(displayProg, "u_colourScheme", "1i", colourScheme);
 
@@ -231,6 +238,10 @@ export function fieldSim(config) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.viewport(0, 0, canvas.width, canvas.height);
             drawQuad(displayProg);
+
+            if (config.displayLinear && floatLinearAvailable) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            }
         },
 
         /**

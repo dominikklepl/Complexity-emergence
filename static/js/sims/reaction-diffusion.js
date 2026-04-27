@@ -32,21 +32,17 @@ void main() {
     vec2 dx = vec2(1.0 / u_resolution.x, 0.0);
     vec2 dy = vec2(0.0, 1.0 / u_resolution.y);
 
-    vec4 here  = texture2D(u_state, v_uv);
+    vec2 here  = texture2D(u_state, v_uv).rg;
     float u = here.r;
     float v = here.g;
 
-    float u_up    = texture2D(u_state, v_uv + dy).r;
-    float u_down  = texture2D(u_state, v_uv - dy).r;
-    float u_left  = texture2D(u_state, v_uv - dx).r;
-    float u_right = texture2D(u_state, v_uv + dx).r;
-    float lap_u   = u_up + u_down + u_left + u_right - 4.0 * u;
-
-    float v_up    = texture2D(u_state, v_uv + dy).g;
-    float v_down  = texture2D(u_state, v_uv - dy).g;
-    float v_left  = texture2D(u_state, v_uv - dx).g;
-    float v_right = texture2D(u_state, v_uv + dx).g;
-    float lap_v   = v_up + v_down + v_left + v_right - 4.0 * v;
+    // Sample each neighbour once; read both channels (u,v) from the same fetch.
+    vec2 nb_up    = texture2D(u_state, v_uv + dy).rg;
+    vec2 nb_down  = texture2D(u_state, v_uv - dy).rg;
+    vec2 nb_left  = texture2D(u_state, v_uv - dx).rg;
+    vec2 nb_right = texture2D(u_state, v_uv + dx).rg;
+    float lap_u = nb_up.r + nb_down.r + nb_left.r + nb_right.r - 4.0 * u;
+    float lap_v = nb_up.g + nb_down.g + nb_left.g + nb_right.g - 4.0 * v;
 
     float uvv = u * v * v;
     float new_u = u + u_Du * lap_u - uvv + u_f * (1.0 - u);
@@ -72,68 +68,59 @@ uniform sampler2D u_state;
 uniform int u_colourScheme;
 varying vec2 v_uv;
 
-// Porcelain: cream -> soft blue -> deep indigo
+// Branchless piecewise-linear ramps using mix()+step(). No per-pixel branches.
+// Stop colours verified against original formulas at each breakpoint.
+
+// Porcelain: cream(0) -> soft blue(0.3) -> indigo(0.6) -> deep navy(1)
 vec3 porcelain(float t) {
-    if (t < 0.3) {
-        float p = t / 0.3;
-        return vec3(245.0 - p*55.0, 240.0 - p*40.0, 230.0 - p*10.0) / 255.0;
-    }
-    if (t < 0.6) {
-        float p = (t - 0.3) / 0.3;
-        return vec3(190.0 - p*70.0, 200.0 - p*30.0, 220.0 - p*40.0) / 255.0;
-    }
-    float p = (t - 0.6) / 0.4;
-    return vec3(120.0 - p*90.0, 170.0 - p*120.0, 180.0 - p*100.0) / 255.0;
+    vec3 c0 = vec3(245.0, 240.0, 230.0) / 255.0;
+    vec3 c1 = vec3(190.0, 200.0, 220.0) / 255.0;
+    vec3 c2 = vec3(120.0, 170.0, 180.0) / 255.0;
+    vec3 c3 = vec3( 30.0,  50.0,  80.0) / 255.0;
+    vec3 s0 = mix(c0, c1, clamp(t / 0.3, 0.0, 1.0));
+    vec3 s1 = mix(c1, c2, clamp((t - 0.3) / 0.3, 0.0, 1.0));
+    vec3 s2 = mix(c2, c3, clamp((t - 0.6) / 0.4, 0.0, 1.0));
+    return mix(mix(s0, s1, step(0.3, t)), s2, step(0.6, t));
 }
 
-// Forest: dark brown -> moss -> sage -> warm cream
+// Forest: dark brown(0) -> moss(0.25) -> sage(0.5) -> olive(0.75) -> warm cream(1)
 vec3 forest(float t) {
-    if (t < 0.25) {
-        float p = t / 0.25;
-        return vec3(30.0 + p*15.0, 25.0 + p*30.0, 20.0 + p*10.0) / 255.0;
-    }
-    if (t < 0.5) {
-        float p = (t - 0.25) / 0.25;
-        return vec3(45.0 + p*25.0, 55.0 + p*45.0, 30.0 + p*25.0) / 255.0;
-    }
-    if (t < 0.75) {
-        float p = (t - 0.5) / 0.25;
-        return vec3(70.0 + p*70.0, 100.0 + p*60.0, 55.0 + p*65.0) / 255.0;
-    }
-    float p = (t - 0.75) / 0.25;
-    return vec3(140.0 + p*80.0, 160.0 + p*50.0, 120.0 + p*60.0) / 255.0;
+    vec3 c0 = vec3( 30.0,  25.0,  20.0) / 255.0;
+    vec3 c1 = vec3( 45.0,  55.0,  30.0) / 255.0;
+    vec3 c2 = vec3( 70.0, 100.0,  55.0) / 255.0;
+    vec3 c3 = vec3(140.0, 160.0, 120.0) / 255.0;
+    vec3 c4 = vec3(220.0, 210.0, 180.0) / 255.0;
+    vec3 s0 = mix(c0, c1, clamp(t / 0.25, 0.0, 1.0));
+    vec3 s1 = mix(c1, c2, clamp((t - 0.25) / 0.25, 0.0, 1.0));
+    vec3 s2 = mix(c2, c3, clamp((t - 0.5)  / 0.25, 0.0, 1.0));
+    vec3 s3 = mix(c3, c4, clamp((t - 0.75) / 0.25, 0.0, 1.0));
+    return mix(mix(mix(s0, s1, step(0.25, t)), s2, step(0.5, t)), s3, step(0.75, t));
 }
 
-// Sunset: deep plum -> rose -> amber -> pale gold
+// Sunset: deep plum(0) -> rose(0.25) -> amber(0.5) -> gold(0.75) -> pale gold(1)
 vec3 sunset(float t) {
-    if (t < 0.25) {
-        float p = t / 0.25;
-        return vec3(40.0 + p*50.0, 15.0 + p*10.0, 30.0 + p*5.0) / 255.0;
-    }
-    if (t < 0.5) {
-        float p = (t - 0.25) / 0.25;
-        return vec3(90.0 + p*70.0, 25.0 + p*30.0, 35.0 + p*10.0) / 255.0;
-    }
-    if (t < 0.75) {
-        float p = (t - 0.5) / 0.25;
-        return vec3(160.0 + p*60.0, 55.0 + p*95.0, 45.0 + p*15.0) / 255.0;
-    }
-    float p = (t - 0.75) / 0.25;
-    return vec3(220.0 + p*30.0, 150.0 + p*80.0, 60.0 + p*120.0) / 255.0;
+    vec3 c0 = vec3( 40.0,  15.0,  30.0) / 255.0;
+    vec3 c1 = vec3( 90.0,  25.0,  35.0) / 255.0;
+    vec3 c2 = vec3(160.0,  55.0,  45.0) / 255.0;
+    vec3 c3 = vec3(220.0, 150.0,  60.0) / 255.0;
+    vec3 c4 = vec3(250.0, 230.0, 180.0) / 255.0;
+    vec3 s0 = mix(c0, c1, clamp(t / 0.25, 0.0, 1.0));
+    vec3 s1 = mix(c1, c2, clamp((t - 0.25) / 0.25, 0.0, 1.0));
+    vec3 s2 = mix(c2, c3, clamp((t - 0.5)  / 0.25, 0.0, 1.0));
+    vec3 s3 = mix(c3, c4, clamp((t - 0.75) / 0.25, 0.0, 1.0));
+    return mix(mix(mix(s0, s1, step(0.25, t)), s2, step(0.5, t)), s3, step(0.75, t));
 }
 
-// Ink: near-black -> warm grey -> off-white (sepia tint)
+// Ink: near-black(0) -> warm grey(0.3) -> mid grey(0.7) -> off-white(1)
 vec3 ink(float t) {
-    if (t < 0.3) {
-        float p = t / 0.3;
-        return vec3(15.0 + p*35.0, 15.0 + p*32.0, 20.0 + p*25.0) / 255.0;
-    }
-    if (t < 0.7) {
-        float p = (t - 0.3) / 0.4;
-        return vec3(50.0 + p*60.0, 47.0 + p*55.0, 45.0 + p*50.0) / 255.0;
-    }
-    float p = (t - 0.7) / 0.3;
-    return vec3(110.0 + p*135.0, 102.0 + p*138.0, 95.0 + p*140.0) / 255.0;
+    vec3 c0 = vec3( 15.0,  15.0,  20.0) / 255.0;
+    vec3 c1 = vec3( 50.0,  47.0,  45.0) / 255.0;
+    vec3 c2 = vec3(110.0, 102.0,  95.0) / 255.0;
+    vec3 c3 = vec3(245.0, 240.0, 235.0) / 255.0;
+    vec3 s0 = mix(c0, c1, clamp(t / 0.3, 0.0, 1.0));
+    vec3 s1 = mix(c1, c2, clamp((t - 0.3) / 0.4, 0.0, 1.0));
+    vec3 s2 = mix(c2, c3, clamp((t - 0.7) / 0.3, 0.0, 1.0));
+    return mix(mix(s0, s1, step(0.3, t)), s2, step(0.7, t));
 }
 
 void main() {
@@ -160,6 +147,12 @@ export default fieldSim({
         display: DISPLAY_SHADER,
     },
 
+    // Run simulation at 768×512 (4× fewer pixels than 1536×1024) for performance.
+    // Display shader upscales with LINEAR filtering so output looks smooth at full canvas size.
+    simW: 768,
+    simH: 512,
+    displayLinear: true,
+
     touchRadius: 0.03,
     // Values injected when user draws while paused: u=0 (fuel depleted), v=0.9 (activator peak)
     // Creates active pattern seeds that grow into structure when simulation resumes.
@@ -167,19 +160,35 @@ export default fieldSim({
     paintRadius: 0.010,
 
     /**
-     * Create initial state: u=1 everywhere, v=0 everywhere,
-     * with random seed patches of elevated v.
+     * Create initial state.
+     * seed_mode 'noise' (labyrinth): tiny uniform v perturbations everywhere so
+     * the Turing instability amplifies them into connected maze-like stripes.
+     * Default (sparse): 40 small random seed patches — patterns grow from local seeds.
      */
-    initState(width, height, _params) {
+    initState(width, height, params) {
         const data = new Float32Array(width * height * 4);
 
-        // Fill with u=1, v=0
+        if (params?.seed_mode === 'noise') {
+            for (let i = 0; i < width * height; i++) {
+                const v = 0.01 + Math.random() * 0.02;
+                data[i * 4 + 0] = 1.0 - v;
+                data[i * 4 + 1] = v;
+                data[i * 4 + 2] = 0.0;
+                data[i * 4 + 3] = 1.0;
+            }
+            return data;
+        }
+
+        // Fill with u=1, v=0 (same for both 'blank' mode and sparse-seed mode)
         for (let i = 0; i < width * height; i++) {
             data[i * 4 + 0] = 1.0;
             data[i * 4 + 1] = 0.0;
             data[i * 4 + 2] = 0.0;
             data[i * 4 + 3] = 1.0;
         }
+
+        // 'blank' mode: pure resting state — user draws seeds while paused
+        if (params?.seed_mode === 'blank') return data;
 
         // Seed random patches
         for (let s = 0; s < 40; s++) {
@@ -227,13 +236,12 @@ export default fieldSim({
     ],
 
     presets: [
-        { i18nLabel: "preset_labyrinth", params: { f: 0.037, k: 0.060 } },
+        // Blank canvas, auto-paused: user draws seeds with touch/mouse, then unpauses.
+        { i18nLabel: "preset_explore", params: { f: 0.037, k: 0.060, seed_mode: 'blank', auto_pause: true } },
+        // Noise seeding: Turing instability amplifies tiny perturbations into connected stripe maze.
+        { i18nLabel: "preset_labyrinth", params: { f: 0.037, k: 0.060, seed_mode: 'noise' } },
+        // Sparse seeds: isolated spots — classic leopard-pattern regime.
         { i18nLabel: "preset_spots", params: { f: 0.035, k: 0.065 } },
-        { i18nLabel: "preset_waves", params: { f: 0.014, k: 0.054 } },
-        { i18nLabel: "preset_worms", params: { f: 0.046, k: 0.063 } },
-        { i18nLabel: "preset_coral", params: { f: 0.025, k: 0.060 } },
-        { i18nLabel: "preset_mitosis", params: { f: 0.028, k: 0.062 } },
-        { i18nLabel: "preset_fingerprints", params: { f: 0.040, k: 0.058 } },
     ],
 
     colours: [
@@ -305,13 +313,9 @@ export default fieldSim({
         },
         feed_rate: { cs: "Přidávání látky (f)", en: "Adding chemical (f)" },
         kill_rate: { cs: "Odbourávání látky (k)", en: "Removing chemical (k)" },
-        preset_labyrinth: { cs: "Labyrint", en: "Labyrinth" },
-        preset_spots: { cs: "Skvrny", en: "Spots" },
-        preset_waves: { cs: "Vlny", en: "Waves" },
-        preset_worms: { cs: "Červi", en: "Worms" },
-        preset_coral: { cs: "Korál", en: "Coral" },
-        preset_mitosis: { cs: "Mitóza", en: "Mitosis" },
-        preset_fingerprints: { cs: "Otisky prstů", en: "Fingerprints" },
+        preset_explore:   { cs: "Kresli sám",  en: "Draw your own" },
+        preset_labyrinth: { cs: "Labyrint",    en: "Labyrinth" },
+        preset_spots:     { cs: "Skvrny",      en: "Spots" },
         snap_title_rd: { cs: "Turingovy vzory", en: "Turing Patterns" },
         snap_sub_rd: {
             cs: "Tvoje nastavení vytvořilo tento jedinečný vzor",
@@ -361,13 +365,9 @@ export default fieldSim({
         setTr("desc", cfg.desc_cs, cfg.desc_en);
         setTr("feed_rate", cfg.lbl_feed_rate_cs, cfg.lbl_feed_rate_en);
         setTr("kill_rate", cfg.lbl_kill_rate_cs, cfg.lbl_kill_rate_en);
+        setTr("preset_explore",   cfg.preset_explore_cs,   cfg.preset_explore_en);
         setTr("preset_labyrinth", cfg.preset_labyrinth_cs, cfg.preset_labyrinth_en);
-        setTr("preset_spots", cfg.preset_spots_cs, cfg.preset_spots_en);
-        setTr("preset_waves", cfg.preset_waves_cs, cfg.preset_waves_en);
-        setTr("preset_worms", cfg.preset_worms_cs, cfg.preset_worms_en);
-        setTr("preset_coral", cfg.preset_coral_cs, cfg.preset_coral_en);
-        setTr("preset_mitosis", cfg.preset_mitosis_cs, cfg.preset_mitosis_en);
-        setTr("preset_fingerprints", cfg.preset_fingerprints_cs, cfg.preset_fingerprints_en);
+        setTr("preset_spots",     cfg.preset_spots_cs,     cfg.preset_spots_en);
         setTr("snap_title_rd", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_rd", cfg.snap_sub_cs, cfg.snap_sub_en);
         setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);

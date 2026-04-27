@@ -133,20 +133,12 @@ tip_Dv_cs = "Jak rychle se druhá látka rozlévá — pomaleji než první, a p
 tip_Dv_en = "How fast the second chemical spreads — slower than the first, and that's what creates patterns! (fixed)"
 
 # Preset names
+preset_explore_cs   = "Kresli sám"
+preset_explore_en   = "Draw your own"
 preset_labyrinth_cs = "Labyrint"
 preset_labyrinth_en = "Labyrinth"
 preset_spots_cs     = "Skvrny"
 preset_spots_en     = "Spots"
-preset_waves_cs     = "Vlny"
-preset_waves_en     = "Waves"
-preset_worms_cs     = "Červi"
-preset_worms_en     = "Worms"
-preset_coral_cs     = "Korál"
-preset_coral_en     = "Coral"
-preset_mitosis_cs   = "Mitóza"
-preset_mitosis_en   = "Mitosis"
-preset_fingerprints_cs = "Otisky prstů"
-preset_fingerprints_en = "Fingerprints"
 
 # Postcard snapshot strings
 snap_title_cs = "Turingovy vzory"
@@ -167,11 +159,6 @@ explain_c_en = "Gray-Scott model with parameters f (feed) and k (kill). Diffusiv
 # Values are inline tables of parameter overrides. Must match control IDs in reaction-diffusion.js.
 labyrinth = { f = 0.037, k = 0.060 }
 spots     = { f = 0.035, k = 0.065 }
-waves     = { f = 0.014, k = 0.054 }
-worms     = { f = 0.046, k = 0.063 }
-coral     = { f = 0.025, k = 0.060 }
-mitosis      = { f = 0.028, k = 0.062 }
-fingerprints = { f = 0.040, k = 0.058 }
 
 
 # -------------------------------------------------------------
@@ -217,16 +204,12 @@ tip_spread_cs       = "Jak moc se liší tempo jednotlivých světýlek — mal�
 tip_spread_en       = "How different the blinking speeds are — small difference = easier to synchronise. More spread = harder to synchronise."
 
 # Preset names
-preset_spiral_cs     = "Spirálové vlny"
-preset_spiral_en     = "Spiral waves"
-preset_chimera_cs    = "Chiméra (polovina nesync)"
-preset_chimera_en    = "Chimera (half unsync)"
 preset_sync_cs       = "Plná synchronizace"
 preset_sync_en       = "Full sync"
+preset_chimera_cs    = "Chiméra"
+preset_chimera_en    = "Chimera"
 preset_turbulence_cs = "Turbulence"
 preset_turbulence_en = "Turbulence"
-preset_slow_sync_cs  = "Pomalá synchronizace"
-preset_slow_sync_en  = "Slow sync"
 
 # Postcard snapshot strings
 snap_title_cs = "Synchronizace oscilátorů"
@@ -244,11 +227,9 @@ explain_c_en = "Kuramoto model on a 2D lattice, nearest-neighbour coupling. Orde
 
 [content.osc.preset_params]
 # K = coupling strength, spread = frequency spread, omega = mean frequency
-spiral     = { K = 1.5, spread = 0.4, omega = 0.6 }
-chimera    = { K = 0.5, spread = 0.8, omega = 0.6 }
 sync       = { K = 3.0, spread = 0.2, omega = 0.4 }
+chimera    = { K = 0.5, spread = 0.8, omega = 0.6 }
 turbulence = { K = 0.2, spread = 0.6, omega = 0.8 }
-slow_sync  = { K = 1.8, spread = 0.3, omega = 0.5 }
 
 
 # -------------------------------------------------------------
@@ -321,12 +302,8 @@ eq_note_en = "Each individual only perceives its nearest neighbours — yet toge
 # Preset names
 preset_murmuration_cs = "Ptačí hejno"
 preset_murmuration_en = "Murmuration"
-preset_school_cs      = "Hejno ryb"
-preset_school_en      = "Fish school"
 preset_predator_cs    = "Útěk před predátorem"
 preset_predator_en    = "Predator panic"
-preset_crowd_cs       = "Proudění davu"
-preset_crowd_en       = "Crowd flow"
 preset_chaos_cs       = "Chaos"
 preset_chaos_en       = "Chaos"
 
@@ -348,9 +325,7 @@ explain_c_en = "1024 GPU agents (32×32 texture). Each step: N² neighbour scan 
 # mode can be "boids", "crowd", or "predator"
 # Keys are i18nLabel with "preset_" stripped
 murmuration = { mode = "boids",    separation = 1.2, alignment = 1.8, cohesion = 1.0, perception = 0.10, maxSpeed = 0.005, trailPersistence = 0.96 }
-school      = { mode = "boids",    separation = 1.8, alignment = 1.2, cohesion = 0.8, perception = 0.06, maxSpeed = 0.003, trailPersistence = 0.93 }
 predator    = { mode = "predator", separation = 2.0, alignment = 0.8, cohesion = 1.5, perception = 0.12, maxSpeed = 0.006, trailPersistence = 0.94 }
-crowd       = { mode = "crowd",    separation = 2.5, alignment = 0.3, cohesion = 0.2, perception = 0.05, maxSpeed = 0.003, trailPersistence = 0.90 }
 chaos       = { mode = "boids",    separation = 0.3, alignment = 0.2, cohesion = 0.1, perception = 0.15, maxSpeed = 0.008, trailPersistence = 0.85 }
 
 # -------------------------------------------------------------
@@ -402,10 +377,6 @@ preset_seizure_cs  = "Záchvat"
 preset_seizure_en  = "Seizure"
 preset_silence_cs  = "Ticho"
 preset_silence_en  = "Silence"
-preset_cascade_cs  = "Vlna"
-preset_cascade_en  = "Wave"
-preset_sleep_cs    = "Spánek"
-preset_sleep_en    = "Sleep"
 
 # Postcard snapshot strings
 snap_title_cs = "Mozková aktivita"
@@ -426,8 +397,6 @@ explain_c_en = "Beggs & Plenz (2003) neuronal avalanche model. State: R=charge, 
 critical = { spread = 0.28, input = 0.012, leak = 0.008 }
 seizure  = { spread = 0.38, input = 0.015, leak = 0.005 }
 silence  = { spread = 0.09, input = 0.002, leak = 0.050 }
-cascade  = { spread = 0.32, input = 0.008, leak = 0.005 }
-sleep    = { spread = 0.12, input = 0.003, leak = 0.020 }
 
 
 # -------------------------------------------------------------

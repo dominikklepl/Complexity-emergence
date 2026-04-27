@@ -465,8 +465,6 @@ export default fieldSim({
         { i18nLabel: "preset_critical", params: { spread: 0.28, input: 0.012, leak: 0.008 } },
         { i18nLabel: "preset_seizure",  params: { spread: 0.38, input: 0.015, leak: 0.005 } },
         { i18nLabel: "preset_silence",  params: { spread: 0.09, input: 0.002, leak: 0.050 } },
-        { i18nLabel: "preset_cascade",  params: { spread: 0.32, input: 0.008, leak: 0.005 } },
-        { i18nLabel: "preset_sleep",    params: { spread: 0.12, input: 0.003, leak: 0.020 } },
     ],
 
     colours: [
@@ -555,11 +553,9 @@ export default fieldSim({
         lbl_spread:  { cs: "Propojení (σ)",       en: "Connectivity (σ)" },
         lbl_input:   { cs: "Pozadí (ε)",           en: "Background noise (ε)" },
         lbl_leak:    { cs: "Paměť (1−λ)",          en: "Memory (1−λ)" },
-        preset_critical: { cs: "Kritický bod",    en: "Critical point" },
-        preset_seizure:  { cs: "Záchvat",          en: "Seizure" },
-        preset_silence:  { cs: "Ticho",            en: "Silence" },
-        preset_cascade:  { cs: "Vlna",             en: "Wave" },
-        preset_sleep:    { cs: "Spánek",           en: "Sleep" },
+        preset_critical: { cs: "Kritický bod", en: "Critical point" },
+        preset_seizure:  { cs: "Záchvat",     en: "Seizure" },
+        preset_silence:  { cs: "Ticho",       en: "Silence" },
         region_visual:     { cs: "Zraková kůra",      en: "Visual cortex" },
         region_parietal:   { cs: "Temenní lalok",    en: "Parietal lobe" },
         region_motor:      { cs: "Motorická kůra",   en: "Motor cortex" },
@@ -611,11 +607,9 @@ export default fieldSim({
         set("lbl_spread",        cfg.lbl_spread_cs,       cfg.lbl_spread_en);
         set("lbl_input",         cfg.lbl_input_cs,        cfg.lbl_input_en);
         set("lbl_leak",          cfg.lbl_leak_cs,         cfg.lbl_leak_en);
-        set("preset_critical",   cfg.preset_critical_cs,  cfg.preset_critical_en);
-        set("preset_seizure",    cfg.preset_seizure_cs,   cfg.preset_seizure_en);
-        set("preset_silence",    cfg.preset_silence_cs,   cfg.preset_silence_en);
-        set("preset_cascade",    cfg.preset_cascade_cs,   cfg.preset_cascade_en);
-        set("preset_sleep",      cfg.preset_sleep_cs,     cfg.preset_sleep_en);
+        set("preset_critical", cfg.preset_critical_cs, cfg.preset_critical_en);
+        set("preset_seizure",  cfg.preset_seizure_cs,  cfg.preset_seizure_en);
+        set("preset_silence",  cfg.preset_silence_cs,  cfg.preset_silence_en);
         set("snap_title_neural", cfg.snap_title_cs,       cfg.snap_title_en);
         set("snap_sub_neural",   cfg.snap_sub_cs,         cfg.snap_sub_en);
         set("explain_a",         cfg.explain_a_cs,        cfg.explain_a_en);

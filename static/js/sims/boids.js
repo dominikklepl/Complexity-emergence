@@ -515,20 +515,12 @@ export default {
             params: { mode: "boids", separation: 1.2, alignment: 1.8, cohesion: 1.0, perception: 0.10, maxSpeed: 0.005, trailPersistence: 0.92 },
         },
         {
-            i18nLabel: "preset_school",
-            params: { mode: "boids", separation: 1.8, alignment: 1.2, cohesion: 0.8, perception: 0.06, maxSpeed: 0.003, trailPersistence: 0.88 },
-        },
-        {
             i18nLabel: "preset_predator",
             params: { mode: "predator", separation: 2.0, alignment: 0.8, cohesion: 1.5, perception: 0.12, maxSpeed: 0.006, trailPersistence: 0.90 },
         },
         {
-            i18nLabel: "preset_crowd",
-            params: { mode: "crowd", separation: 2.5, alignment: 0.3, cohesion: 0.2, perception: 0.05, maxSpeed: 0.003, trailPersistence: 0.85 },
-        },
-        {
             i18nLabel: "preset_chaos",
-            params: { mode: "boids", separation: 0.3, alignment: 0.2, cohesion: 0.1, perception: 0.15, maxSpeed: 0.008, trailPersistence: 0.80 },
+            params: { mode: "boids", separation: 0.3, alignment: 0.2, cohesion: 0.1, perception: 0.15, maxSpeed: 0.008, trailPersistence: 0.95 },
         },
     ],
 
@@ -634,11 +626,9 @@ export default {
         lbl_perception: { cs: "Dosah vnímání", en: "Perception range" },
         lbl_max_speed: { cs: "Max. rychlost", en: "Max speed" },
         lbl_trail: { cs: "Stopa", en: "Trail" },
-        preset_murmuration: { cs: "Ptačí hejno", en: "Murmuration" },
-        preset_school: { cs: "Hejno ryb", en: "Fish school" },
-        preset_predator: { cs: "Útěk před predátorem", en: "Predator panic" },
-        preset_crowd: { cs: "Proudění davu", en: "Crowd flow" },
-        preset_chaos: { cs: "Chaos", en: "Chaos" },
+        preset_murmuration: { cs: "Ptačí hejno",            en: "Murmuration" },
+        preset_predator:    { cs: "Útěk před predátorem",   en: "Predator panic" },
+        preset_chaos:       { cs: "Chaos",                  en: "Chaos" },
         snap_title_boids: { cs: "Hejna", en: "Flocking" },
         snap_sub_boids: {
             cs: "Emergentní kolektivní pohyb",
@@ -694,10 +684,8 @@ export default {
         setTr("lbl_max_speed", cfg.lbl_max_speed_cs, cfg.lbl_max_speed_en);
         setTr("lbl_trail", cfg.lbl_trail_cs, cfg.lbl_trail_en);
         setTr("preset_murmuration", cfg.preset_murmuration_cs, cfg.preset_murmuration_en);
-        setTr("preset_school", cfg.preset_school_cs, cfg.preset_school_en);
-        setTr("preset_predator", cfg.preset_predator_cs, cfg.preset_predator_en);
-        setTr("preset_crowd", cfg.preset_crowd_cs, cfg.preset_crowd_en);
-        setTr("preset_chaos", cfg.preset_chaos_cs, cfg.preset_chaos_en);
+        setTr("preset_predator",    cfg.preset_predator_cs,    cfg.preset_predator_en);
+        setTr("preset_chaos",       cfg.preset_chaos_cs,       cfg.preset_chaos_en);
         setTr("snap_title_boids", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_boids", cfg.snap_sub_cs, cfg.snap_sub_en);
         setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);

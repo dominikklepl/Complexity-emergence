@@ -29,6 +29,8 @@ let gl = null;
 let canvas = null;
 let quadBuffer = null;
 
+export let floatLinearAvailable = false;
+
 // ── Location caches ──────────────────────────────────────────────
 /** @type {Map<WebGLProgram, Map<string, WebGLUniformLocation>>} */
 const _uniformCache = new Map();
@@ -44,11 +46,11 @@ const _attribCache = new Map();
 export function initWebGL(canvasEl) {
     canvas = canvasEl;
 
-    // Scale canvas backing store by devicePixelRatio for sharp rendering
-    // on HiDPI screens and large displays. CSS size stays the same.
-    const dpr = Math.min(window.devicePixelRatio || 1, 3); // cap at 3×
-    canvas.width = Math.round(SIM_W * dpr);
-    canvas.height = Math.round(SIM_H * dpr);
+    // Fix canvas to sim dimensions. CSS handles upscaling to screen size.
+    // DPR multiplication was causing display shader to run at 4-9× more
+    // pixels than the sim texture (NEAREST filtering = identical samples).
+    canvas.width = SIM_W;
+    canvas.height = SIM_H;
 
     gl = canvas.getContext("webgl", {
         preserveDrawingBuffer: true,
@@ -65,6 +67,8 @@ export function initWebGL(canvasEl) {
         alert("Float textures not supported — try Chrome or Firefox");
         return null;
     }
+
+    floatLinearAvailable = !!gl.getExtension("OES_texture_float_linear");
 
     // Full-screen quad (two triangles)
     quadBuffer = gl.createBuffer();
@@ -97,9 +101,8 @@ export function getCanvas() {
  * output sharpness, not simulation resolution.
  */
 export function resizeDisplayCanvas(canvas) {
-    const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    const w = Math.round(canvas.clientWidth * dpr);
-    const h = Math.round(canvas.clientHeight * dpr);
+    const w = Math.round(canvas.clientWidth);
+    const h = Math.round(canvas.clientHeight);
     if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
         canvas.width = w;
         canvas.height = h;
