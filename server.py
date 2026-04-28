@@ -499,7 +499,7 @@ def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
         qr_dim = int(60 * scale)
         qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=0)
         qr_img = qr_img.resize((qr_dim, qr_dim), Image.NEAREST)
-        card.paste(qr_img, (PW - qr_dim - margin, sep_y + int(4 * scale)))
+        card.paste(qr_img, (PW - qr_dim - margin, sep_y + int(4 * scale)), mask=qr_img)
 
     return card
 
