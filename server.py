@@ -109,28 +109,48 @@ try:
 
     # Register TrueType fonts for full Unicode / Czech diacritics support.
     # DejaVu ships on virtually every Linux distribution.
-    def _find_dejavu(filename):
-        for base in [
-            "/usr/share/fonts/truetype/dejavu",  # Debian / Ubuntu
-            "/usr/share/fonts/TTF",  # Arch Linux
-            "/usr/share/fonts/dejavu",  # Fedora / RHEL
-        ]:
-            p = Path(base) / filename
-            if p.exists():
-                return str(p)
+    FONTS_DIR = Path(__file__).parent / "static" / "fonts"
+
+    def _find_font(name, filename, fallback_dirs=None):
+        p = FONTS_DIR / filename
+        if p.exists():
+            return str(p)
+        for base in (fallback_dirs or []):
+            q = Path(base) / filename
+            if q.exists():
+                return str(q)
         return None
 
-    for _name, _file in [
-        ("DejaVuSerif-Bold", "DejaVuSerif-Bold.ttf"),
-        ("DejaVuSerif-Italic", "DejaVuSerif-Italic.ttf"),
-        ("DejaVuSans", "DejaVuSans.ttf"),
-        ("DejaVuSans-Bold", "DejaVuSans-Bold.ttf"),
+    _dejavu_dirs = [
+        "/usr/share/fonts/truetype/dejavu",
+        "/usr/share/fonts/TTF",
+        "/usr/share/fonts/dejavu",
+    ]
+
+    for _name, _file, _dirs in [
+        ("DejaVuSerif-Bold",       "DejaVuSerif-Bold.ttf",       _dejavu_dirs),
+        ("DejaVuSerif-Italic",     "DejaVuSerif-Italic.ttf",     _dejavu_dirs),
+        ("DejaVuSans",             "DejaVuSans.ttf",              _dejavu_dirs),
+        ("DejaVuSans-Bold",        "DejaVuSans-Bold.ttf",         _dejavu_dirs),
+        ("PlayfairDisplay-Bold",   "PlayfairDisplay-Bold.ttf",   []),
+        ("PlayfairDisplay-Italic", "PlayfairDisplay-Italic.ttf", []),
     ]:
-        _p = _find_dejavu(_file)
+        _p = _find_font(_name, _file, _dirs)
         if _p:
             pdfmetrics.registerFont(TTFont(_name, _p))
         else:
-            print(f"⚠ {_file} not found — Czech diacritics may not render in PDF")
+            print(f"⚠ {_file} not found — falling back for PDF text")
+
+    def _font(name):
+        _fallbacks = {
+            "PlayfairDisplay-Bold":   "DejaVuSerif-Bold",
+            "PlayfairDisplay-Italic": "DejaVuSerif-Italic",
+        }
+        try:
+            pdfmetrics.getFont(name)
+            return name
+        except Exception:
+            return _fallbacks.get(name, "Helvetica")
 
 except ImportError:
     HAS_REPORTLAB = False
@@ -146,8 +166,11 @@ except ImportError:
     print("⚠ qrcode not installed — postcards will skip QR code")
 
 
-def _make_qr_image(url, box_size=10, border=0):
-    """Generate a QR code as a PIL Image with dark navy modules on transparent bg."""
+def _make_qr_image(url, box_size=10, border=1):
+    """Generate a styled QR code: round dots, white on transparent background."""
+    from qrcode.image.styledpil import StyledPilImage
+    from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
+
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -156,9 +179,21 @@ def _make_qr_image(url, box_size=10, border=0):
     )
     qr.add_data(url)
     qr.make(fit=True)
-    return qr.make_image(fill_color=(26, 26, 46), back_color=(250, 248, 243)).convert(
-        "RGB"
-    )
+    # Generate with default (black on white), then post-process to white on transparent
+    img = qr.make_image(
+        image_factory=StyledPilImage,
+        module_drawer=RoundedModuleDrawer(),
+    ).convert("RGBA")
+    r, g, b, a = img.split()
+    # Invert: dark modules → white; make white background transparent
+    inv = r.point(lambda x: 255 - x)
+    img = Image.merge("RGBA", (
+        inv.point(lambda x: 255),   # R = 255 (white)
+        inv.point(lambda x: 255),   # G = 255 (white)
+        inv.point(lambda x: 255),   # B = 255 (white)
+        inv,                         # A = original darkness (module opacity)
+    ))
+    return img
 
 
 # =============================================================
@@ -313,54 +348,75 @@ def snapshot():
 
 
 def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
-    """Full-bleed sim image with logo top-left and QR bottom-right as corner overlays."""
+    """Full-bleed art postcard: gradient vignette, Playfair Display text, styled QR."""
     pc = CFG["postcard"]
-    pad = 8    # pt padding inside white corner boxes
-    margin = 10  # pt from page edge to corner box
+    margin = 12   # pt from page edge
+    pad    = 6    # extra pt between logo edge and page edge
+
+    # -- Composite gradient vignette onto simulation image (PIL) --
+    img_rgba = pattern_img.convert("RGBA")
+    w, h = img_rgba.size
+    vignette_h = int(h * 0.32)
+    vignette = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    from PIL import ImageDraw as _IDraw
+    vdraw = _IDraw.Draw(vignette)
+    steps = 64
+    for i in range(steps):
+        alpha = int(230 * (i / (steps - 1)) ** 1.6)
+        y_top    = h - vignette_h + int(vignette_h * i / steps)
+        y_bottom = h - vignette_h + int(vignette_h * (i + 1) / steps)
+        vdraw.rectangle([0, y_top, w, y_bottom], fill=(6, 10, 18, alpha))
+    composited = Image.alpha_composite(img_rgba, vignette).convert("RGB")
 
     c = pdf_canvas.Canvas(str(output_path), pagesize=(PAGE_W, PAGE_H))
 
-    # -- Full-bleed simulation image --
-    img_reader = ImageReader(pattern_img)
+    # -- Full-bleed composited image --
+    img_reader = ImageReader(composited)
     c.drawImage(img_reader, 0, 0, width=PAGE_W, height=PAGE_H,
                 preserveAspectRatio=False)
 
-    # -- Logo overlay: top-left corner --
-    # Logo file is 768×189 px → aspect ratio 189/768 ≈ 0.246
+    # -- Logo overlay: top-left --
     logo_w = PAGE_W * 0.28
     logo_h = logo_w * (189 / 768)
     logo_x = margin
     logo_y = PAGE_H - margin - logo_h
-
+    WHITE_MASK = [220, 255, 220, 255, 220, 255]
     try:
         if LOGO_PATH.exists():
-            c.setFillColor(Color(1, 1, 1, 0.92))
-            c.roundRect(logo_x - pad, logo_y - pad,
-                        logo_w + pad * 2, logo_h + pad * 2,
-                        radius=3, fill=1, stroke=0)
-            logo_reader = ImageReader(str(LOGO_PATH))
-            c.drawImage(logo_reader, logo_x, logo_y,
+            c.drawImage(ImageReader(str(LOGO_PATH)), logo_x, logo_y,
                         width=logo_w, height=logo_h,
-                        preserveAspectRatio=True, mask="auto")
+                        preserveAspectRatio=True, mask=WHITE_MASK)
     except Exception:
         pass
 
-    # -- QR code overlay: bottom-right corner --
+    # -- Text block: bottom-left in vignette zone --
+    text_x = margin + pad
+    text_y_base = margin + 4
+
+    # Sub-line 2: event (dimmer, bottom-most)
+    c.setFont(_font("PlayfairDisplay-Italic"), 9)
+    c.setFillColor(Color(1, 1, 1, 0.38))
+    c.drawString(text_x, text_y_base, pc.get("footer_event", "Veletrh Vědy 2026"))
+
+    # Sub-line 1: institution (slightly brighter, above event)
+    c.setFont(_font("PlayfairDisplay-Italic"), 9)
+    c.setFillColor(Color(1, 1, 1, 0.50))
+    c.drawString(text_x, text_y_base + 13, pc.get("footer_institution", "Ústav informatiky AV ČR"))
+
+    # Sim title (bold, top of text block)
+    c.setFont(_font("PlayfairDisplay-Bold"), 18)
+    c.setFillColor(Color(1, 1, 1, 0.92))
+    c.drawString(text_x, text_y_base + 27, title)
+
+    # -- Styled QR: bottom-right in vignette zone --
     if HAS_QRCODE and HAS_PIL:
-        qr_size = PAGE_W * 0.12
+        qr_size = PAGE_W * 0.10
         qr_x = PAGE_W - margin - qr_size
         qr_y = margin
-
-        c.setFillColor(Color(1, 1, 1, 0.92))
-        c.roundRect(qr_x - pad, qr_y - pad,
-                    qr_size + pad * 2, qr_size + pad * 2,
-                    radius=3, fill=1, stroke=0)
-
         qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1)
-        qr_reader = ImageReader(qr_img)
-        c.drawImage(qr_reader, qr_x, qr_y,
+        c.drawImage(ImageReader(qr_img), qr_x, qr_y,
                     width=qr_size, height=qr_size,
-                    preserveAspectRatio=True)
+                    preserveAspectRatio=True, mask="auto")
 
     c.save()
 
