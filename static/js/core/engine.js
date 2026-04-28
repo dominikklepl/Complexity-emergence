@@ -42,6 +42,7 @@ let rafId = null;
 
 /** @type {boolean} Whether the animation is paused by the user */
 let paused = false;
+let activePresetParams = {}; // non-slider flags (seed_mode, auto_pause) for current preset
 
 // ─── Public API ─────────────────────────────────────────────────
 
@@ -99,7 +100,7 @@ export function init(defaultLang) {
     buildTabs();
 
     // Wire up action buttons
-    document.getElementById("btn-reset").addEventListener("click", resetSim);
+    document.getElementById("btn-reset").addEventListener("click", () => resetSim(activePresetParams));
     document.getElementById("btn-pause").addEventListener("click", togglePause);
     document.getElementById("btn-snapshot").addEventListener("click", doSnapshot);
 
@@ -108,7 +109,7 @@ export function init(defaultLang) {
         if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
         if (e.key === "s" || e.key === "S") doSnapshot();
         else if (e.key === "p" || e.key === "P") togglePause();
-        else if (e.key === "r" || e.key === "R") resetSim();
+        else if (e.key === "r" || e.key === "R") resetSim(activePresetParams);
     });
 
     // Wire up equation panel toggle
@@ -217,6 +218,7 @@ function switchSim(id) {
     }
 
     activeSim = sim;
+    activePresetParams = {};
     stepAccum = 0; // reset so a new sim starts cleanly
 
     // Re-merge translations so shared keys (e.g. 'desc') reflect the active sim
@@ -239,12 +241,13 @@ function switchSim(id) {
         onPreset: (preset) => {
             // Pass full preset.params so non-slider flags (seed_mode, auto_pause)
             // reach initState — getParams() only returns slider values.
+            activePresetParams = preset.params ?? {};
             resetSim(preset.params);
             const wantPaused = !!preset.params?.auto_pause;
             if (wantPaused !== paused) togglePause();
         },
         onColourChange: () => { },  // live — read each frame
-        onReset: () => resetSim(),
+        onReset: () => resetSim(activePresetParams),
     };
     activeControls = buildControls(sim, controlsContainer, callbacks);
 
