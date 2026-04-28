@@ -417,20 +417,15 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
     text_x = margin + pad
     text_y_base = margin + 4
 
-    # Sub-line 2: event (dimmer, bottom-most)
+    # Sub-line: event date
     c.setFont(_font("PlayfairDisplay-Italic"), 9)
     c.setFillColor(ink_dim)
-    c.drawString(text_x, text_y_base, pc.get("footer_event", "Veletrh Vědy 2026"))
+    c.drawString(text_x, text_y_base, pc.get("footer_event", "Veletrh vědy 2026"))
 
-    # Sub-line 1: institution (slightly brighter, above event)
-    c.setFont(_font("PlayfairDisplay-Italic"), 9)
-    c.setFillColor(ink_mid)
-    c.drawString(text_x, text_y_base + 13, pc.get("footer_institution", "Ústav informatiky AV ČR"))
-
-    # Sim title (bold, top of text block)
+    # Sim title (bold, above event date)
     c.setFont(_font("PlayfairDisplay-Bold"), 18)
     c.setFillColor(ink)
-    c.drawString(text_x, text_y_base + 27, title)
+    c.drawString(text_x, text_y_base + 14, title)
 
     # -- Styled QR: bottom-right in vignette zone --
     if HAS_QRCODE and HAS_PIL:
