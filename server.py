@@ -166,8 +166,12 @@ except ImportError:
     print("⚠ qrcode not installed — postcards will skip QR code")
 
 
-def _make_qr_image(url, box_size=10, border=1):
-    """Generate a styled QR code: round dots, white on transparent background."""
+def _make_qr_image(url, box_size=10, border=1, dark_ink=False):
+    """Generate a styled QR code: round dots on transparent background.
+
+    dark_ink=False → white modules (for dark backgrounds)
+    dark_ink=True  → dark navy modules (for light backgrounds)
+    """
     from qrcode.image.styledpil import StyledPilImage
     from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
 
@@ -179,19 +183,19 @@ def _make_qr_image(url, box_size=10, border=1):
     )
     qr.add_data(url)
     qr.make(fit=True)
-    # Generate with default (black on white), then post-process to white on transparent
+    # Generate black-on-white, then recolour and make background transparent
     img = qr.make_image(
         image_factory=StyledPilImage,
         module_drawer=RoundedModuleDrawer(),
     ).convert("RGBA")
     r, g, b, a = img.split()
-    # Invert: dark modules → white; make white background transparent
-    inv = r.point(lambda x: 255 - x)
+    inv = r.point(lambda x: 255 - x)   # darkness of each pixel (255 = module, 0 = bg)
+    module_r, module_g, module_b = (26, 26, 46) if dark_ink else (255, 255, 255)
     img = Image.merge("RGBA", (
-        inv.point(lambda x: 255),   # R = 255 (white)
-        inv.point(lambda x: 255),   # G = 255 (white)
-        inv.point(lambda x: 255),   # B = 255 (white)
-        inv,                         # A = original darkness (module opacity)
+        inv.point(lambda x: module_r),  # R
+        inv.point(lambda x: module_g),  # G
+        inv.point(lambda x: module_b),  # B
+        inv,                             # A = original darkness (module opacity)
     ))
     return img
 
@@ -368,6 +372,26 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
         vdraw.rectangle([0, y_top, w, y_bottom], fill=(6, 10, 18, alpha))
     composited = Image.alpha_composite(img_rgba, vignette).convert("RGB")
 
+    # -- Detect ink colour from the composited text zone --
+    # Sample bottom-left region where text will sit; choose dark or light ink.
+    sample_x2 = w // 3
+    sample_y1 = h - int(h * 0.18)
+    zone = composited.crop((0, sample_y1, sample_x2, h))
+    pixels = list(zone.getdata())
+    avg_lum = sum(0.299 * r + 0.587 * g + 0.114 * b for r, g, b in pixels) / len(pixels)
+    dark_ink = avg_lum > 140   # light background → use dark ink
+
+    if dark_ink:
+        # Dark navy ink on light background
+        ink       = Color(0.102, 0.118, 0.176, 1.0)   # (26,30,45)
+        ink_mid   = Color(0.102, 0.118, 0.176, 0.55)
+        ink_dim   = Color(0.102, 0.118, 0.176, 0.40)
+    else:
+        # White ink on dark background
+        ink       = Color(1, 1, 1, 0.92)
+        ink_mid   = Color(1, 1, 1, 0.50)
+        ink_dim   = Color(1, 1, 1, 0.38)
+
     c = pdf_canvas.Canvas(str(output_path), pagesize=(PAGE_W, PAGE_H))
 
     # -- Full-bleed composited image --
@@ -395,17 +419,17 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
 
     # Sub-line 2: event (dimmer, bottom-most)
     c.setFont(_font("PlayfairDisplay-Italic"), 9)
-    c.setFillColor(Color(1, 1, 1, 0.38))
+    c.setFillColor(ink_dim)
     c.drawString(text_x, text_y_base, pc.get("footer_event", "Veletrh Vědy 2026"))
 
     # Sub-line 1: institution (slightly brighter, above event)
     c.setFont(_font("PlayfairDisplay-Italic"), 9)
-    c.setFillColor(Color(1, 1, 1, 0.50))
+    c.setFillColor(ink_mid)
     c.drawString(text_x, text_y_base + 13, pc.get("footer_institution", "Ústav informatiky AV ČR"))
 
     # Sim title (bold, top of text block)
     c.setFont(_font("PlayfairDisplay-Bold"), 18)
-    c.setFillColor(Color(1, 1, 1, 0.92))
+    c.setFillColor(ink)
     c.drawString(text_x, text_y_base + 27, title)
 
     # -- Styled QR: bottom-right in vignette zone --
@@ -413,7 +437,7 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
         qr_size = PAGE_W * 0.10
         qr_x = PAGE_W - margin - qr_size
         qr_y = margin
-        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1)
+        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1, dark_ink=dark_ink)
         c.drawImage(ImageReader(qr_img), qr_x, qr_y,
                     width=qr_size, height=qr_size,
                     preserveAspectRatio=True, mask="auto")
