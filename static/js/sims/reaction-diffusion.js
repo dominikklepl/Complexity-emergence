@@ -242,6 +242,8 @@ export default fieldSim({
         { i18nLabel: "preset_labyrinth", params: { f: 0.037, k: 0.060, seed_mode: 'noise' } },
         // Sparse seeds: isolated spots — classic leopard-pattern regime.
         { i18nLabel: "preset_spots", params: { f: 0.035, k: 0.065 } },
+        // Large organic blob/holes regime — rename before exhibition
+        { i18nLabel: "preset_blobs", params: { f: 0.025, k: 0.051, seed_mode: 'noise' } },
     ],
 
     colours: [
@@ -368,6 +370,7 @@ export default fieldSim({
         setTr("preset_explore",   cfg.preset_explore_cs,   cfg.preset_explore_en);
         setTr("preset_labyrinth", cfg.preset_labyrinth_cs, cfg.preset_labyrinth_en);
         setTr("preset_spots",     cfg.preset_spots_cs,     cfg.preset_spots_en);
+        setTr("preset_blobs",     cfg.preset_blobs_cs,     cfg.preset_blobs_en);
         setTr("snap_title_rd", cfg.snap_title_cs, cfg.snap_title_en);
         setTr("snap_sub_rd", cfg.snap_sub_cs, cfg.snap_sub_en);
         setTr("explain_a", cfg.explain_a_cs, cfg.explain_a_en);

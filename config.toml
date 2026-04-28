@@ -59,7 +59,7 @@ footer_institution = "Ústav informatiky AV ČR"
 qr_url             = "https://www.cs.cas.cz"
 
 # Logo image path (relative to project root)
-logo_path = "static/logo.png"
+logo_path = "static/logo ustav informatiky.jpg"
 
 # Optional: path to a light/white version of the logo for the dark sidebar.
 # If set, this image is used in the web app instead of logo_path.
@@ -139,6 +139,8 @@ preset_labyrinth_cs = "Labyrint"
 preset_labyrinth_en = "Labyrinth"
 preset_spots_cs     = "Skvrny"
 preset_spots_en     = "Spots"
+preset_blobs_cs     = "Buňky"
+preset_blobs_en     = "Cells"
 
 # Postcard snapshot strings
 snap_title_cs = "Turingovy vzory"
@@ -159,6 +161,7 @@ explain_c_en = "Gray-Scott model with parameters f (feed) and k (kill). Diffusiv
 # Values are inline tables of parameter overrides. Must match control IDs in reaction-diffusion.js.
 labyrinth = { f = 0.037, k = 0.060 }
 spots     = { f = 0.035, k = 0.065 }
+blobs     = { f = 0.025, k = 0.051 }
 
 
 # -------------------------------------------------------------
