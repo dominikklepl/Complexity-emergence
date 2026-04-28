@@ -357,40 +357,40 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
     margin = 12   # pt from page edge
     pad    = 6    # extra pt between logo edge and page edge
 
-    # -- Composite gradient vignette onto simulation image (PIL) --
+    # -- Sample original image to decide light vs dark scheme --
+    # Must happen BEFORE vignette so we read the actual sim colours.
     img_rgba = pattern_img.convert("RGBA")
     w, h = img_rgba.size
-    vignette_h = int(h * 0.32)
-    vignette = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    from PIL import ImageDraw as _IDraw
-    vdraw = _IDraw.Draw(vignette)
-    steps = 64
-    for i in range(steps):
-        alpha = int(230 * (i / (steps - 1)) ** 1.6)
-        y_top    = h - vignette_h + int(vignette_h * i / steps)
-        y_bottom = h - vignette_h + int(vignette_h * (i + 1) / steps)
-        vdraw.rectangle([0, y_top, w, y_bottom], fill=(6, 10, 18, alpha))
-    composited = Image.alpha_composite(img_rgba, vignette).convert("RGB")
-
-    # -- Detect ink colour from the composited text zone --
-    # Sample bottom-left region where text will sit; choose dark or light ink.
-    sample_x2 = w // 3
-    sample_y1 = h - int(h * 0.18)
-    zone = composited.crop((0, sample_y1, sample_x2, h))
+    sample_y1 = h - int(h * 0.25)
+    zone = pattern_img.crop((0, sample_y1, w // 3, h))
     pixels = list(zone.getdata())
     avg_lum = sum(0.299 * r + 0.587 * g + 0.114 * b for r, g, b in pixels) / len(pixels)
-    dark_ink = avg_lum > 140   # light background → use dark ink
+    light_bg = avg_lum > 140   # cream/light sim → use dark ink + warm vignette
 
-    if dark_ink:
-        # Dark navy ink on light background
-        ink       = Color(0.102, 0.118, 0.176, 1.0)   # (26,30,45)
-        ink_mid   = Color(0.102, 0.118, 0.176, 0.55)
-        ink_dim   = Color(0.102, 0.118, 0.176, 0.40)
+    # -- Composite gradient vignette --
+    from PIL import ImageDraw as _IDraw
+    vignette_h = int(h * 0.32)
+    vignette = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    vdraw = _IDraw.Draw(vignette)
+    steps = 64
+    # Light sims: warm cream vignette (subtle); dark sims: deep navy vignette
+    vig_rgb = (210, 205, 195) if light_bg else (6, 10, 18)
+    vig_max_alpha = 180 if light_bg else 230
+    for i in range(steps):
+        alpha = int(vig_max_alpha * (i / (steps - 1)) ** 1.6)
+        y_top    = h - vignette_h + int(vignette_h * i / steps)
+        y_bottom = h - vignette_h + int(vignette_h * (i + 1) / steps)
+        vdraw.rectangle([0, y_top, w, y_bottom], fill=(*vig_rgb, alpha))
+    composited = Image.alpha_composite(img_rgba, vignette).convert("RGB")
+
+    if light_bg:
+        ink     = Color(0.102, 0.118, 0.176, 1.0)
+        ink_mid = Color(0.102, 0.118, 0.176, 0.55)
+        ink_dim = Color(0.102, 0.118, 0.176, 0.40)
     else:
-        # White ink on dark background
-        ink       = Color(1, 1, 1, 0.92)
-        ink_mid   = Color(1, 1, 1, 0.50)
-        ink_dim   = Color(1, 1, 1, 0.38)
+        ink     = Color(1, 1, 1, 0.92)
+        ink_mid = Color(1, 1, 1, 0.50)
+        ink_dim = Color(1, 1, 1, 0.38)
 
     c = pdf_canvas.Canvas(str(output_path), pagesize=(PAGE_W, PAGE_H))
 
@@ -437,7 +437,7 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
         qr_size = PAGE_W * 0.10
         qr_x = PAGE_W - margin - qr_size
         qr_y = margin
-        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1, dark_ink=dark_ink)
+        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1, dark_ink=light_bg)
         c.drawImage(ImageReader(qr_img), qr_x, qr_y,
                     width=qr_size, height=qr_size,
                     preserveAspectRatio=True, mask="auto")
