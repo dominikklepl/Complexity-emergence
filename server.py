@@ -313,102 +313,54 @@ def snapshot():
 
 
 def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
-    """
-    Creates a 6×4 inch PDF postcard:
-      - Simulation image fills top portion
-      - Gold accent line
-      - Title row: sim name (bold serif) + ICS logo (right)
-      - Separator
-      - Branding row: institution name (left) + QR code (right)
-      - Tagline + event year (bottom left, grey)
-
-    Footer is laid out bottom-up to guarantee nothing clips below page edge.
-    """
+    """Full-bleed sim image with logo top-left and QR bottom-right as corner overlays."""
     pc = CFG["postcard"]
-    margin = 12
+    pad = 8    # pt padding inside white corner boxes
+    margin = 10  # pt from page edge to corner box
 
     c = pdf_canvas.Canvas(str(output_path), pagesize=(PAGE_W, PAGE_H))
 
-    # -- Background (cream) --
-    c.setFillColor(Color(250 / 255, 248 / 255, 243 / 255))
-    c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
-
-    # ── Layout footer bottom-up ──
-    # Row 3 (bottom): tagline + event — baseline at 6pt from page bottom
-    tagline_y = 6
-    # Row 2: institution name — baseline 12pt above tagline
-    inst_y = tagline_y + 13
-    # Separator line — above institution
-    sep_y = inst_y + 12
-    # Row 1: title baseline — above separator, with room for 40pt logo
-    title_y = sep_y + 18
-    # Gold accent line top = title baseline + ascender + logo headroom
-    footer_top = title_y + 28
-    # Accent line sits on top of footer
-    accent_bottom = footer_top
-    art_bottom = accent_bottom + ACCENT_H
-
-    # -- Simulation image (top portion) --
+    # -- Full-bleed simulation image --
     img_reader = ImageReader(pattern_img)
-    c.drawImage(
-        img_reader, 0, art_bottom, width=PAGE_W, height=PAGE_H - art_bottom,
-        preserveAspectRatio=False,
-    )
+    c.drawImage(img_reader, 0, 0, width=PAGE_W, height=PAGE_H,
+                preserveAspectRatio=False)
 
-    # -- Gold accent line --
-    c.setFillColor(Color(200 / 255, 184 / 255, 138 / 255))
-    c.rect(0, accent_bottom, PAGE_W, ACCENT_H, fill=1, stroke=0)
+    # -- Logo overlay: top-left corner --
+    # Logo file is 768×189 px → aspect ratio 189/768 ≈ 0.246
+    logo_w = PAGE_W * 0.28
+    logo_h = logo_w * (189 / 768)
+    logo_x = margin
+    logo_y = PAGE_H - margin - logo_h
 
-    # -- Title row: sim name + ICS logo --
-    c.setFont("DejaVuSerif-Bold", 14)
-    c.setFillColor(Color(26 / 255, 26 / 255, 46 / 255))
-    c.drawString(margin, title_y, title)
-
-    # ICS logo — right side of title row, must not exceed accent line
-    logo_size = min(40, accent_bottom - sep_y - 4)
-    logo_x = PAGE_W - logo_size - margin
-    logo_y = accent_bottom - logo_size - 2  # top edge 2pt below accent
     try:
         if LOGO_PATH.exists():
+            c.setFillColor(Color(1, 1, 1, 0.92))
+            c.roundRect(logo_x - pad, logo_y - pad,
+                        logo_w + pad * 2, logo_h + pad * 2,
+                        radius=3, fill=1, stroke=0)
             logo_reader = ImageReader(str(LOGO_PATH))
-            c.drawImage(
-                logo_reader, logo_x, logo_y,
-                width=logo_size, height=logo_size,
-                preserveAspectRatio=True, mask="auto",
-            )
-        else:
-            raise FileNotFoundError
+            c.drawImage(logo_reader, logo_x, logo_y,
+                        width=logo_w, height=logo_h,
+                        preserveAspectRatio=True, mask="auto")
     except Exception:
-        c.setFont("DejaVuSans-Bold", 10)
-        c.setFillColor(Color(200 / 255, 184 / 255, 138 / 255))
-        c.drawString(logo_x + 4, logo_y + 10, "ICS")
+        pass
 
-    # -- Thin separator --
-    c.setStrokeColor(Color(224 / 255, 220 / 255, 212 / 255))
-    c.setLineWidth(0.5)
-    sep_end = margin + (logo_x - 8 - margin) * 0.5
-    c.line(margin, sep_y, sep_end, sep_y)
-
-    # -- Institution name --
-    c.setFont("DejaVuSans-Bold", 8)
-    c.setFillColor(Color(26 / 255, 26 / 255, 46 / 255))
-    c.drawString(margin, inst_y, pc["footer_institution"])
-
-
-    # -- QR code (right side, spanning inst+tagline rows) --
+    # -- QR code overlay: bottom-right corner --
     if HAS_QRCODE and HAS_PIL:
-        qr_size = 28
-        # Centre QR horizontally under the logo
-        logo_centre_x = logo_x + logo_size / 2
-        qr_x = logo_centre_x - qr_size / 2
-        qr_y = tagline_y
-        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=0)
+        qr_size = PAGE_W * 0.12
+        qr_x = PAGE_W - margin - qr_size
+        qr_y = margin
+
+        c.setFillColor(Color(1, 1, 1, 0.92))
+        c.roundRect(qr_x - pad, qr_y - pad,
+                    qr_size + pad * 2, qr_size + pad * 2,
+                    radius=3, fill=1, stroke=0)
+
+        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1)
         qr_reader = ImageReader(qr_img)
-        c.drawImage(
-            qr_reader, qr_x, qr_y,
-            width=qr_size, height=qr_size,
-            preserveAspectRatio=True,
-        )
+        c.drawImage(qr_reader, qr_x, qr_y,
+                    width=qr_size, height=qr_size,
+                    preserveAspectRatio=True)
 
     c.save()
 
