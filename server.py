@@ -352,32 +352,29 @@ def snapshot():
 
 
 def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
-    """Full-bleed art postcard: gradient vignette, Playfair Display text, styled QR."""
+    """Full-bleed postcard: gradient vignette, Playfair Display text overlaid, styled QR."""
     pc = CFG["postcard"]
-    margin = 12   # pt from page edge
-    pad    = 6    # extra pt between logo edge and page edge
+    margin = 14   # pt from page edge — keeps elements off the very edge
 
-    # -- Sample original image to decide light vs dark scheme --
-    # Must happen BEFORE vignette so we read the actual sim colours.
+    # -- Sample bottom-left zone for light/dark scheme --
     img_rgba = pattern_img.convert("RGBA")
     w, h = img_rgba.size
     sample_y1 = h - int(h * 0.25)
     zone = pattern_img.crop((0, sample_y1, w // 3, h))
     pixels = list(zone.getdata())
     avg_lum = sum(0.299 * r + 0.587 * g + 0.114 * b for r, g, b in pixels) / len(pixels)
-    light_bg = avg_lum > 140   # cream/light sim → use dark ink + warm vignette
+    light_bg = avg_lum > 140
 
-    # -- Composite gradient vignette --
+    # -- Gradient vignette at bottom (darkens zone for text legibility) --
     from PIL import ImageDraw as _IDraw
-    vignette_h = int(h * 0.32)
+    vignette_h = int(h * 0.38)
     vignette = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     vdraw = _IDraw.Draw(vignette)
     steps = 64
-    # Light sims: warm cream vignette (subtle); dark sims: deep navy vignette
     vig_rgb = (210, 205, 195) if light_bg else (6, 10, 18)
-    vig_max_alpha = 180 if light_bg else 230
+    vig_max_alpha = 200 if light_bg else 240
     for i in range(steps):
-        alpha = int(vig_max_alpha * (i / (steps - 1)) ** 1.6)
+        alpha = int(vig_max_alpha * (i / (steps - 1)) ** 1.4)
         y_top    = h - vignette_h + int(vignette_h * i / steps)
         y_bottom = h - vignette_h + int(vignette_h * (i + 1) / steps)
         vdraw.rectangle([0, y_top, w, y_bottom], fill=(*vig_rgb, alpha))
@@ -385,21 +382,18 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
 
     if light_bg:
         ink     = Color(0.102, 0.118, 0.176, 1.0)
-        ink_mid = Color(0.102, 0.118, 0.176, 0.55)
-        ink_dim = Color(0.102, 0.118, 0.176, 0.40)
+        ink_dim = Color(0.102, 0.118, 0.176, 0.70)
     else:
-        ink     = Color(1, 1, 1, 0.92)
-        ink_mid = Color(1, 1, 1, 0.50)
-        ink_dim = Color(1, 1, 1, 0.38)
+        ink     = Color(1, 1, 1, 0.95)
+        ink_dim = Color(1, 1, 1, 0.60)
 
     c = pdf_canvas.Canvas(str(output_path), pagesize=(PAGE_W, PAGE_H))
 
-    # -- Full-bleed composited image --
-    img_reader = ImageReader(composited)
-    c.drawImage(img_reader, 0, 0, width=PAGE_W, height=PAGE_H,
+    # -- Full-bleed image --
+    c.drawImage(ImageReader(composited), 0, 0, width=PAGE_W, height=PAGE_H,
                 preserveAspectRatio=False)
 
-    # -- Logo overlay: top-left --
+    # -- Logo: top-left --
     logo_w = PAGE_W * 0.28
     logo_h = logo_w * (189 / 768)
     logo_x = margin
@@ -413,23 +407,22 @@ def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
     except Exception:
         pass
 
-    # -- Text block: bottom-left in vignette zone --
-    text_x = margin + pad
-    text_y_base = margin + 4
+    # -- Text: bottom-left overlaid on vignette --
+    text_x = margin
+    event_y = margin
+    title_y = event_y + 14
 
-    # Sub-line: event date
     c.setFont(_font("PlayfairDisplay-Italic"), 9)
     c.setFillColor(ink_dim)
-    c.drawString(text_x, text_y_base, pc.get("footer_event", "Veletrh vědy 2026"))
+    c.drawString(text_x, event_y, pc.get("footer_event", "Veletrh vědy 2026"))
 
-    # Sim title (bold, above event date)
     c.setFont(_font("PlayfairDisplay-Bold"), 18)
     c.setFillColor(ink)
-    c.drawString(text_x, text_y_base + 14, title)
+    c.drawString(text_x, title_y, title)
 
-    # -- Styled QR: bottom-right in vignette zone --
+    # -- QR: bottom-right --
     if HAS_QRCODE and HAS_PIL:
-        qr_size = PAGE_W * 0.10
+        qr_size = PAGE_W * 0.11
         qr_x = PAGE_W - margin - qr_size
         qr_y = margin
         qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1, dark_ink=light_bg)
