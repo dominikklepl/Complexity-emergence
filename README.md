@@ -4,20 +4,21 @@ An interactive web application demonstrating how complex patterns emerge from si
 
 ## What it does
 
-Visitors can explore pattern formation through two interactive simulations:
+Visitors explore five GPU-accelerated simulations in real time, adjust parameters through a live sidebar, and save their creations as print-ready postcards.
 
-- **Reaction-Diffusion Systems** – Create Turing patterns (spots, stripes, labyrinths) by adjusting chemical reaction parameters
-- **Coupled Oscillators** – Observe synchronization phenomena in networks of connected oscillators
-- **Boids Flocking Simulation** – Simulate flocking behavior of birds/fish based on simple rules of alignment, cohesion, and separation
+| Simulation | Phenomenon |
+|---|---|
+| **Reaction-Diffusion** (Gray-Scott) | Turing patterns — spots, stripes, labyrinths |
+| **Coupled Oscillators** (Kuramoto) | Synchronisation; touch injects spiral waves |
+| **Boids** | Flocking, crowd dynamics, predator-prey |
+| **Neural Criticality** | Brain avalanches at the edge of chaos (Beggs & Plenz SOC model) |
+| **Double Pendulum** | Deterministic chaos and the butterfly effect |
 
-The application lets visitors experiment with parameters in real-time and save their created patterns as personalized postcards.
+The UI is fully bilingual (Czech / English), switchable at runtime.
 
-## How it works
+## Postcards
 
-The simulation runs entirely in the browser using WebGL for real-time computation. A local Flask server handles:
-- Serving the web interface
-- Receiving pattern snapshots
-- Assembling print-ready postcards with educational information
+Pressing **S** (or the Pohlednice button) captures the current pattern at 1800 × 1200 px and sends it to the server, which assembles a print-ready 6 × 4″ PDF with a branding ribbon and the institute logo. PDFs are saved to `postcards/`.
 
 ## Setup & Running
 
@@ -29,15 +30,25 @@ cd "Complexity emergence postcard"
 uv run server.py
 ```
 
-`uv` automatically creates a virtual environment and installs all dependencies on first run. Then open `http://localhost:5000` in your browser.
+`uv` automatically creates a virtual environment and installs all dependencies on first run. Then open `http://localhost:5000`.
 
 **Exhibition kiosk mode** (hides browser UI):
 ```bash
 chromium-browser --kiosk http://localhost:5000
 ```
 
-The server is accessible from any device on the same network at `http://<host-ip>:5000`.
+The server binds to `0.0.0.0:5000` — accessible from any device on the same network.
+
+## Configuration
+
+All simulations, UI text, parameter labels, presets, and branding are controlled by `config.toml`. No JS changes needed for content tweaks. Requires a server restart after edits.
+
+## Architecture
+
+- **Backend** — Flask (`server.py`): serves static files, exposes `/api/config` and `/api/snapshot`, assembles PDFs with ReportLab.
+- **Frontend** — Vanilla ES6 modules, no build step. WebGL runs all simulations; `engine.js` drives the render loop and tab switching.
+- **Simulations** — Each sim in `static/js/sims/` exports a standard interface (`setup`, `step`, `render`, `teardown`, `controls`, `presets`). Add new ones via `_template.js`.
 
 ## Purpose
 
-This exhibit demonstrates a key concept in complexity science: **simple local interactions can produce intricate global patterns**. It's an accessible introduction to emergent phenomena in natural and artificial systems.
+This exhibit demonstrates a key concept in complexity science: **simple local interactions can produce intricate global patterns** — from chemistry and neuroscience to physics and ecology.
