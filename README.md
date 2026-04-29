@@ -27,10 +27,16 @@ Pressing **S** (or the Pohlednice button) captures the current pattern at 1800 Ã
 ```bash
 git clone <repo-url>
 cd "Complexity emergence postcard"
-uv run server.py
+uv sync
+uv run complexity-emergence
 ```
 
-`uv` automatically creates a virtual environment and installs all dependencies on first run. Then open `http://localhost:5000`.
+`uv sync` installs all dependencies and entry points. `complexity-emergence` starts the Flask server and opens the print utility in a separate terminal window. Then open `http://localhost:5000`.
+
+**Print utility only:**
+```bash
+uv run print-postcards
+```
 
 **Exhibition kiosk mode** (hides browser UI):
 ```bash
