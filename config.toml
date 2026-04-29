@@ -73,10 +73,11 @@ output_dir = "postcards"
 #   "6x4"  — standard postcard (6x4 inches), 300 DPI = 1800x1200 px
 #   "A6"   — 148x105 mm
 #   "A5"   — 210x148 mm
-page_size = "6x4"
+page_size = "10x15"
 
-# Fraction of page height used by the simulation image (rest = footer)
-art_fraction = 0.82
+# Fraction of page height used by the simulation image (rest = ribbon)
+art_fraction = 1.0
+
 
 
 # =============================================================

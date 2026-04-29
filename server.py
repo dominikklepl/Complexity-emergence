@@ -23,6 +23,7 @@ from datetime import datetime
 from pathlib import Path
 import base64
 import json
+import subprocess
 
 # --- Load config.toml ---
 try:
@@ -222,6 +223,10 @@ def _page_dimensions(size_str):
         return (5.827, 4.134)
     if s == "a5":
         return (8.268, 5.827)
+    if s == "10x15":
+        return (5.906, 3.937)  # 150×100mm landscape
+    if s in ("hagaki", "hagaki-l"):
+        return (337 / 72, 253 / 72)  # 118.9×89.3mm landscape — Canon SELPHY CP1500 "Postcard"
     return (6.0, 4.0)  # default: standard postcard
 
 
@@ -313,17 +318,14 @@ def snapshot():
         pattern_img = Image.open(pil_io.BytesIO(img_bytes)).convert("RGB")
 
         pdf_path = POSTCARD_DIR / f"postcard_{sim_type}_{timestamp}.pdf"
-        assemble_pdf_postcard(pattern_img, title, subtitle, pdf_path)
-
-        # Also save the sharpened PNG for easy preview
-        png_preview = POSTCARD_DIR / f"postcard_{sim_type}_{timestamp}.png"
-        pattern_img.save(png_preview, "PNG", optimize=False)
+        assemble_pdf_postcard(pattern_img, title, subtitle, pdf_path, sim_type=sim_type)
 
         result["pdf_filename"] = pdf_path.name
         result["filename"] = pdf_path.name
         print(
             f"✓ Saved PDF: {pdf_path.name}  ({pattern_img.size[0]}×{pattern_img.size[1]} source)"
         )
+
 
     elif HAS_PIL:
         # --- Fallback: raster PNG postcard via Pillow ---
@@ -351,84 +353,100 @@ def snapshot():
 # =============================================================
 
 
-def assemble_pdf_postcard(pattern_img, title, subtitle, output_path):
-    """Full-bleed postcard: gradient vignette, Playfair Display text overlaid, styled QR."""
+RIBBON_SIMS = {"rd", "osc", "boids"}
+
+
+def assemble_pdf_postcard(pattern_img, title, subtitle, output_path, sim_type="unknown"):
+    """Full-bleed postcard. Light bg / ribbon sims → white ribbon overlay. Dark bg → dark vignette + white text."""
     pc = CFG["postcard"]
-    margin = 14   # pt from page edge — keeps elements off the very edge
+    margin = 14
 
-    # -- Sample bottom-left zone for light/dark scheme --
-    img_rgba = pattern_img.convert("RGBA")
-    w, h = img_rgba.size
-    sample_y1 = h - int(h * 0.25)
-    zone = pattern_img.crop((0, sample_y1, w // 3, h))
-    pixels = list(zone.getdata())
-    avg_lum = sum(0.299 * r + 0.587 * g + 0.114 * b for r, g, b in pixels) / len(pixels)
-    light_bg = avg_lum > 140
-
-    # -- Gradient vignette at bottom (darkens zone for text legibility) --
-    from PIL import ImageDraw as _IDraw
-    vignette_h = int(h * 0.38)
-    vignette = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    vdraw = _IDraw.Draw(vignette)
-    steps = 64
-    vig_rgb = (210, 205, 195) if light_bg else (6, 10, 18)
-    vig_max_alpha = 200 if light_bg else 240
-    for i in range(steps):
-        alpha = int(vig_max_alpha * (i / (steps - 1)) ** 1.4)
-        y_top    = h - vignette_h + int(vignette_h * i / steps)
-        y_bottom = h - vignette_h + int(vignette_h * (i + 1) / steps)
-        vdraw.rectangle([0, y_top, w, y_bottom], fill=(*vig_rgb, alpha))
-    composited = Image.alpha_composite(img_rgba, vignette).convert("RGB")
-
-    if light_bg:
-        ink     = Color(0.102, 0.118, 0.176, 1.0)
-        ink_dim = Color(0.102, 0.118, 0.176, 0.70)
+    # -- Ribbon sims always use ribbon mode; others detect from image --
+    if sim_type in RIBBON_SIMS:
+        light_bg = True
     else:
-        ink     = Color(1, 1, 1, 0.95)
-        ink_dim = Color(1, 1, 1, 0.60)
+        w, h = pattern_img.size
+        zone = pattern_img.crop((0, h - int(h * 0.25), w // 3, h))
+        pixels = list(zone.getdata())
+        avg_lum = sum(0.299 * r + 0.587 * g + 0.114 * b for r, g, b in pixels) / len(pixels)
+        light_bg = avg_lum > 140
 
     c = pdf_canvas.Canvas(str(output_path), pagesize=(PAGE_W, PAGE_H))
 
-    # -- Full-bleed image --
-    c.drawImage(ImageReader(composited), 0, 0, width=PAGE_W, height=PAGE_H,
-                preserveAspectRatio=False)
+    # -- Logo dimensions (shared) --
+    logo_aspect = 768 / 189
+    logo_h_pt   = PAGE_H * 0.054
+    logo_w_pt   = logo_h_pt * logo_aspect
+    logo_x      = PAGE_W - margin - logo_w_pt
 
-    # -- Logo: top-left --
-    logo_w = PAGE_W * 0.28
-    logo_h = logo_w * (189 / 768)
-    logo_x = margin
-    logo_y = PAGE_H - margin - logo_h
-    WHITE_MASK = [220, 255, 220, 255, 220, 255]
+    if light_bg:
+        # Full-bleed image, then solid white ribbon overlaid at bottom
+        ribbon_h = PAGE_H * 0.11
+        c.drawImage(ImageReader(pattern_img), 0, 0, width=PAGE_W, height=PAGE_H,
+                    preserveAspectRatio=False)
+        c.saveState()
+        c.setFillAlpha(1)
+        c.setFillColorRGB(1, 1, 1)
+        c.rect(0, 0, PAGE_W, ribbon_h, fill=1, stroke=0)
+        c.restoreState()
+
+        ink     = Color(0.102, 0.118, 0.176, 1.0)
+        ink_dim = Color(0.102, 0.118, 0.176, 1.0)
+        font_sz = min(ribbon_h * 0.36, 15)
+        sub_sz  = min(ribbon_h * 0.21, 9)
+        gap     = 2
+        block_h = font_sz + gap + sub_sz
+        sub_y   = (ribbon_h - block_h) / 2
+        title_y = sub_y + sub_sz + gap
+        logo_y  = (ribbon_h - logo_h_pt) / 2
+
+    else:
+        # Dark vignette composited into image, white text overlay
+        from PIL import ImageDraw as _IDraw
+        img_rgba  = pattern_img.convert("RGBA")
+        vig_h_px  = int(h * 0.38)
+        vignette  = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        vdraw     = _IDraw.Draw(vignette)
+        for i in range(64):
+            alpha    = int(220 * (i / 63) ** 1.6)
+            y_top    = h - vig_h_px + int(vig_h_px * i / 64)
+            y_bottom = h - vig_h_px + int(vig_h_px * (i + 1) / 64)
+            vdraw.rectangle([0, y_top, w, y_bottom], fill=(6, 10, 18, alpha))
+        composited = Image.alpha_composite(img_rgba, vignette).convert("RGB")
+        c.drawImage(ImageReader(composited), 0, 0, width=PAGE_W, height=PAGE_H,
+                    preserveAspectRatio=False)
+
+        ink     = Color(1, 1, 1, 0.95)
+        ink_dim = Color(1, 1, 1, 0.95)
+        font_sz = 16
+        sub_sz  = 9
+        title_y = margin + sub_sz + 3
+        sub_y   = margin
+        logo_y  = margin
+
+    # -- Title + subtitle --
+    c.setFont(_font("PlayfairDisplay-Bold"), font_sz)
+    c.setFillColor(ink)
+    c.drawString(margin, title_y, title)
+    c.setFont(_font("PlayfairDisplay-Italic"), sub_sz)
+    c.setFillColor(ink_dim)
+    c.drawString(margin, sub_y, pc.get("footer_event", "Veletrh vědy 2026"))
+
+    # -- Logo: opaque white backing with padding --
+    pad = 4
     try:
         if LOGO_PATH.exists():
-            c.drawImage(ImageReader(str(LOGO_PATH)), logo_x, logo_y,
-                        width=logo_w, height=logo_h,
-                        preserveAspectRatio=True, mask=WHITE_MASK)
+            c.saveState()
+            c.setFillAlpha(1)
+            c.setFillColorRGB(1, 1, 1)
+            c.rect(logo_x - pad, logo_y - pad, logo_w_pt + pad * 2, logo_h_pt + pad * 2,
+                   fill=1, stroke=0)
+            c.drawImage(str(LOGO_PATH), logo_x, logo_y,
+                        width=logo_w_pt, height=logo_h_pt,
+                        preserveAspectRatio=True)
+            c.restoreState()
     except Exception:
         pass
-
-    # -- Text: bottom-left overlaid on vignette --
-    text_x = margin
-    event_y = margin
-    title_y = event_y + 14
-
-    c.setFont(_font("PlayfairDisplay-Italic"), 9)
-    c.setFillColor(ink_dim)
-    c.drawString(text_x, event_y, pc.get("footer_event", "Veletrh vědy 2026"))
-
-    c.setFont(_font("PlayfairDisplay-Bold"), 18)
-    c.setFillColor(ink)
-    c.drawString(text_x, title_y, title)
-
-    # -- QR: bottom-right --
-    if HAS_QRCODE and HAS_PIL:
-        qr_size = PAGE_W * 0.11
-        qr_x = PAGE_W - margin - qr_size
-        qr_y = margin
-        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=1, dark_ink=light_bg)
-        c.drawImage(ImageReader(qr_img), qr_x, qr_y,
-                    width=qr_size, height=qr_size,
-                    preserveAspectRatio=True, mask="auto")
 
     c.save()
 
@@ -450,7 +468,10 @@ def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
     PH = int(PW * 2 / 3)
     PATTERN_H = int(PH * ART_FRAC)
 
-    card = Image.new("RGB", (PW, PH), (250, 248, 243))
+    ribbon_px = PH - PATTERN_H
+
+    # White ribbon at bottom
+    card = Image.new("RGB", (PW, PH), (255, 255, 255))
     pat = pattern_img.resize((PW, PATTERN_H), Image.LANCZOS)
     card.paste(pat, (0, 0))
 
@@ -470,48 +491,36 @@ def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
                 continue
         return ImageFont.load_default()
 
-    ft_title = load_font("DejaVuSerif-Bold", 28)
-    ft_inst = load_font("DejaVuSans-Bold", 16)
-    ft_sm = load_font("DejaVuSans", 13)
-    margin = int(24 * scale)
+    ft_title = load_font("DejaVuSerif-Bold", 22)
+    margin = int(18 * scale)
+    ink_navy = (26, 31, 84)
 
-    # Gold accent line
-    accent_h = max(4, PH // 150)
-    draw.rectangle([(0, PATTERN_H), (PW, PATTERN_H + accent_h)], fill=(200, 184, 138))
-    footer_y = PATTERN_H + accent_h
+    # Title + subtitle in ribbon (left)
+    ft_sub  = load_font("DejaVuSerif-BoldItalic", 13)
+    title_h = int(22 * scale)
+    sub_h   = int(13 * scale)
+    block   = title_h + sub_h + int(2 * scale)
+    title_y = PATTERN_H + (ribbon_px - block) // 2 + sub_h + int(2 * scale)
+    sub_y   = PATTERN_H + (ribbon_px - block) // 2
+    draw.text((margin, title_y), title, fill=ink_navy, font=ft_title)
+    draw.text((margin, sub_y), pc.get("footer_event", "Veletrh vědy 2026"),
+              fill=(*ink_navy, 165), font=ft_sub)
 
-    # Title row: sim name + ICS logo
-    logo_dim = int(72 * scale)
-    lx = PW - logo_dim - margin
-    ly = footer_y + int(6 * scale)
-
-    draw.text((margin, footer_y + int(14 * scale)), title, fill=(26, 26, 46), font=ft_title)
-
+    # Logo in ribbon (right, smaller)
+    logo_h_px = int(ribbon_px * 0.55)
+    logo_aspect = 768 / 189
+    logo_w_px = int(logo_h_px * logo_aspect)
+    logo_x_px = PW - margin - logo_w_px
+    logo_y_px = PATTERN_H + (ribbon_px - logo_h_px) // 2
     try:
         if LOGO_PATH.exists():
-            logo = Image.open(LOGO_PATH).convert("RGBA")
-            logo.thumbnail((logo_dim, logo_dim), Image.LANCZOS)
-            card.paste(logo, (lx, ly), logo if logo.mode == "RGBA" else None)
+            logo = Image.open(LOGO_PATH).convert("RGB")
+            logo = logo.resize((logo_w_px, logo_h_px), Image.LANCZOS)
+            card.paste(logo, (logo_x_px, logo_y_px))
         else:
             raise FileNotFoundError
     except Exception:
-        ft_logo = load_font("DejaVuSans-Bold", 16)
-        draw.text((lx + int(10 * scale), ly + int(16 * scale)), "ICS", fill=(200, 184, 138), font=ft_logo)
-
-    # Separator
-    sep_y = footer_y + int(56 * scale)
-    sep_end_png = margin + (lx - int(8 * scale) - margin) // 2
-    draw.line([(margin, sep_y), (sep_end_png, sep_y)], fill=(224, 220, 212), width=max(1, int(scale)))
-
-    # Branding row: institution + QR
-    draw.text((margin, sep_y + int(8 * scale)), pc["footer_institution"], fill=(26, 26, 46), font=ft_inst)
-
-    # QR code
-    if HAS_QRCODE:
-        qr_dim = int(60 * scale)
-        qr_img = _make_qr_image(pc["qr_url"], box_size=10, border=0)
-        qr_img = qr_img.resize((qr_dim, qr_dim), Image.NEAREST)
-        card.paste(qr_img, (PW - qr_dim - margin, sep_y + int(4 * scale)), mask=qr_img)
+        pass
 
     return card
 
