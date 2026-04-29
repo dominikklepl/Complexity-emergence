@@ -23,8 +23,7 @@
         <!-- ── Top bar: brand · sim dropdown · lang toggle ── -->
         <header class="top-bar">
             <div class="brand">
-                <img id="app-logo" src="/static/logo.png" alt="ÚI AV ČR" onerror="this.style.display='none'">
-                <div class="brand-text">
+<div class="brand-text">
                     <div id="app-subtitle">ÚI AV ČR — Veletrh vědy 2026</div>
                 </div>
             </div>
@@ -107,14 +106,7 @@
                 if (titleEl && title) titleEl.textContent = title;
                 if (subtitleEl && cfg.branding.subtitle) subtitleEl.textContent = cfg.branding.subtitle;
 
-                const logoEl = document.getElementById("app-logo");
-                const lightLogo = cfg.branding.logo_light_path;
-                if (logoEl && lightLogo) {
-                    logoEl.src = "/static/" + lightLogo.replace(/^static\//, "");
-                    logoEl.style.filter = "none";
-                }
-
-                for (const id of cfg.simulations) {
+for (const id of cfg.simulations) {
                     if (ALL_SIMS[id]) {
                         registerSim(ALL_SIMS[id]);
                         if (cfg.content && cfg.content[id] && ALL_SIMS[id].applyContent) {
