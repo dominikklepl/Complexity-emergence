@@ -11,6 +11,10 @@ dependencies = [
     "reportlab",
 ]
 
+[project.scripts]
+complexity-emergence = "launcher:main"
+print-postcards = "print_postcard:main"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",

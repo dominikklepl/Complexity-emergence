@@ -528,13 +528,14 @@ def assemble_png_postcard(pattern_img, title="Turingovy vzory", subtitle=""):
 # =============================================================
 # RUN
 # =============================================================
-if __name__ == "__main__":
+def main():
     print("=" * 50)
     print("  Veletrh vědy 2026 — Pattern Generator")
     print("  Open http://localhost:5000 in Chrome")
     print("  Postcards saved to ./postcards/")
     print("=" * 50)
+    app.run(host="0.0.0.0", port=5000, debug=False)
 
-    # host="0.0.0.0" means accessible from any device on the network
-    # (useful if you want to test from a tablet on the same WiFi)
-    app.run(host="0.0.0.0", port=5000, debug=True)
+
+if __name__ == "__main__":
+    main()
