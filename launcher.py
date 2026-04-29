@@ -12,17 +12,21 @@ from pathlib import Path
 
 
 def _terminal_cmd(python: str, script: Path) -> list[str]:
-    for term, flag in [("kitty", None), ("konsole", "-e"), ("gnome-terminal", "--"), ("xterm", "-e")]:
-        if shutil.which(term):
-            if flag:
-                return [term, flag, python, str(script)]
-            return [term, python, str(script)]
-    # Fallback: run in background in same terminal
+    if shutil.which("kitty"):
+        return ["kitty", python, str(script)]
+    if shutil.which("konsole"):
+        return ["konsole", "--noclose", "-e", python, str(script)]
+    if shutil.which("gnome-terminal"):
+        return ["gnome-terminal", "--", python, str(script)]
+    if shutil.which("xterm"):
+        return ["xterm", "-e", python, str(script)]
+    # Fallback: same terminal, background
     return [python, str(script)]
 
 
 def main():
-    root = Path(__file__).parent
+    # Resolve project root relative to this file (works both as script and entry point)
+    root = Path(__file__).resolve().parent
     python = sys.executable
 
     server = subprocess.Popen([python, str(root / "server.py")])

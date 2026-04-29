@@ -15,6 +15,13 @@ dependencies = [
 complexity-emergence = "launcher:main"
 print-postcards = "print_postcard:main"
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+include = ["launcher.py", "server.py", "print_postcard.py"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
