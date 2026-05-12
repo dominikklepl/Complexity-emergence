@@ -342,12 +342,12 @@ tab_cs = "Mozková aktivita"
 tab_en = "Neural Criticality"
 
 # Tagline
-tagline_cs = “Příliš málo: ticho. Příliš mnoho: záchvat. Přesně na hraně: kaskády všech velikostí.”
-tagline_en = “Too little: silence. Too much: seizure. Exactly at the edge: cascades of every size.”
+tagline_cs = "Příliš málo: ticho. Příliš mnoho: záchvat. Přesně na hraně: kaskády všech velikostí."
+tagline_en = "Too little: silence. Too much: seizure. Exactly at the edge: cascades of every size."
 
 # Short description
-desc_cs = “Sniž propojení: síť zticí. Zvyš ho příliš: aktivita se nekontrolovaně šíří celou sítí. Přesně mezi těmito stavy vznikají kaskády ve všech velikostech — bez typického měřítka. Posuň 'Propojení' a sleduj přechod.”
-desc_en = “Decrease connectivity: the network falls silent. Increase it too far: activity spreads uncontrollably across the whole network. Exactly between these states, cascades emerge at every scale — with no characteristic size. Slide 'Connectivity' and watch the transition.”
+desc_cs = "Sniž propojení: síť zticí. Zvyš ho příliš: aktivita se nekontrolovaně šíří celou sítí. Přesně mezi těmito stavy vznikají kaskády ve všech velikostech — bez typického měřítka. Posuň 'Propojení' a sleduj přechod."
+desc_en = "Decrease connectivity: the network falls silent. Increase it too far: activity spreads uncontrollably across the whole network. Exactly between these states, cascades emerge at every scale — with no characteristic size. Slide 'Connectivity' and watch the transition."
 
 # Slider labels
 lbl_spread_cs = "Propojení (σ)"
@@ -389,8 +389,8 @@ snap_sub_cs   = "Tvůj mozek, na hraně mezi tichem a bouří."
 snap_sub_en   = "Your brain, on the edge between silence and storm."
 
 # Level-A explanation panel
-explain_a_cs = “Na kritickém bodě nemají laviny aktivity žádnou typickou velikost — vznikají malé i velké napříč všemi měřítky. Modely předpovídají, že systém bez typické škály dokáže reagovat na slabé i silné podněty stejně dobře. Příliš daleko od kritického bodu tato vlastnost mizí — systém buď ignoruje slabé signály, nebo se přetíží silnými. Kritický bod není náhodný — modely předpovídají, že maximalizuje dynamický rozsah.”
-explain_a_en = “At the critical point, activity avalanches have no characteristic size — small and large ones occur across all scales. Models predict that a system with no typical scale responds equally well to weak and strong inputs. Move away from criticality in either direction and this property is lost — the system either ignores weak signals or gets overwhelmed by strong ones. The edge is not incidental — models predict it maximises dynamic range.”
+explain_a_cs = "Na kritickém bodě nemají laviny aktivity žádnou typickou velikost — vznikají malé i velké napříč všemi měřítky. Modely předpovídají, že systém bez typické škály dokáže reagovat na slabé i silné podněty stejně dobře. Příliš daleko od kritického bodu tato vlastnost mizí — systém buď ignoruje slabé signály, nebo se přetíží silnými. Kritický bod není náhodný — modely předpovídají, že maximalizuje dynamický rozsah."
+explain_a_en = "At the critical point, activity avalanches have no characteristic size — small and large ones occur across all scales. Models predict that a system with no typical scale responds equally well to weak and strong inputs. Move away from criticality in either direction and this property is lost — the system either ignores weak signals or gets overwhelmed by strong ones. The edge is not incidental — models predict it maximises dynamic range."
 explain_b_cs = "Samoorganizovaná kritičnost (SOC): síť neuronů naladěná na přechod mezi útlumem a explozí. Na kritickém bodě se velikosti lavin řídí mocninným rozdělením — žádná typická velikost. Takový stav maximalizuje rozsah reakcí, které mozek zvládne: jemné i hrubé podněty."
 explain_b_en = "Self-organised criticality (SOC): a neural network tuned to the edge between quiescence and runaway activity. At the critical point, avalanche sizes follow a power law — no typical scale. This maximises the range of responses the brain can produce: subtle to dramatic."
 explain_c_cs = "Beggs & Plenz (2003) model neuronové lavinové dynamiky. Stav: R=náboj, G=refrakterní fáze, B=stopa. Deterministický hash generuje dalekodosahová spojení — topologie malého světa. Při σ ≈ 1 (subkritická vazba upravená pro síť) leží systém na hranici; exponent velikostí lavin α ≈ −3/2 je univerzální."
