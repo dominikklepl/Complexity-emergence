@@ -26,7 +26,7 @@ const translations = {
     tagline: { cs: "Čtyři simulace o tom, jak z malých pravidel vzniká velký vzor.", en: "Four simulations showing how big patterns arise from small rules." },
     touch_hint: { cs: "Dotykem ovlivni simulaci", en: "Touch or click to interact" },
     draw_hint: { cs: "Pozastaveno — nakresli iniciály myší nebo prstem", en: "Paused — draw your initials with mouse or finger" },
-    interaction_radius: { cs: "Dosah interakce", en: "Interaction range" },
+    interaction_radius: { cs: "Velikost štětce", en: "Brush size" },
     eq_title: { cs: "Jak to funguje? 🔍", en: "How does it work? 🔍" },
     toast_saved: { cs: "Uloženo", en: "Saved" },
     toast_downloaded: { cs: "Pohlednice stažena", en: "Postcard downloaded" },
