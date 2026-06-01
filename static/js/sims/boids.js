@@ -525,7 +525,7 @@ export default {
     ],
 
     speedSlider: { min: 0.1, max: 0.9, step: 0.1, default: 0.5 },
-    interactionSlider: { min: 0.05, max: 0.35, step: 0.01, default: 0.20 },
+    interactionSlider: { min: 0.05, max: 0.35, step: 0.01, default: 0.20, i18nLabel: "lbl_interaction_boids" },
     defaultColourScheme: 1,
 
     // ── Equations ───────────────────────────────────────────────
@@ -618,6 +618,7 @@ export default {
         lbl_alignment: { cs: "Zarovnání", en: "Alignment" },
         lbl_cohesion: { cs: "Soudržnost", en: "Cohesion" },
         lbl_perception: { cs: "Vzdálenost od sousedů", en: "Perception range" },
+        lbl_interaction_boids: { cs: "Oblast vlivu", en: "Zone of influence" },
         lbl_max_speed: { cs: "Max. rychlost", en: "Max speed" },
         lbl_trail: { cs: "Stopa", en: "Trail" },
         preset_murmuration: { cs: "Ptačí hejno",            en: "Murmuration" },

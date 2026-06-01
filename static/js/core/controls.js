@@ -122,7 +122,7 @@ export function buildControls(sim, container, callbacks) {
             max: sim.interactionSlider.max,
             step: sim.interactionSlider.step ?? 0.005,
             default: sim.interactionSlider.default,
-            i18nLabel: "interaction_radius",
+            i18nLabel: sim.interactionSlider.i18nLabel ?? "interaction_radius",
             format: 2,
         };
         container.appendChild(buildSlider(irCtrl, {}));
