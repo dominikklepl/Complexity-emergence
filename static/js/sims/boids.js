@@ -617,7 +617,7 @@ export default {
         lbl_separation: { cs: "Separace", en: "Separation" },
         lbl_alignment: { cs: "Zarovnání", en: "Alignment" },
         lbl_cohesion: { cs: "Soudržnost", en: "Cohesion" },
-        lbl_perception: { cs: "Dosah vnímání", en: "Perception range" },
+        lbl_perception: { cs: "Vzdálenost od sousedů", en: "Perception range" },
         lbl_max_speed: { cs: "Max. rychlost", en: "Max speed" },
         lbl_trail: { cs: "Stopa", en: "Trail" },
         preset_murmuration: { cs: "Ptačí hejno",            en: "Murmuration" },
@@ -629,7 +629,7 @@ export default {
             en: "Emergent collective motion",
         },
         explain_a: {
-            cs: "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Dosah vnímání' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky při lovu bakterií.",
+            cs: "Každá tečka zná jen tři pravidla: drž se blízkých, nesrážej se, koukej stejným směrem jako soused. Žádný vůdce, žádný plán — a přesto celé hejno letí jako jeden organismus. Přetáhni 'Vzdálenost od sousedů' doleva: hejno se rozpadne. Zpátky doprava: zase se sejde. Stejnou logikou se řídí vaše imunitní buňky při lovu bakterií.",
             en: "Each dot knows only three rules: stay close to neighbours, avoid collisions, face the same direction as your neighbours. No leader, no plan — yet the whole flock moves as one. Drag 'Perception range' left: the flock falls apart. Back right: it reforms. Your immune cells use the same logic to hunt bacteria.",
         },
     },
