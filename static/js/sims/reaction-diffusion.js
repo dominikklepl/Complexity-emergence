@@ -23,7 +23,7 @@ uniform float u_f;
 uniform float u_k;
 uniform float u_Du;
 uniform float u_Dv;
-uniform vec2 u_touch;
+uniform vec2 u_touches[5];
 uniform float u_touchRadius;
 
 varying vec2 v_uv;
@@ -48,8 +48,9 @@ void main() {
     float new_u = u + u_Du * lap_u - uvv + u_f * (1.0 - u);
     float new_v = v + u_Dv * lap_v + uvv - (u_f + u_k) * v;
 
-    if (u_touch.x >= 0.0) {
-        float dist = length(v_uv - u_touch);
+    for (int i = 0; i < 5; i++) {
+        if (u_touches[i].x < 0.0) continue;
+        float dist = length(v_uv - u_touches[i]);
         if (dist < u_touchRadius) {
             float strength = 1.0 - dist / u_touchRadius;
             new_u -= 0.1 * strength;

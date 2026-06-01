@@ -30,7 +30,7 @@ uniform float u_spread;      // charge per fired neighbour (≈0.25 = critical)
 uniform float u_input;       // probability a resting cell gets a random spike
 uniform float u_leak;        // fraction of charge lost each step
 uniform float u_seed;        // changes each step for unique noise pattern
-uniform vec2  u_touch;
+uniform vec2  u_touches[5];
 uniform float u_touchRadius;
 uniform float u_touchButton; // 0 = left (stimulate), 1 = right (silence)
 
@@ -121,9 +121,10 @@ void main() {
     // Trail accumulator: decays every step, injected when cell fires
     float new_trail = trail * TRAIL_DECAY + (fired ? 1.0 : 0.0);
 
-    // Touch: stimulate (left) or silence (right)
-    if (u_touch.x >= 0.0) {
-        float dist = length(v_uv - u_touch);
+    // Touch: stimulate (left) or silence (right) — u_touchButton applies to all active fingers
+    for (int i = 0; i < 5; i++) {
+        if (u_touches[i].x < 0.0) continue;
+        float dist = length(v_uv - u_touches[i]);
         if (dist < u_touchRadius) {
             float str = 1.0 - dist / u_touchRadius;
             if (u_touchButton < 0.5) {

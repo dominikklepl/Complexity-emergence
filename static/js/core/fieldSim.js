@@ -109,7 +109,7 @@ export function fieldSim(config) {
             }
 
             // Pre-cache all uniform locations to avoid per-frame driver roundtrips
-            const stepUniforms = ["u_state", "u_resolution", "u_touch", "u_touchRadius",
+            const stepUniforms = ["u_state", "u_resolution", "u_touches[0]", "u_touchRadius", "u_touchButton",
                 ...((config.getStepUniforms({}) || []).map(u => u.name))];
             cacheUniformLocations(stepProg, stepUniforms);
             cacheUniformLocations(displayProg, ["u_state", "u_colourScheme",
@@ -179,11 +179,18 @@ export function fieldSim(config) {
             const DEFAULT_TOUCH_RADIUS = 0.03;
             const touchRadius = touch.radius ?? config.touchRadius ?? DEFAULT_TOUCH_RADIUS;
             setUniform(stepProg, "u_touchRadius", "1f", touchRadius);
-            if (touch.active) {
-                setUniform(stepProg, "u_touch", "2f", touch.pos[0], touch.pos[1]);
-            } else {
-                setUniform(stepProg, "u_touch", "2f", -1, -1);
+
+            // Build flat vec2 array for all active pointers (inactive slots = sentinel -1)
+            const MAX_TOUCHES = 5;
+            const allTouches = touch.touches ?? (touch.active ? [touch] : []);
+            const count = Math.min(allTouches.length, MAX_TOUCHES);
+            const flatPos = new Float32Array(MAX_TOUCHES * 2).fill(-1);
+            for (let i = 0; i < count; i++) {
+                flatPos[i * 2]     = allTouches[i].pos[0];
+                flatPos[i * 2 + 1] = allTouches[i].pos[1];
             }
+            setUniform(stepProg, "u_touches[0]", "2fv", flatPos);
+            setUniform(stepProg, "u_touchButton", "1f", touch.button === 2 ? 1.0 : 0.0);
 
             // Set simulation-specific uniforms
             const uniforms = config.getStepUniforms(params, touch);

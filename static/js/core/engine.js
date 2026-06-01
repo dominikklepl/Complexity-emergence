@@ -8,7 +8,7 @@
 
 import { initWebGL, getGL, getCanvas, resizeDisplayCanvas } from "./webgl.js";
 import { mergeTranslations, setLang, getLang, t } from "./i18n.js";
-import { setupInteraction, touchPos, touchActive, touchButton, frameTick } from "./interaction.js";
+import { setupInteraction, touchPos, touchActive, touchButton, touches, frameTick } from "./interaction.js";
 import { buildControls } from "./controls.js";
 import { renderEquations, toggleEquations } from "./equations.js";
 import { takeSnapshot } from "./snapshot.js";
@@ -336,7 +336,7 @@ function animate() {
             const speed = activeControls.getSpeed();
             const colourScheme = activeControls.getColourScheme();
 
-            const touch = { pos: touchPos, active: touchActive, button: touchButton, radius: activeControls.getInteractionRadius() };
+            const touch = { pos: touchPos, active: touchActive, button: touchButton, radius: activeControls.getInteractionRadius(), touches };
 
             // Fractional-speed accumulator: supports speed < 1 (e.g. 0.2 = 1 step/5 frames).
             // For speed >= 1 this behaves identically to the old integer loop.

@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Z jednoduchého složité</title>
 
     <!-- Fonts (bundled locally for offline kiosk — latin + latin-ext for Czech) -->
@@ -43,7 +43,12 @@
                 <div class="canvas-wrapper">
                     <canvas id="simCanvas"></canvas>
                 </div>
-                <div class="touch-hint" data-i18n="touch_hint">Klikni na plátno a přidej nové vzory</div>
+                <div class="touch-hint" data-i18n="touch_hint">Dotykem ovlivni simulaci</div>
+                <div class="actions">
+                    <button class="action-btn btn-reset"    id="btn-reset"    data-i18n="reset"   >⟲ Resetovat (R)</button>
+                    <button class="action-btn btn-pause"    id="btn-pause"    data-i18n="pause"   >⏸ Pauza (P)</button>
+                    <button class="action-btn btn-snapshot" id="btn-snapshot" data-i18n="snapshot">📸 Uložit (S)</button>
+                </div>
             </div>
 
             <aside class="side-col">
@@ -67,19 +72,6 @@
             </aside>
         </section>
 
-        <!-- ── Console: action buttons ── -->
-        <footer class="console-row">
-            <div class="kbd-hints">
-                <span><kbd>R</kbd> reset</span>
-                <span><kbd>P</kbd> pauza / pause</span>
-                <span><kbd>S</kbd> pohlednice / postcard</span>
-            </div>
-            <div class="actions">
-                <button class="action-btn btn-reset"    id="btn-reset"    data-i18n="reset"    data-key="R">⟲ Resetovat</button>
-                <button class="action-btn btn-pause"    id="btn-pause"    data-i18n="pause"    data-key="P">⏸ Pauza</button>
-                <button class="action-btn btn-snapshot" id="btn-snapshot" data-i18n="snapshot" data-key="S">◈ Pohlednice</button>
-            </div>
-        </footer>
     </div>
 
     <!-- Toast notification -->

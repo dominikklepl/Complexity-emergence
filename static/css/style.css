@@ -31,14 +31,15 @@ body {
     overflow: hidden;
     height: 100vh;
     user-select: none;
+    touch-action: none;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "ss01";
 }
 
-/* ---- Layout: 3-row grid (title moved into side-col) ---- */
+/* ---- Layout: 2-row grid ---- */
 .app {
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr;
     height: 100vh;
     padding: 20px 40px 20px;
     gap: 16px;
@@ -309,7 +310,6 @@ body {
     border-radius: 4px;
     overflow: hidden;
     min-height: 0;
-    box-shadow: 0 24px 48px -28px oklch(0.15 0.01 260 / .4);
 }
 
 canvas {
@@ -317,6 +317,7 @@ canvas {
     width: 100%;
     height: 100%;
     cursor: crosshair;
+    touch-action: none;
     aspect-ratio: 3 / 2;
     max-width: 100%;
     max-height: 100%;
@@ -543,40 +544,10 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
-/* ---- Console row (action buttons + kbd hints) ---- */
-.console-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-    padding-top: 16px;
-    border-top: 1px solid var(--rule);
-}
-
-.kbd-hints {
-    display: flex;
-    gap: 24px;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--ink-3);
-    letter-spacing: .04em;
-}
-.kbd-hints kbd {
-    display: inline-block;
-    margin-right: 6px;
-    padding: 2px 7px;
-    background: var(--bg-2);
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--ink);
-}
-
 .actions {
     display: flex;
     gap: 8px;
+    margin-top: 10px;
 }
 
 .action-btn {

@@ -49,7 +49,7 @@ uniform sampler2D u_state;
 uniform vec2 u_resolution;
 uniform float u_K;
 uniform float u_dt;
-uniform vec2 u_touch;
+uniform vec2 u_touches[5];
 uniform float u_touchRadius;
 
 varying vec2 v_uv;
@@ -74,10 +74,11 @@ void main() {
 
     float new_theta = theta + u_dt * (omega + u_K / 4.0 * coupling);
 
-    if (u_touch.x >= 0.0) {
-        float dist = length(v_uv - u_touch);
+    for (int i = 0; i < 5; i++) {
+        if (u_touches[i].x < 0.0) continue;
+        float dist = length(v_uv - u_touches[i]);
         if (dist < u_touchRadius && dist > 0.001) {
-            vec2 diff = v_uv - u_touch;
+            vec2 diff = v_uv - u_touches[i];
             float angle = atan(diff.y, diff.x);
             float spiral = angle + dist * 30.0;
             float strength = 1.0 - dist / u_touchRadius;

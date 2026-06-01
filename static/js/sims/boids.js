@@ -304,6 +304,7 @@ let indexBuf = null;
 
 let curState = 0;
 let curTrail = 0;
+let currentMode = "boids";
 
 // ── Export simulation ───────────────────────────────────────────
 
@@ -364,6 +365,7 @@ export default {
 
         curState = 0;
         curTrail = 0;
+        if (params?.mode) currentMode = params.mode;
 
         // Pre-cache all uniform locations
         cacheUniformLocations(stepProg, [
@@ -417,13 +419,13 @@ export default {
         setUniform(stepProg, "u_cohesion", "1f", params.cohesion);
         setUniform(stepProg, "u_perception", "1f", params.perception);
         setUniform(stepProg, "u_maxSpeed", "1f", params.maxSpeed);
-        setUniform(stepProg, "u_mode", "1f", MODE_MAP[params.mode] || 0);
+        setUniform(stepProg, "u_mode", "1f", MODE_MAP[params.mode ?? currentMode] ?? 0);
 
         setUniform(stepProg, "u_touchRadius", "1f", touch.radius ?? 0.20);
         if (touch.active) {
             setUniform(stepProg, "u_touch", "2f", touch.pos[0], touch.pos[1]);
             setUniform(stepProg, "u_touchActive", "1f", 1.0);
-            setUniform(stepProg, "u_touchButton", "1f", touch.button === 2 ? 1.0 : 0.0);
+            setUniform(stepProg, "u_touchButton", "1f", (touch.button === 2 || params.repulse) ? 1.0 : 0.0);
         } else {
             setUniform(stepProg, "u_touch", "2f", -1, -1);
             setUniform(stepProg, "u_touchActive", "1f", 0.0);
@@ -491,16 +493,7 @@ export default {
     // ── Metadata ────────────────────────────────────────────────
 
     controls: [
-        {
-            type: "select", id: "mode",
-            options: [
-                { value: "boids", i18nLabel: "mode_boids" },
-                { value: "crowd", i18nLabel: "mode_crowd" },
-                { value: "predator", i18nLabel: "mode_predator" },
-            ],
-            default: "boids",
-            i18nLabel: "mode_label",
-        },
+        { type: "toggle", id: "repulse", default: false, i18nLabel: "lbl_repulse" },
         { type: "slider", id: "separation", min: 0, max: 3, step: 0.1, default: 1.5, i18nLabel: "lbl_separation", format: 1 },
         { type: "slider", id: "alignment", min: 0, max: 3, step: 0.1, default: 1.0, i18nLabel: "lbl_alignment", format: 1 },
         { type: "slider", id: "cohesion", min: 0, max: 3, step: 0.1, default: 1.0, i18nLabel: "lbl_cohesion", format: 1 },
@@ -613,13 +606,14 @@ export default {
             en: "Three rules. No leader. And still — a flock.",
         },
         desc: {
-            cs: "Tři jednoduchá pravidla — separace, zarovnání a soudržnost — stačí k tomu, aby vzniklo složité hejnové chování, jako u ptáků nebo ryb. Klikni levým tlačítkem pro přitahování, pravým pro odpuzování.",
-            en: "Three simple rules — separation, alignment, and cohesion — are enough to produce complex flocking behaviour, like in birds or fish. Left-click to attract, right-click to repel.",
+            cs: "Tři jednoduchá pravidla — separace, zarovnání a soudržnost — stačí k tomu, aby vzniklo složité hejnové chování, jako u ptáků nebo ryb. Dotkni se (nebo klikni) pro přitahování; přepni 'Odpuzovat' nebo klikni pravým tlačítkem pro odpuzování.",
+            en: "Three simple rules — separation, alignment, and cohesion — are enough to produce complex flocking behaviour, like in birds or fish. Touch or left-click to attract; toggle 'Repulse' or right-click to repel.",
         },
         mode_label: { cs: "Režim", en: "Mode" },
         mode_boids: { cs: "Hejno", en: "Flocking" },
         mode_crowd: { cs: "Dav", en: "Crowd" },
         mode_predator: { cs: "Predátor", en: "Predator" },
+        lbl_repulse: { cs: "Odpuzovat", en: "Repulse" },
         lbl_separation: { cs: "Separace", en: "Separation" },
         lbl_alignment: { cs: "Zarovnání", en: "Alignment" },
         lbl_cohesion: { cs: "Soudržnost", en: "Cohesion" },
